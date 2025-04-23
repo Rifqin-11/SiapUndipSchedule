@@ -16,7 +16,7 @@ const TodayCard = ({
       className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35`}
     >
       <div className="flex flex-row mt-2 justify-between items-center">
-        <h1 className={`font-black text-lg max-w-50 ${textColor}`}>{name}</h1>
+        <h1 className={`font-black text max-w-50 ${textColor}`}>{name}</h1>
         <div className={`text-xs text-right ${textColor} `}>
           {lecturer.map((lecturer, index) => (
             <p

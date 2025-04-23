@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { BellPlus } from "lucide-react";
-import CategoryCard from "@/components/CategoryCard";
+import AllCourses from "@/components/AllCourses";
 import TodayCard from "@/components/TodayCard";
 import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate } from "@/utils/date";
@@ -36,7 +36,7 @@ const page = () => {
           <div className="flex gap-4">
             {!allMeetingsSafe ? (
               dummySubject.map((subject) => (
-                <CategoryCard {...subject} key={subject.id} />
+                <AllCourses {...subject} key={subject.id} />
               ))
             ) : (
               <p className="text-sm text-green-700 dark:text-green-300">

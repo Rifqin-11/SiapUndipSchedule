@@ -2,7 +2,7 @@ import React from "react";
 import { Progress } from "./ui/progress";
 import { colorPairs } from "@/utils/date";
 
-const CategoryCard = ({ name, category, meeting,  }: subject) => {
+const AllCourses = ({ name, category, meeting,  }: subject) => {
   const proggressMeeting = (meeting / 14) * 100;
 
   return (
@@ -33,4 +33,4 @@ const CategoryCard = ({ name, category, meeting,  }: subject) => {
   );
 };
 
-export default CategoryCard;
+export default AllCourses;
