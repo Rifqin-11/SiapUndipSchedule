@@ -15,13 +15,13 @@ const page = () => {
   );
 
   const colorPairs = [
-    { bg: "bg-red-100", text: "text-red-700", roomBg: "bg-red-700" },
-    { bg: "bg-green-100", text: "text-green-700", roomBg: "bg-green-700" },
-    { bg: "bg-yellow-100", text: "text-yellow-700", roomBg: "bg-yellow-700" },
-    { bg: "bg-pink-100", text: "text-pink-700", roomBg: "bg-pink-700" },
-    { bg: "bg-purple-100", text: "text-purple-700", roomBg: "bg-purple-700" },
-    { bg: "bg-orange-100", text: "text-orange-700", roomBg: "bg-orange-700" },
-    { bg: "bg-blue-100", text: "text-blue-700", roomBg: "bg-blue-700" },
+    { bg: "bg-blue-100", text: "text-blue-700", roomBg: "bg-blue-800" },
+    { bg: "bg-purple-100", text: "text-purple-700", roomBg: "bg-purple-800" },
+    { bg: "bg-green-100", text: "text-green-700", roomBg: "bg-green-800" },
+    { bg: "bg-red-100", text: "text-red-700", roomBg: "bg-red-800" },
+    { bg: "bg-pink-100", text: "text-pink-700", roomBg: "bg-pink-800" },
+    { bg: "bg-orange-100", text: "text-orange-700", roomBg: "bg-orange-800" },
+    { bg: "bg-yellow-100", text: "text-yellow-700", roomBg: "bg-yellow-800" },
   ];
 
   return (
