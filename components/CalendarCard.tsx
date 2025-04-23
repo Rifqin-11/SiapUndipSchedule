@@ -24,7 +24,9 @@ const CalendarCard = ({
         >
           <div className="flex flex-row gap-2 justify-between items-center">
             <h1 className={`font-bold ${textColor}`}>{name}</h1>
-            <div className="bg-white/60 rounded-lg p-1 px-2 text-xs">
+            <div
+              className={`bg-white/60 rounded-lg p-1 px-2 text-xs ${textColor}`}
+            >
               {room}
             </div>
           </div>
