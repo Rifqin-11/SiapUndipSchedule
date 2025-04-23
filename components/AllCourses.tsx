@@ -26,7 +26,7 @@ const AllCourses = ({ name, category, meeting,  }: subject) => {
           <p className="text-blue-900">{meeting}/14</p>
         </div>
         <div>
-          <Progress value={proggressMeeting} />
+          <Progress value={proggressMeeting} className="bg-blue-100"/>
         </div>
       </div>
     </div>
