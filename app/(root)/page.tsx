@@ -6,6 +6,7 @@ import TodayCard from "@/components/TodayCard";
 import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate } from "@/utils/date";
 
+
 const page = () => {
   const { currentDay, currentDate } = getCurrentDayAndDate();
 
@@ -14,13 +15,13 @@ const page = () => {
   );
 
   const colorPairs = [
-    { bg: "bg-red-100", text: "text-red-700" },
-    { bg: "bg-green-100", text: "text-green-700" },
-    { bg: "bg-yellow-100", text: "text-yellow-700" },
-    { bg: "bg-pink-100", text: "text-pink-700" },
-    { bg: "bg-purple-100", text: "text-purple-700" },
-    { bg: "bg-orange-100", text: "text-orange-700" },
-    { bg: "bg-blue-100", text: "text-blue-700" },
+    { bg: "bg-red-100", text: "text-red-700", roomBg: "bg-red-700" },
+    { bg: "bg-green-100", text: "text-green-700", roomBg: "bg-green-700" },
+    { bg: "bg-yellow-100", text: "text-yellow-700", roomBg: "bg-yellow-700" },
+    { bg: "bg-pink-100", text: "text-pink-700", roomBg: "bg-pink-700" },
+    { bg: "bg-purple-100", text: "text-purple-700", roomBg: "bg-purple-700" },
+    { bg: "bg-orange-100", text: "text-orange-700", roomBg: "bg-orange-700" },
+    { bg: "bg-blue-100", text: "text-blue-700", roomBg: "bg-blue-700" },
   ];
 
   return (
@@ -53,14 +54,15 @@ const page = () => {
         <div className="flex flex-col mt-3 gap-4">
           {todaySubject.length > 0 ? (
             todaySubject.map((subject, index) => {
-              const { bg, text } = colorPairs[index % colorPairs.length];
+              const { bg, text, roomBg } =
+                colorPairs[index % colorPairs.length];
               return (
                 <TodayCard
                   {...subject}
                   key={subject.id}
                   bgColor={bg}
                   textColor={text}
-                  bgRoomColor={text.replace("text-", "bg-")}
+                  bgRoomColor={roomBg}
                 />
               );
             })

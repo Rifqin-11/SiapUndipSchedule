@@ -30,7 +30,7 @@ const TodayCard = ({
           <p className="text-xs">Start</p>
         </div>
         <div
-          className={`${bgRoomColor} p-1 px-5 rounded-3xl font-bold flex justify-center items-center  ${textColor}`}
+          className={`${bgRoomColor} p-1 px-5 rounded-3xl font-bold flex justify-center items-center  text-white`}
         >
           {room}
         </div>
