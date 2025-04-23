@@ -16,8 +16,8 @@ const page = ({ children }: { children: ReactNode }) => {
               className="rounded-full size-10"
             />
             <div>
-              <h1 className="font-bold text-lg">Hello, Rifqi Naufal</h1>
-              <p className="text-sm text-gray-800">Welcome Back!</p>
+              <h1 className="font-bold">Rifqi Naufal</h1>
+              <p className="text-xs text-gray-800">Welcome Back!</p>
             </div>
           </div>
           <div>

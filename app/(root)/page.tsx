@@ -1,8 +1,6 @@
-
 import React from "react";
-import Image from "next/image";
 import { BellPlus } from "lucide-react";
-import AllCourses from "@/components/AllCourses";
+import CoursesCard from "@/components/CoursesCard";
 import TodayCard from "@/components/TodayCard";
 import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate } from "@/utils/date";
@@ -22,39 +20,50 @@ const page = () => {
   );
 
   return (
-    <>
-      <section className="flex mt-3 mx-5 text-lg dark:text-white">
-        This is your schedule
+    <main className="animate-fadeIn">
+      <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">
+        <h1 className="text-xl font-extrabold tracking-tight">
+          Hi, here’s your schedule
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {currentDay}, {currentDate}
+        </p>
       </section>
 
-      <section className="mt-4 dark:text-white">
-        <div className="flex flex-row justify-between items-center mx-5">
-          <h1 className="font-black">Your Courses</h1>
-          <p className="text-xs text-gray-700 dark:text-gray-300">View more</p>
+      <section className="mt-6 dark:text-white">
+        <div className="flex flex-row justify-between items-center mx-6 mb-2">
+          <h2 className="font-bold text-xl">Your Courses</h2>
+          <button className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+            View more
+          </button>
         </div>
 
-        <div className="mt-3 overflow-x-auto scrollbar-none px-5 py-2">
+        <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
           <div className="flex gap-4">
             {!allMeetingsSafe ? (
               dummySubject.map((subject) => (
-                <AllCourses {...subject} key={subject.id} />
+                <div
+                  key={subject.id}
+                  className="w-[280px] shrink-0 transition-transform duration-200 hover:scale-105"
+                >
+                  <CoursesCard {...subject} />
+                </div>
               ))
             ) : (
               <p className="text-sm text-green-700 dark:text-green-300">
-                Your courses are all safe.
+                🎉 All your courses are above 75%.
               </p>
             )}
           </div>
         </div>
       </section>
 
-      <section className="mt-4 mx-5 dark:text-white">
-        <div className="flex flex-row justify-between items-center">
-          <h1 className="font-black">Today Schedule</h1>
-          <p className="text-xs text-gray-700"></p>
+      <section className="mt-6 mx-6 dark:text-white">
+        <div className="flex flex-row justify-between items-center mb-2">
+          <h2 className="font-bold text-xl">Today’s Schedule</h2>
         </div>
 
-        <div className="flex flex-col mt-3 gap-4">
+        <div className="flex flex-col gap-4">
           {todaySubject.length > 0 ? (
             todaySubject.map((subject) => {
               const randomColor =
@@ -71,17 +80,17 @@ const page = () => {
             })
           ) : (
             <div className="flex flex-col justify-center items-center mt-10">
-              <h1 className="font-bold text-lg text-gray-700 dark:text-gray-300">
-                No Schedule Today
-              </h1>
+              <h3 className="font-bold text-lg text-gray-700 dark:text-gray-300">
+                No Schedule Today 🎉
+              </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                You have no schedule today
+                Enjoy your free day!
               </p>
             </div>
           )}
         </div>
       </section>
-    </>
+    </main>
   );
 };
 
