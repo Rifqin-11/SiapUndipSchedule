@@ -12,6 +12,8 @@ const CalendarCard = ({
   bgRoomColor,
   meeting,
 }: subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
+  const proggressMeeting = (meeting / 14) * 100;
+
   return (
     <div className="flex flex-row gap-4 mt-2">
       <div className="flex flex-row w-full p-2 gap-1">
@@ -45,7 +47,7 @@ const CalendarCard = ({
               <h1 className="text-xs text-gray-500">Progress</h1>
               <p className="text-xs text-gray-500">{meeting}/14</p>
             </div>
-            <Progress value={50} className="bg-blue-200" />
+            <Progress value={proggressMeeting} className="bg-blue-200" />
           </div>
         </div>
       </div>
