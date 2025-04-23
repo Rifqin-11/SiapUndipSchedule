@@ -6,6 +6,6 @@ interface subject {
   startTime: string;
   endTime: string;
   lecturer: string[];
-  meeting: string[];
+  meeting: number;
   category?: string;
 }

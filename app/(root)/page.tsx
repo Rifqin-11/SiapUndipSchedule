@@ -7,12 +7,17 @@ import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate } from "@/utils/date";
 import { colorPairs } from "@/utils/date";
 
+const MAX_MEETING = 14;
 
 const page = () => {
   const { currentDay, currentDate } = getCurrentDayAndDate();
 
   const todaySubject = dummySubject.filter(
     (subject) => subject.day === currentDay
+  );
+
+  const allMeetingsSafe = dummySubject.every(
+    (subject) => (subject.meeting / MAX_MEETING) * 100 >= 75
   );
 
   return (
@@ -23,20 +28,26 @@ const page = () => {
 
       <section className="mt-4 dark:text-white">
         <div className="flex flex-row justify-between items-center mx-5">
-          <h1 className="font-black">Schedule Category</h1>
+          <h1 className="font-black">Your Courses</h1>
           <p className="text-xs text-gray-700 dark:text-gray-300">View more</p>
         </div>
 
         <div className="mt-3 overflow-x-auto scrollbar-none px-5">
           <div className="flex gap-4">
-            {dummySubject.map((subject) => (
-              <CategoryCard {...subject} key={subject.id} />
-            ))}
+            {!allMeetingsSafe ? (
+              dummySubject.map((subject) => (
+                <CategoryCard {...subject} key={subject.id} />
+              ))
+            ) : (
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Your courses are all safe.
+              </p>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="mt-8 mx-5 dark:text-white">
+      <section className="mt-6 mx-5 dark:text-white">
         <div className="flex flex-row justify-between items-center">
           <h1 className="font-black">Today Schedule</h1>
           <p className="text-xs text-gray-700"></p>

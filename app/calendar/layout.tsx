@@ -3,8 +3,8 @@ import React, { ReactNode } from 'react'
 
 const layout = ({children }: {children: ReactNode}) => {
   return (
-    <div className=" mx-5">
-      <section className="flex flex-row gap-2 items-center mt-4 mb-2">
+    <div className="">
+      <section className="flex flex-row gap-2 items-center mt-4 mb-2 mx-5">
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-col gap-0.5 justify-center">
             <h1 className="font-bold text-xl">Calendar</h1>
