@@ -5,6 +5,7 @@ import CategoryCard from "@/components/CategoryCard";
 import TodayCard from "@/components/TodayCard";
 import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate } from "@/utils/date";
+import { colorPairs } from "@/utils/date";
 
 
 const page = () => {
@@ -13,16 +14,6 @@ const page = () => {
   const todaySubject = dummySubject.filter(
     (subject) => subject.day === currentDay
   );
-
-  const colorPairs = [
-    { bg: "bg-blue-100", text: "text-blue-700", roomBg: "bg-blue-800" },
-    { bg: "bg-purple-100", text: "text-purple-700", roomBg: "bg-purple-800" },
-    { bg: "bg-green-100", text: "text-green-700", roomBg: "bg-green-800" },
-    { bg: "bg-red-100", text: "text-red-700", roomBg: "bg-red-800" },
-    { bg: "bg-pink-100", text: "text-pink-700", roomBg: "bg-pink-800" },
-    { bg: "bg-orange-100", text: "text-orange-700", roomBg: "bg-orange-800" },
-    { bg: "bg-yellow-100", text: "text-yellow-700", roomBg: "bg-yellow-800" },
-  ];
 
   return (
     <>
@@ -53,16 +44,16 @@ const page = () => {
 
         <div className="flex flex-col mt-3 gap-4">
           {todaySubject.length > 0 ? (
-            todaySubject.map((subject, index) => {
-              const { bg, text, roomBg } =
-                colorPairs[index % colorPairs.length];
+            todaySubject.map((subject) => {
+              const randomColor =
+                colorPairs[Math.floor(Math.random() * colorPairs.length)];
               return (
                 <TodayCard
                   {...subject}
                   key={subject.id}
-                  bgColor={bg}
-                  textColor={text}
-                  bgRoomColor={roomBg}
+                  bgColor={randomColor.bg}
+                  textColor={randomColor.text}
+                  bgRoomColor={randomColor.roomBg}
                 />
               );
             })
