@@ -1,6 +1,7 @@
 interface subject {
   id: string;
   name: string;
+  day: string;
   room: string;
   startTime: string;
   endTime: string;
