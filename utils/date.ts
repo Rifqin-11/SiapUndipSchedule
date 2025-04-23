@@ -9,7 +9,11 @@ export const getCurrentDayAndDate = () => {
     "Friday",
     "Saturday",
   ];
-  const currentDay = dayNames[today.getDay()];
+  const currentDay = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    timeZone: "Asia/Jakarta",
+  }).format(today);
+
   const currentDate = today.toLocaleDateString("en-US", {
     day: "numeric",
     month: "long",
