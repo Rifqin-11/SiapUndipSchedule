@@ -40,7 +40,7 @@ const CalendarCard = ({
               </p>
             ))}
           </div>
-          <div className="mt-3 gap-1">
+          <div className="flex flex-col mt-3 gap-1">
             <div className="flex flex-row justify-between items-center">
               <h1 className="text-xs text-gray-500">Progress</h1>
               <p className="text-xs text-gray-500">{meeting}/14</p>
