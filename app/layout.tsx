@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
-import { BellPlus, Calendar, Home, Menu, PersonStanding, Settings2 } from "lucide-react";
+import { BellPlus, Calendar, Home, Menu, PersonStanding, Settings2, UserRound } from "lucide-react";
 import Link from "next/link";
 import NotifIcon from "@/components/NotifIcon";
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none`}
+        className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none dark:bg-black`}
       >
 
         {children}
@@ -40,7 +40,7 @@ export default function RootLayout({
             <Settings2 className="text-white" />
           </Link>
           <Link href="/">
-            <PersonStanding className="text-white" />
+            <UserRound className="text-white" />
           </Link>
         </div>
       </body>

@@ -8,14 +8,14 @@ import { dummySubject } from "@/constants";
 const page = () => {
   return (
     <>
-      <section className="flex mt-3 mx-5 text-lg">
+      <section className="flex mt-3 mx-5 text-lg dark:text-white">
         This is your schedule
       </section>
 
-      <section className="mt-4">
+      <section className="mt-4 dark:text-white">
         <div className="flex flex-row justify-between items-center mx-5">
           <h1 className="font-black ">Schedule Category</h1>
-          <p className="text-xs text-gray-700">View more</p>
+          <p className="text-xs text-gray-700 dark:text-gray-300">View more</p>
         </div>
 
         <div className="mt-3 overflow-x-auto scrollbar-none px-5">
@@ -27,7 +27,7 @@ const page = () => {
         </div>
       </section>
 
-      <section className="mt-8 mx-5">
+      <section className="mt-8 mx-5 dark:text-white">
         <div className="flex flex-row justify-between items-center">
           <h1 className="font-black ">Today Schedule</h1>
           <p className="text-xs text-gray-700"></p>
