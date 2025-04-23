@@ -24,7 +24,7 @@ export const dummySubject: subject[] = [
     meeting: 7,
   },
   {
-    id: "4",
+    id: "3",
     name: "Prak. Rekayasa Perangkat Lunak",
     room: "Lab Kom",
     day: "Tuesday",

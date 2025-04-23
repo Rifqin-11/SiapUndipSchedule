@@ -13,7 +13,7 @@ const page = () => {
   const { currentDay, currentDate } = getCurrentDayAndDate();
 
   const todaySubject = dummySubject.filter(
-    (subject) => subject.day === currentDay
+    (subject) => subject.day.toLowerCase() === currentDay.toLowerCase()
   );
 
   const allMeetingsSafe = dummySubject.every(
