@@ -34,7 +34,7 @@ const CalendarCard = ({
             {lecturer.map((lecturer, index) => (
               <p
                 key={index}
-                className={`text-xs ${textColor} truncate overflow-hidden whitespace-nowrap max-w-[140px]`}
+                className={`text-xs ${textColor} truncate overflow-hidden whitespace-nowrap max-w-[240px]`}
               >
                 {lecturer}
               </p>
