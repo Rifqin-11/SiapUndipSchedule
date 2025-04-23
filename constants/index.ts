@@ -6,7 +6,7 @@ export const dummySubject: subject[] = [
     day: "Monday",
     startTime: "10:00 PM",
     endTime: "12:10 PM",
-    lecturer: ["Pak Eko", "Pak Arfan"],
+    lecturer: ["Ir. M. Arfan, S.Kom., M.Eng.", "Eko Handoyo, S.T., M.T."],
     meeting: ["Zoom", "Google Meet"],
     category: "High",
   },
@@ -17,7 +17,10 @@ export const dummySubject: subject[] = [
     day: "Tuesday",
     startTime: "07:30 PM",
     endTime: "09:10 PM",
-    lecturer: ["Pak Yos", "Pak Arfan"],
+    lecturer: [
+      "Ir. M. Arfan, S.Kom., M.Eng.",
+      "Ir. Yosua Alvin Adi Soetrisno, S.T., M.Eng., IPM",
+    ],
     meeting: ["Zoom", "Google Meet"],
   },
   {
@@ -27,7 +30,10 @@ export const dummySubject: subject[] = [
     day: "Tuesday",
     startTime: "12:40 PM",
     endTime: "15:30 PM",
-    lecturer: ["Pak Maman"],
+    lecturer: [
+      "Dr. Maman Somantri, S.T., M.T.",
+      "Ir. M. Arfan, S.Kom., M.Eng.",
+    ],
     meeting: ["Zoom", "Google Meet"],
     category: "High",
   },
@@ -38,7 +44,10 @@ export const dummySubject: subject[] = [
     day: "Wednesday",
     startTime: "15:30 PM",
     endTime: "18:21 PM",
-    lecturer: ["Pak yos"],
+    lecturer: [
+      "Ir. Yosua Alvin Adi Soetrisno, S.T., M.Eng., IPM",
+      "Ir. M. Arfan, S.Kom., M.Eng.",
+    ],
     meeting: ["Zoom", "Google Meet"],
   },
   {
@@ -48,7 +57,7 @@ export const dummySubject: subject[] = [
     day: "Thursday",
     startTime: "13:00 PM",
     endTime: "14:30 PM",
-    lecturer: ["Pak yos"],
+    lecturer: ["Ir. Yosua Alvin Adi Soetrisno, S.T., M.Eng., IPM"],
     meeting: ["Zoom", "Google Meet"],
   },
   {
@@ -58,7 +67,10 @@ export const dummySubject: subject[] = [
     day: "Thursday",
     startTime: "15:31 PM",
     endTime: "17:11 PM",
-    lecturer: ["Pak yos"],
+    lecturer: [
+      "Ir. Yosua Alvin Adi Soetrisno, S.T., M.Eng., IPM",
+      "Eko Handoyo, S.T., M.T.",
+    ],
     meeting: ["Zoom", "Google Meet"],
   },
   {
@@ -68,7 +80,7 @@ export const dummySubject: subject[] = [
     day: "Friday",
     startTime: "07:30 PM",
     endTime: "09:10 PM",
-    lecturer: ["Pak Jaka"],
+    lecturer: ["Dr. Ir. Jaka Windarta, M.T., IPU, ASEAN Eng."],
     meeting: ["Zoom", "Google Meet"],
   },
   {
@@ -78,7 +90,10 @@ export const dummySubject: subject[] = [
     day: "Friday",
     startTime: "09:30 PM",
     endTime: "12:11 PM",
-    lecturer: ["Pak yos"],
+    lecturer: [
+      "Ir. Yosua Alvin Adi Soetrisno, S.T., M.Eng., IPM"
+
+    ],
     meeting: ["Zoom", "Google Meet"],
   },
   {
@@ -88,7 +103,8 @@ export const dummySubject: subject[] = [
     day: "Friday",
     startTime: "13:00 PM",
     endTime: "14:40 PM",
-    lecturer: ["Pak Arfan", "Pak Maman"],
+    lecturer: ["Ir. M. Arfan, S.Kom., M.Eng.",
+      "Dr. Maman Somantri, S.T., M.T.",],
     meeting: ["Zoom", "Google Meet"],
   },
 ];

@@ -17,9 +17,14 @@ const TodayCard = ({
     >
       <div className="flex flex-row mt-2 justify-between items-center">
         <h1 className={`font-black text-lg max-w-50 ${textColor}`}>{name}</h1>
-        <div className={`text-xs text-right ${textColor}`}>
+        <div className={`text-xs text-right ${textColor} `}>
           {lecturer.map((lecturer, index) => (
-            <p key={index}>{lecturer}</p>
+            <p
+              key={index}
+              className="truncate overflow-hidden whitespace-nowrap max-w-[140px]"
+            >
+              {lecturer}
+            </p>
           ))}
         </div>
       </div>
