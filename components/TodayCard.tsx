@@ -7,12 +7,17 @@ const TodayCard = ({
   endTime,
   lecturer,
   category,
-}: subject) => {
+  bgColor,
+  textColor,
+  bgRoomColor,
+}: subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
   return (
-    <div className="flex flex-col bg-blue-100 justify-around rounded-3xl p-3 w-full min-h-35">
-      <div className="flex flex-row mt-2 justify-between items-center jus">
-        <h1 className="font-black text-cyan-700 text-lg max-w-50">{name}</h1>
-        <div className="text-xs text-cyan-700 text-right">
+    <div
+      className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35`}
+    >
+      <div className="flex flex-row mt-2 justify-between items-center">
+        <h1 className={`font-black text-lg max-w-50 ${textColor}`}>{name}</h1>
+        <div className={`text-xs text-right ${textColor}`}>
           {lecturer.map((lecturer, index) => (
             <p key={index}>{lecturer}</p>
           ))}
@@ -20,20 +25,24 @@ const TodayCard = ({
       </div>
 
       <div className="mt-3 flex flex-row justify-between items-center">
-        <div>
-          <h1 className="font-bold text-cyan-700">{startTime}</h1>
-          <p className="text-xs text-cyan-700">Start</p>
+        <div className={textColor}>
+          <h1 className="font-bold">{startTime}</h1>
+          <p className="text-xs">Start</p>
         </div>
-        <div className="bg-cyan-700 p-1 px-5 rounded-3xl text-blue-100 font-bold flex justify-center items-center">
+        <div
+          className={`${bgRoomColor} p-1 px-5 rounded-3xl font-bold flex justify-center items-center  ${textColor}`}
+        >
           {room}
         </div>
-        <div>
-          <h1 className="font-bold text-cyan-700">{endTime}</h1>
-          <p className="text-xs text-cyan-700">End</p>
+        <div className={textColor}>
+          <h1 className="font-bold">{endTime}</h1>
+          <p className="text-xs">End</p>
         </div>
       </div>
     </div>
   );
 };
+
+
 
 export default TodayCard;
