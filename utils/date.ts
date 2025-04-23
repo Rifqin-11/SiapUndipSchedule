@@ -18,6 +18,7 @@ export const getCurrentDayAndDate = () => {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Asia/Jakarta",
   });
   return { currentDay, currentDate };
 };

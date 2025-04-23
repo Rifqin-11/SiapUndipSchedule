@@ -51,7 +51,7 @@ const page = () => {
               ))
             ) : (
               <p className="text-sm text-green-700 dark:text-green-300">
-                🎉 All your courses are above 75%.
+                All your courses are above 75%.
               </p>
             )}
           </div>
