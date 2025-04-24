@@ -36,10 +36,10 @@ export default function RootLayout({
           <Link href="/calendar">
             <Calendar className="text-white" />
           </Link>
-          <Link href="/">
+          <Link href="/settings">
             <Settings2 className="text-white" />
           </Link>
-          <Link href="/">
+          <Link href="/user">
             <UserRound className="text-white" />
           </Link>
         </div>
