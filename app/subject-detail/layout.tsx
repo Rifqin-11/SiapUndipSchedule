@@ -1,7 +1,5 @@
 import BackButton from "@/components/Back-Button";
-import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { Edit3 } from "lucide-react";
 import React, { ReactNode } from "react";
 
 const layout = ({ children }: { children: ReactNode }) => {
@@ -13,6 +11,9 @@ const layout = ({ children }: { children: ReactNode }) => {
           <div className="flex flex-col gap-0.5 justify-center text-center">
             <h1 className="font-bold text-xl">Subject Detail</h1>
           </div>
+        </div>
+        <div>
+          <Edit3 />
         </div>
       </section>
 
