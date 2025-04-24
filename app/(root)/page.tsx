@@ -5,6 +5,7 @@ import TodayCard from "@/components/TodayCard";
 import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate } from "@/utils/date";
 import { colorPairs } from "@/utils/date";
+import Link from "next/link";
 
 const MAX_MEETING = 14;
 
@@ -69,13 +70,15 @@ const page = () => {
               const randomColor =
                 colorPairs[Math.floor(Math.random() * colorPairs.length)];
               return (
-                <TodayCard
-                  {...subject}
-                  key={subject.id}
-                  bgColor={randomColor.bg}
-                  textColor={randomColor.text}
-                  bgRoomColor={randomColor.roomBg}
-                />
+                <Link href="/calendar/calendarDetail" key={subject.id}>
+                  <TodayCard
+                    {...subject}
+                    key={subject.id}
+                    bgColor={randomColor.bg}
+                    textColor={randomColor.text}
+                    bgRoomColor={randomColor.roomBg}
+                  />
+                </Link>
               );
             })
           ) : (

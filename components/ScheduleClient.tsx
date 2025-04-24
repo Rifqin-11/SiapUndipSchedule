@@ -5,6 +5,7 @@ import { dummySubject } from "@/constants";
 import { getCurrentDayAndDate, getWeekDates, colorPairs } from "@/utils/date";
 import HorizonalCalendar from "@/components/HorizonalCalendar";
 import CalendarCard from "@/components/CalendarCard";
+import Link from "next/link";
 
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
@@ -33,13 +34,15 @@ const ScheduleClient = () => {
             const randomColor =
               colorPairs[Math.floor(Math.random() * colorPairs.length)];
             return (
-              <CalendarCard
-                {...subject}
-                key={subject.id}
-                bgColor={randomColor.bg}
-                textColor={randomColor.text}
-                bgRoomColor={randomColor.roomBg}
-              />
+              <Link href="/calendar/calendarDetail" key={subject.id}>
+                <CalendarCard
+                  {...subject}
+                  key={subject.id}
+                  bgColor={randomColor.bg}
+                  textColor={randomColor.text}
+                  bgRoomColor={randomColor.roomBg}
+                />
+              </Link>
             );
           })
         ) : (
