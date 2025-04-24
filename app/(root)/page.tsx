@@ -70,7 +70,7 @@ const page = () => {
               const randomColor =
                 colorPairs[Math.floor(Math.random() * colorPairs.length)];
               return (
-                <Link href="/calendar/calendarDetail" key={subject.id}>
+                <Link href={`/subject-detail/${subject.id}`} key={subject.id}>
                   <TodayCard
                     {...subject}
                     key={subject.id}

@@ -26,14 +26,13 @@ export default function RootLayout({
       <body
         className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none dark:bg-black`}
       >
-
         {children}
 
         <div className="fixed bottom-2 left-0 right-0 bg-[#333333] rounded-3xl p-4 flex justify-around items-center max-w-[350px] mx-auto w-full z-50">
           <Link href="/">
             <Home className="text-white" />
           </Link>
-          <Link href="/calendar">
+          <Link href="/schedule">
             <Calendar className="text-white" />
           </Link>
           <Link href="/settings">

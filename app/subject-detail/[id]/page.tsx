@@ -1,23 +1,22 @@
+import { dummySubject } from "@/constants";
+import { notFound } from "next/navigation";
 import { Clock, Locate, PinIcon } from "lucide-react";
 import React from "react";
+import { p } from "framer-motion/client";
 
-const page = ({
-  name,
-  room,
-  startTime,
-  endTime,
-  lecturer,
-  category,
-  bgColor,
-  textColor,
-  bgRoomColor,
-}: subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
+const page = ({ params }: { params: { id: string } }) => {
+  const subject = dummySubject.find((item) => item.id === params.id);
+
+  if (!subject) return notFound();
+
   return (
     <div className="flex flex-col mx-5 mt-6 gap-4">
-      <div className="bg-red-100 rounded w-15 text-center">High</div>
+      {subject.category && (
+        <div className="bg-red-200 rounded w-15 text-center font-bold">High</div>
+      )}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="font-bold text-xl">Keamanan Jaringan</h1>
+          <h1 className="font-bold text-xl">{subject.name}</h1>
           <p className="text-justify mt-2">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Sint
             exercitationem soluta, commodi fugiat autem officia natus laborum
@@ -28,9 +27,10 @@ const page = ({
 
         <div>
           <h1 className="font-bold">Lecturer</h1>
-          <div className="flex flex-row gap-2">
-            <p>Ir. M. Arfan S.T M.T,</p>
-            <p>Yoshua Alfin S.T M.T</p>
+          <div className="flex flex-col gap-1">
+            {subject.lecturer.map((lect, index) => (
+              <p key={index}>{lect}</p>
+            ))}
           </div>
         </div>
 
@@ -41,14 +41,16 @@ const page = ({
               <Clock className="" />
               <div className="flex flex-col">
                 <p className="text-xs">Dates:</p>
-                <h1 className="font-bold">23 May 2025</h1>
+                <h1 className="font-bold">
+                  {subject.startTime} - {subject.endTime}
+                </h1>
               </div>
             </div>
             <div className="flex flex-row gap-2 items-center justify-center">
               <PinIcon />
               <div className="flex flex-col">
                 <p className="text-xs">Room:</p>
-                <h1 className="font-bold">B.203</h1>
+                <h1 className="font-bold">{subject.room}</h1>
               </div>
             </div>
           </div>

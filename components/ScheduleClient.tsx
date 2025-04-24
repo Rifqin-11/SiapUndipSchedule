@@ -34,7 +34,7 @@ const ScheduleClient = () => {
             const randomColor =
               colorPairs[Math.floor(Math.random() * colorPairs.length)];
             return (
-              <Link href="/calendar/calendarDetail" key={subject.id}>
+              <Link href={`/subject-detail/${subject.id}`} key={subject.id}>
                 <CalendarCard
                   {...subject}
                   key={subject.id}
