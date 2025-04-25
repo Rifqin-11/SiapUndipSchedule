@@ -1,21 +1,12 @@
 import React from "react";
-import { BellPlus } from "lucide-react";
 import CoursesCard from "@/components/CoursesCard";
-import TodayCard from "@/components/TodayCard";
 import { dummySubject } from "@/constants";
-import { getCurrentDayAndDate } from "@/utils/date";
-import { colorPairs } from "@/utils/date";
-import Link from "next/link";
+import TodaySubject from "@/components/TodaySubject";
+import CurrentDayDate from "@/components/CurrentDayDate";
 
 const MAX_MEETING = 14;
 
 const page = () => {
-  const { currentDay, currentDate } = getCurrentDayAndDate();
-
-  const todaySubject = dummySubject.filter(
-    (subject) => subject.day.toLowerCase() === currentDay.toLowerCase()
-  );
-
   const allMeetingsSafe = dummySubject.every(
     (subject) => (subject.meeting / MAX_MEETING) * 100 >= 75
   );
@@ -26,9 +17,7 @@ const page = () => {
         <h1 className="text-xl font-extrabold tracking-tight">
           Hi, here’s your schedule
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {currentDay}, {currentDate}
-        </p>
+        <CurrentDayDate />
       </section>
 
       <section className="mt-6 dark:text-white">
@@ -64,34 +53,7 @@ const page = () => {
           <h2 className="font-bold text-xl">Today’s Schedule</h2>
         </div>
 
-        <div className="flex flex-col gap-4">
-          {todaySubject.length > 0 ? (
-            todaySubject.map((subject) => {
-              const randomColor =
-                colorPairs[Math.floor(Math.random() * colorPairs.length)];
-              return (
-                <Link href={`/subject-detail/${subject.id}`} key={subject.id}>
-                  <TodayCard
-                    {...subject}
-                    key={subject.id}
-                    bgColor={randomColor.bg}
-                    textColor={randomColor.text}
-                    bgRoomColor={randomColor.roomBg}
-                  />
-                </Link>
-              );
-            })
-          ) : (
-            <div className="flex flex-col justify-center items-center mt-10">
-              <h3 className="font-bold text-lg text-gray-700 dark:text-gray-300">
-                No Schedule Today 🎉
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Enjoy your free day!
-              </p>
-            </div>
-          )}
-        </div>
+        <TodaySubject />
       </section>
     </main>
   );
