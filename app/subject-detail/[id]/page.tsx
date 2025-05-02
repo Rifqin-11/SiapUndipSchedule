@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Clock, Locate, PinIcon } from "lucide-react";
 import React from "react";
 import { p } from "framer-motion/client";
+import Timeline from "@/components/Timeline";
 
 const page = ({ params }: { params: { id: string } }) => {
   const subject = dummySubject.find((item) => item.id === params.id);
@@ -54,6 +55,16 @@ const page = ({ params }: { params: { id: string } }) => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-4">
+        <Timeline />
+        <Timeline />
+        <Timeline />
+        <Timeline />
+        <Timeline />
+        <Timeline />
+        <Timeline />
         </div>
       </div>
     </div>
