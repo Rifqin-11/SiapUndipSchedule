@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Siap Undip Schedule
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-%5E14.0.0-black?logo=nextdotjs)
+![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-%5E3.0-green?logo=tailwindcss)
 
-First, run the development server:
+Welcome to **Siap Undip Schedule** – a lightweight, unofficial web app designed to help Universitas Diponegoro students view and manage their academic schedules on **any device**, including iOS. The official "Siap Undip" app is limited to Android only, leaving many students without a dedicated solution. This project bridges that gap with accessibility, simplicity, and reliability in mind.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🌟 Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### 📅 View Weekly Schedule
+- Instantly access your class schedule with a clean and minimal interface.
+- Optimized for both desktop and mobile browsers.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### ✏️ Edit Class Schedule
+- Customize your courses directly on the page.
+- Easily update course names, times, and other details.
 
-## Learn More
+#### 🔔 Class Time Notifications
+- Get notified when class time is approaching.
+- Helps you stay punctual and organized throughout the day.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🚀 Live Demo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+🔗 [Try the App](https://schedule.rifqinaufal11.studio/)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 🛠️ Built With
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js** – React framework for building fast and scalable web apps.
+- **Tailwind CSS** – Utility-first CSS framework for rapid UI development.
+- **Vercel** – Deployment platform optimized for frontend frameworks like Next.js.
+
+---
+
+### 📦 Getting Started
+
+Follow the steps below to run the project locally:
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/siap-undip-schedule.git
+   cd siap-undip-schedule
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm start
+   ```
+
+4. Open your browser and navigate to:
+   ```
+   http://localhost:3000
+   ```
+
+---
+
+### 📢 Disclaimer
+This is an unofficial project and is not affiliated with Universitas Diponegoro or the original "Siap Undip" developers. This web app is intended solely to enhance accessibility for students.
