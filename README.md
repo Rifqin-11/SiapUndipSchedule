@@ -43,7 +43,7 @@ Follow the steps below to run the project locally:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/siap-undip-schedule.git
+   git clone https://github.com/Rifqin-11/SiapUndipSchedule.git
    cd siap-undip-schedule
    ```
 
