@@ -1,13 +1,18 @@
 "use client";
 
-import { BellPlus, Calendar, Home, LogOut, Menu, Settings2 } from "lucide-react";
+import {
+  BellPlus,
+  Calendar,
+  Home,
+  LogOut,
+  Settings2,
+  BookOpen,
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 export default function NotifIcon() {
   const [isOpen, setIsOpen] = useState(false);
-  const pathName = usePathname();
 
   return (
     <div className="relative">
@@ -29,6 +34,15 @@ export default function NotifIcon() {
                 className="flex flex-row items-center gap-1"
               >
                 <Calendar className="size-4" /> Calendar
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/manage-subjects"
+                className="flex flex-row items-center gap-1"
+              >
+                <BookOpen className="size-4" />
+                Kelola MK
               </Link>
             </li>
             <li>

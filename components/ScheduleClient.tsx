@@ -1,19 +1,37 @@
 "use client";
 
 import React, { useState } from "react";
-import { dummySubject } from "@/constants";
-import { getCurrentDayAndDate, getWeekDates, colorPairs } from "@/utils/date";
+import { getCurrentDayAndDate, colorPairs } from "@/utils/date";
 import HorizonalCalendar from "@/components/HorizonalCalendar";
 import CalendarCard from "@/components/CalendarCard";
 import Link from "next/link";
+import { useSubjects } from "@/hooks/useSubjects";
 
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
   const [selectedDay, setSelectedDay] = useState(currentDay);
+  const { subjects, loading, error } = useSubjects();
 
-  const filteredSubjects = dummySubject.filter(
+  const filteredSubjects = subjects.filter(
     (subject) => subject.day === selectedDay
   );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center mt-10">
+        <h1 className="font-bold text-lg text-red-600">Error</h1>
+        <p className="text-xs text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div>

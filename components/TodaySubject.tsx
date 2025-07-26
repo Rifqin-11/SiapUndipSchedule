@@ -1,17 +1,35 @@
-"use client"
+"use client";
 
-import { dummySubject } from '@/constants';
-import { colorPairs, getCurrentDayAndDate } from '@/utils/date';
-import Link from 'next/link';
-import React from 'react'
-import TodayCard from './TodayCard';
+import { colorPairs, getCurrentDayAndDate } from "@/utils/date";
+import Link from "next/link";
+import React from "react";
+import TodayCard from "./TodayCard";
+import { useSubjects } from "@/hooks/useSubjects";
 
 const TodaySubject = () => {
-  const { currentDay, currentDate } = getCurrentDayAndDate();
+  const { currentDay } = getCurrentDayAndDate();
+  const { subjects, loading, error } = useSubjects();
 
-    const todaySubject = dummySubject.filter(
-      (subject) => subject.day.toLowerCase() === currentDay.toLowerCase()
+  const todaySubject = subjects.filter(
+    (subject) => subject.day.toLowerCase() === currentDay.toLowerCase()
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center mt-10">
+        <h3 className="font-bold text-lg text-red-600">Error</h3>
+        <p className="text-xs text-red-500">{error}</p>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-4">
       {todaySubject.length > 0 ? (
@@ -42,6 +60,6 @@ const TodaySubject = () => {
       )}
     </div>
   );
-}
+};
 
-export default TodaySubject
+export default TodaySubject;

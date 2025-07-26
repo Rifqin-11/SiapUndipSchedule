@@ -1,19 +1,32 @@
-import { dummySubject } from "@/constants";
+"use client";
+
 import { notFound } from "next/navigation";
-import { Clock, Locate, PinIcon } from "lucide-react";
+import { Clock, PinIcon } from "lucide-react";
 import React from "react";
-import { p } from "framer-motion/client";
 import Timeline from "@/components/Timeline";
+import { useSubject } from "@/hooks/useSubjects";
 
-const page = ({ params }: { params: { id: string } }) => {
-  const subject = dummySubject.find((item) => item.id === params.id);
+const Page = ({ params }: { params: { id: string } }) => {
+  const { subject, loading, error } = useSubject(params.id);
 
-  if (!subject) return notFound();
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !subject) {
+    return notFound();
+  }
 
   return (
     <div className="flex flex-col mx-5 mt-6 gap-4">
       {subject.category && (
-        <div className="bg-red-200 rounded w-15 text-center font-bold">High</div>
+        <div className="bg-red-200 rounded w-15 text-center font-bold">
+          High
+        </div>
       )}
       <div className="flex flex-col gap-4">
         <div>
@@ -58,17 +71,17 @@ const page = ({ params }: { params: { id: string } }) => {
         </div>
 
         <div className="mt-4">
-        <Timeline />
-        <Timeline />
-        <Timeline />
-        <Timeline />
-        <Timeline />
-        <Timeline />
-        <Timeline />
+          <Timeline />
+          <Timeline />
+          <Timeline />
+          <Timeline />
+          <Timeline />
+          <Timeline />
+          <Timeline />
         </div>
       </div>
     </div>
   );
 };
 
-export default page;
+export default Page;
