@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import type { JWT } from "next-auth/jwt";
+import type { Session, User } from "next-auth";
 
-// @ts-ignore - Suppress NextAuth v5 beta type issues for Vercel deployment
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
@@ -10,13 +11,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      // @ts-ignore - Suppress parameter type issues
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
+          // Call API route for authentication instead of direct DB access
           const response = await fetch(
             `${process.env.NEXTAUTH_URL}/api/auth/verify`,
             {
@@ -45,38 +46,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   session: {
-    strategy: "jwt" as const,
+    strategy: "jwt",
   },
   pages: {
     signIn: "/auth/login",
   },
   callbacks: {
-    // @ts-ignore - Suppress callback parameter type issues
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user: User | null }) {
       if (user) {
         token.id = user.id;
-        token.nim = (user as any).nim;
-        token.jurusan = (user as any).jurusan;
-        token.fakultas = (user as any).fakultas;
-        token.angkatan = (user as any).angkatan;
-        token.avatar = (user as any).avatar;
-        token.role = (user as any).role;
-        token.isEmailVerified = (user as any).isEmailVerified;
+        token.nim = user.nim;
+        token.jurusan = user.jurusan;
+        token.fakultas = user.fakultas;
+        token.angkatan = user.angkatan;
+        token.avatar = user.avatar;
+        token.role = user.role;
+        token.isEmailVerified = user.isEmailVerified;
       }
 
       return token;
     },
-    // @ts-ignore - Suppress callback parameter type issues
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token && session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).nim = token.nim;
-        (session.user as any).jurusan = token.jurusan;
-        (session.user as any).fakultas = token.fakultas;
-        (session.user as any).angkatan = token.angkatan;
-        (session.user as any).avatar = token.avatar;
-        (session.user as any).role = token.role;
-        (session.user as any).isEmailVerified = token.isEmailVerified;
+        session.user.id = token.id as string;
+        session.user.nim = token.nim as string;
+        session.user.jurusan = token.jurusan as string;
+        session.user.fakultas = token.fakultas as string;
+        session.user.angkatan = token.angkatan as string;
+        session.user.avatar = token.avatar as string;
+        session.user.role = token.role as string;
+        session.user.isEmailVerified = token.isEmailVerified as boolean;
       }
       return session;
     },

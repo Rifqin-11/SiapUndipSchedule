@@ -5,11 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "build:vercel": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint --fix --quiet",
-    "lint:check": "next lint --quiet || true",
-    "typecheck": "tsc --noEmit || true",
+    "lint": "next lint",
     "seed": "curl -X POST http://localhost:3000/api/seed"
   },
   "dependencies": {
