@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Palette, Monitor, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
+import { useTheme } from "@/hooks/use-theme";
 import { useAppearanceSettings } from "@/hooks/useAppearanceSettings";
 import BackButton from "@/components/Back-Button";
 
@@ -37,14 +36,14 @@ const AppearancePage = () => {
   ];
 
   const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
-    toast.success(
+    setTheme(newTheme as "light" | "dark" | "system");
+    console.log(
       `Tema berhasil diubah ke ${themes.find((t) => t.id === newTheme)?.name}`
     );
   };
 
   const handleSaveSettings = () => {
-    toast.success("Pengaturan tampilan berhasil disimpan!");
+    console.log("Pengaturan tampilan berhasil disimpan!");
   };
 
   if (!mounted || !isLoaded) {

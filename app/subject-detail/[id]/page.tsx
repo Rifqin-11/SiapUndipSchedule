@@ -2,12 +2,13 @@
 
 import { notFound } from "next/navigation";
 import { Clock, PinIcon } from "lucide-react";
-import React from "react";
+import React, { use } from "react";
 import Timeline from "@/components/Timeline";
 import { useSubject } from "@/hooks/useSubjects";
 
-const Page = ({ params }: { params: { id: string } }) => {
-  const { subject, loading, error } = useSubject(params.id);
+const Page = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params);
+  const { subject, loading, error } = useSubject(id);
 
   if (loading) {
     return (
@@ -17,7 +18,21 @@ const Page = ({ params }: { params: { id: string } }) => {
     );
   }
 
-  if (error || !subject) {
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center h-64 gap-4">
+        <div className="text-red-600 text-lg font-semibold">{error}</div>
+        <button
+          onClick={() => window.history.back()}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Kembali
+        </button>
+      </div>
+    );
+  }
+
+  if (!subject) {
     return notFound();
   }
 

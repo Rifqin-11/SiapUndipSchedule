@@ -66,7 +66,10 @@ const ManageSubjects = () => {
   };
 
   const handleDeleteSubject = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus mata kuliah ini?")) return;
+    if (!confirm("Apakah Anda yakin ingin menghapus mata kuliah ini?")) {
+      return;
+    }
+
     const result = await deleteSubject(id);
 
     if (result.success) {
@@ -146,101 +149,96 @@ const ManageSubjects = () => {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {Array.isArray(subjects) && subjects.length > 0 ? (
-                  subjects.map((subject) => (
-                    <tr
-                      key={subject.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {subject.name}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            ID: {subject.id}
-                          </div>
-                          {subject.category && (
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                subject.category === "High"
-                                  ? "bg-red-100 text-red-800"
-                                  : subject.category === "Medium"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
-                            >
-                              {subject.category}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {subject.day}
+                {subjects.map((subject) => (
+                  <tr
+                    key={subject.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {subject.name}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {subject.startTime} - {subject.endTime}
+                          ID: {subject.id}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {subject.room}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {subject.lecturer.map((lecturer, index) => (
-                            <div key={index} className="truncate max-w-xs">
-                              {lecturer}
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {subject.meeting}/14
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full"
-                            style={{
-                              width: `${((subject.meeting ?? 0) / 14) * 100}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEditSubject(subject)}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            title="Edit"
+                        {subject.category && (
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              subject.category === "High"
+                                ? "bg-red-100 text-red-800"
+                                : subject.category === "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
                           >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteSubject(subject.id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                            title="Hapus"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center">
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Belum ada mata kuliah. Tambahkan mata kuliah pertama
-                        Anda!
-                      </p>
+                            {subject.category}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {subject.day}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {subject.startTime} - {subject.endTime}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {subject.room}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {subject.lecturer.map((lecturer, index) => (
+                          <div key={index} className="truncate max-w-xs">
+                            {lecturer}
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {subject.meeting}/14
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
+                          style={{ width: `${(subject.meeting / 14) * 100}%` }}
+                        ></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEditSubject(subject)}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          title="Edit"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSubject(subject.id)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          title="Hapus"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
+
+          {subjects.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
+                Belum ada mata kuliah. Tambahkan mata kuliah pertama Anda!
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

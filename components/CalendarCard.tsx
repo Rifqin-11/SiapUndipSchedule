@@ -1,5 +1,32 @@
-import React from 'react'
-import { Progress } from './ui/progress'
+import React from "react";
+import { Progress } from "./ui/progress";
+import { Button } from "./ui/button";
+import { Edit2, Trash2, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface CalendarCardProps {
+  _id?: string;
+  id: string;
+  name: string;
+  day: string;
+  room: string;
+  startTime: string;
+  endTime: string;
+  lecturer: string[];
+  meeting: number;
+  category?: string;
+  bgColor: string;
+  textColor: string;
+  bgRoomColor: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  showActions?: boolean;
+}
 
 const CalendarCard = ({
   name,
@@ -9,10 +36,24 @@ const CalendarCard = ({
   lecturer,
   bgColor,
   textColor,
-  bgRoomColor,
   meeting,
-}: subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
+  onEdit,
+  onDelete,
+  showActions = false,
+}: CalendarCardProps) => {
   const proggressMeeting = (meeting / 14) * 100;
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEdit?.();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete?.();
+  };
 
   return (
     <div className="flex flex-row gap-4 mt-2">
@@ -22,10 +63,47 @@ const CalendarCard = ({
           <h1>{endTime}</h1>
         </div>
         <div
-          className={`flex flex-col justify-around ${bgColor} w-full rounded-xl px-4 py-2`}
+          className={`flex flex-col justify-around ${bgColor} w-full rounded-xl px-4 py-2 relative`}
         >
+          {showActions && (
+            <div className="absolute top-2 right-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 w-8 p-0 ${textColor} hover:bg-white/20`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Hapus
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+
           <div className="flex flex-row gap-2 justify-between items-center">
-            <h1 className={`font-bold ${textColor}`}>{name}</h1>
+            <h1
+              className={`font-bold ${textColor} ${showActions ? "pr-8" : ""}`}
+            >
+              {name}
+            </h1>
             <div
               className={`bg-white/60 rounded-lg p-1 px-2 text-xs ${textColor}`}
             >
@@ -55,4 +133,4 @@ const CalendarCard = ({
   );
 };
 
-export default CalendarCard
+export default CalendarCard;

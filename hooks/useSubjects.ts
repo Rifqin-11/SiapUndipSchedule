@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { dummySubject } from "@/constants";
 
 export interface Subject {
   _id?: string;
@@ -22,22 +21,36 @@ export const useSubjects = () => {
   const fetchSubjects = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const response = await fetch("/api/subjects");
+
       if (!response.ok) {
-        // Fallback to dummy data if API fails
-        console.warn("API failed, using dummy data");
-        setSubjects(dummySubject);
-        setError(null);
+        setError("Gagal mengambil data mata kuliah");
+        setSubjects([]);
         return;
       }
-      const data = await response.json();
-      setSubjects(data);
-      setError(null);
+
+      const result = await response.json();
+
+      if (result.success && Array.isArray(result.data)) {
+        // Ensure each subject has proper ID mapping
+        const mappedSubjects = result.data.map(
+          (subject: Subject & { _id?: string }) => ({
+            ...subject,
+            id: subject._id || subject.id, // Use _id as primary, fallback to id
+          })
+        );
+        setSubjects(mappedSubjects);
+        setError(null);
+      } else {
+        setError("Format data tidak valid");
+        setSubjects([]);
+      }
     } catch (err) {
-      console.warn("Error fetching from API, using dummy data:", err);
-      // Fallback to dummy data
-      setSubjects(dummySubject);
-      setError(null);
+      console.error("Error fetching subjects:", err);
+      setError("Terjadi kesalahan saat mengambil data");
+      setSubjects([]);
     } finally {
       setLoading(false);
     }
@@ -145,23 +158,38 @@ export const useSubject = (id: string) => {
     const fetchSubject = async () => {
       try {
         setLoading(true);
+        setError(null);
+
         const response = await fetch(`/api/subjects/${id}`);
+
         if (!response.ok) {
-          // Fallback to dummy data
-          const fallbackSubject = dummySubject.find((s) => s.id === id);
-          setSubject(fallbackSubject || null);
-          setError(null);
+          if (response.status === 404) {
+            setError("Mata kuliah tidak ditemukan");
+          } else {
+            setError("Gagal mengambil data mata kuliah");
+          }
+          setSubject(null);
           return;
         }
-        const data = await response.json();
-        setSubject(data);
-        setError(null);
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          // Ensure we use _id as the primary identifier
+          const subjectData = {
+            ...result.data,
+            id: result.data._id || result.data.id,
+          };
+          setSubject(subjectData);
+          setError(null);
+        } else {
+          setError("Data mata kuliah tidak valid");
+          setSubject(null);
+        }
       } catch (err) {
-        console.warn("Error fetching subject from API, using dummy data:", err);
-        // Fallback to dummy data
-        const fallbackSubject = dummySubject.find((s) => s.id === id);
-        setSubject(fallbackSubject || null);
-        setError(null);
+        console.error("Error fetching subject:", err);
+        setError("Terjadi kesalahan saat mengambil data");
+        setSubject(null);
       } finally {
         setLoading(false);
       }

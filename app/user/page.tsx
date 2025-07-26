@@ -2,26 +2,23 @@
 
 import React from "react";
 import { Edit, Shield, Bell, LogOut, Camera } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
-import { User as UserType } from "next-auth";
-import { toast } from "sonner";
 import Link from "next/link";
 
 const UserPage = () => {
-  const { data: session } = useSession();
-
-  console.log("User page session:", session);
-
-  const user = session?.user as UserType;
+  // Mock user data - remove when auth is implemented
+  const user = {
+    name: "John Doe",
+    email: "john.doe@students.undip.ac.id",
+    image: null,
+    jurusan: "Teknik Informatika",
+    nim: "24060120140157",
+    angkatan: "2020",
+    fakultas: "Sains dan Matematika",
+  };
 
   const handleLogout = async () => {
-    try {
-      await signOut({ callbackUrl: "/auth/login" });
-      toast.success("Logout berhasil!");
-    } catch (error) {
-      toast.error("Terjadi kesalahan saat logout");
-      console.error("Logout error:", error);
-    }
+    // Placeholder for logout functionality
+    console.log("Logout clicked");
   };
 
   const userMenuItems = [
@@ -50,14 +47,6 @@ const UserPage = () => {
       bgColor: "bg-yellow-50",
     },
   ];
-
-  if (!session) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   // Get initials from user name
   const getInitials = (name: string) => {

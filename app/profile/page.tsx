@@ -1,85 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { User, Camera, Save } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { User as UserType } from "next-auth";
-import { toast } from "sonner";
 import BackButton from "@/components/Back-Button";
 
 const ProfilePage = () => {
-  const { data: session, update } = useSession();
   const [formData, setFormData] = useState({
-    name: "",
-    nim: "",
-    email: "",
-    jurusan: "",
-    fakultas: "",
-    angkatan: "",
+    name: "John Doe",
+    nim: "24060120140157",
+    email: "john.doe@students.undip.ac.id",
+    jurusan: "Teknik Informatika",
+    fakultas: "Sains dan Matematika",
+    angkatan: "2020",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (session?.user) {
-      const user = session.user as UserType;
-      setFormData({
-        name: user.name || "",
-        nim: user.nim || "",
-        email: user.email || "",
-        jurusan: user.jurusan || "",
-        fakultas: user.fakultas || "",
-        angkatan: user.angkatan || "",
-      });
-    }
-  }, [session]);
-
-  const handleSave = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
+
     try {
       console.log("Sending profile update data:", formData);
 
-      const response = await fetch("/api/user/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          nim: formData.nim,
-          jurusan: formData.jurusan,
-          fakultas: formData.fakultas,
-          angkatan: formData.angkatan,
-        }),
-      });
+      // Mock API call - replace with actual API when implemented
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const data = await response.json();
-      console.log("Profile update response:", data);
-
-      if (response.ok) {
-        toast.success("Profil berhasil diperbarui!");
-        setIsEditing(false);
-
-        // Update session with trigger to refresh data from database
-        await update();
-      } else {
-        toast.error(data.error || "Gagal memperbarui profil");
-      }
+      console.log("Profile updated successfully!");
+      setIsEditing(false);
     } catch (error) {
-      toast.error("Terjadi kesalahan saat memperbarui profil");
-      console.error("Update profile error:", error);
+      console.error("Error updating profile:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (!session) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -126,7 +80,7 @@ const ProfilePage = () => {
             ) : (
               <div className="flex gap-2">
                 <button
-                  onClick={handleSave}
+                  onClick={handleSubmit}
                   disabled={isLoading}
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

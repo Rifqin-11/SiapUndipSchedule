@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
 import "./globals.css";
 import BottomNavbar from "@/components/BottomNavbar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/components/auth-provider";
-import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/hooks/use-theme";
+import { Toaster } from "sonner";
 
 const muliSans = Mulish({
   variable: "--font-mulish-sans",
@@ -26,18 +25,11 @@ export default function RootLayout({
       <body
         className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none dark:bg-black`}
       >
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <BottomNavbar />
-            <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
+        <ThemeProvider defaultTheme="light" storageKey="schedule-ui-theme">
+          {children}
+          <BottomNavbar />
+          <Toaster richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

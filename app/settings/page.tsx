@@ -50,13 +50,14 @@ const SettingsPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Pengaturan
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Kelola akun dan mata kuliah Anda
+      {/* App Info */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white text-center">
+        <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+          SU
+        </div>
+        <h3 className="font-semibold text-lg mb-2">Schedule SIAP UNDIP</h3>
+        <p className="text-blue-100 text-sm">
+          Kelola jadwal kuliah Anda dengan mudah dan efisien
         </p>
       </div>
 
@@ -105,17 +106,6 @@ const SettingsPage = () => {
             </Link>
           );
         })}
-      </div>
-
-      {/* App Info */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white text-center">
-        <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-          SU
-        </div>
-        <h3 className="font-semibold text-lg mb-2">Schedule SIAP UNDIP</h3>
-        <p className="text-blue-100 text-sm">
-          Kelola jadwal kuliah Anda dengan mudah dan efisien
-        </p>
       </div>
 
       {/* Quick Access */}

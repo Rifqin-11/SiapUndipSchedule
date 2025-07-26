@@ -1,32 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import Subject from "@/models/Subject";
-import { dummySubject } from "@/constants";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();
-    const subject = await Subject.findOne({ id: params.id });
+    const client = await clientPromise;
+    const db = client.db("schedule_undip");
+
+    const subject = await db.collection("subjects").findOne({
+      $or: [{ _id: new ObjectId(params.id) }, { id: params.id }],
+    });
 
     if (!subject) {
-      return NextResponse.json({ error: "Subject not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Subject not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(subject);
+    // Ensure the subject has a consistent id field
+    const mappedSubject = {
+      ...subject,
+      id: subject._id.toString(), // Ensure id is the string version of _id
+    };
+
+    return NextResponse.json({ success: true, data: mappedSubject });
   } catch (error) {
-    console.error(
-      "Error fetching subject from MongoDB, using dummy data:",
-      error
+    console.error("Error fetching subject:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch subject" },
+      { status: 500 }
     );
-    // Fallback to dummy data
-    const subject = dummySubject.find((s) => s.id === params.id);
-    if (!subject) {
-      return NextResponse.json({ error: "Subject not found" }, { status: 404 });
-    }
-    return NextResponse.json(subject);
   }
 }
 
@@ -35,23 +42,34 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();
+    const client = await clientPromise;
+    const db = client.db("schedule_undip");
+
     const body = await request.json();
+    const updateData = {
+      ...body,
+      updatedAt: new Date(),
+    };
 
-    const subject = await Subject.findOneAndUpdate({ id: params.id }, body, {
-      new: true,
-      runValidators: true,
-    });
+    const result = await db.collection("subjects").updateOne(
+      {
+        $or: [{ _id: new ObjectId(params.id) }, { id: params.id }],
+      },
+      { $set: updateData }
+    );
 
-    if (!subject) {
-      return NextResponse.json({ error: "Subject not found" }, { status: 404 });
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { success: false, error: "Subject not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(subject);
+    return NextResponse.json({ success: true, data: updateData });
   } catch (error) {
     console.error("Error updating subject:", error);
     return NextResponse.json(
-      { error: "Failed to update subject" },
+      { success: false, error: "Failed to update subject" },
       { status: 500 }
     );
   }
@@ -62,18 +80,28 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();
-    const subject = await Subject.findOneAndDelete({ id: params.id });
+    const client = await clientPromise;
+    const db = client.db("schedule_undip");
 
-    if (!subject) {
-      return NextResponse.json({ error: "Subject not found" }, { status: 404 });
+    const result = await db.collection("subjects").deleteOne({
+      $or: [{ _id: new ObjectId(params.id) }, { id: params.id }],
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { success: false, error: "Subject not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ message: "Subject deleted successfully" });
+    return NextResponse.json({
+      success: true,
+      message: "Subject deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting subject:", error);
     return NextResponse.json(
-      { error: "Failed to delete subject" },
+      { success: false, error: "Failed to delete subject" },
       { status: 500 }
     );
   }

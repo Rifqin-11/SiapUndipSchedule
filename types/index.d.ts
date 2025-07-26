@@ -1,4 +1,5 @@
 interface subject {
+  _id?: string;
   id: string;
   name: string;
   day: string;
@@ -8,37 +9,30 @@ interface subject {
   lecturer: string[];
   meeting: number;
   category?: string;
+  userId?: string;
 }
 
-// NextAuth types
-declare module "next-auth" {
-  interface User {
-    id: string;
-    email: string;
-    name: string;
-    nim?: string;
-    jurusan?: string;
-    fakultas?: string;
-    angkatan?: string;
-    avatar?: string;
-    role?: string;
-    isEmailVerified?: boolean;
-  }
-
-  interface Session {
-    user: User;
-  }
+interface User {
+  _id?: string;
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  nim?: string;
+  jurusan?: string;
+  fakultas?: string;
+  tahunMasuk?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    nim?: string;
-    jurusan?: string;
-    fakultas?: string;
-    angkatan?: string;
-    avatar?: string;
-    role?: string;
-    isEmailVerified?: boolean;
-  }
+interface Settings {
+  _id?: string;
+  userId: string;
+  theme: "light" | "dark" | "system";
+  notifications: boolean;
+  language: string;
+  timezone: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

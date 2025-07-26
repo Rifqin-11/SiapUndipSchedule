@@ -10,7 +10,10 @@ const TodaySubject = () => {
   const { currentDay } = getCurrentDayAndDate();
   const { subjects, loading, error } = useSubjects();
 
-  const todaySubject = subjects.filter(
+  // Ensure subjects is always an array
+  const subjectsArray = Array.isArray(subjects) ? subjects : [];
+
+  const todaySubject = subjectsArray.filter(
     (subject) => subject.day.toLowerCase() === currentDay.toLowerCase()
   );
 

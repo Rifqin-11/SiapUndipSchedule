@@ -1,36 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import Subject from "@/models/Subject";
-import { dummySubject } from "@/constants";
+import clientPromise from "@/lib/mongodb";
 
 export async function GET() {
   try {
-    await connectDB();
-    const subjects = await Subject.find({}).sort({ day: 1, startTime: 1 });
-    return NextResponse.json(subjects);
+    const client = await clientPromise;
+    const db = client.db("schedule_undip");
+
+    const subjects = await db.collection("subjects").find({}).toArray();
+
+    // Ensure each subject has a consistent id field
+    const mappedSubjects = subjects.map((subject) => ({
+      ...subject,
+      id: subject._id.toString(), // Ensure id is the string version of _id
+    }));
+
+    return NextResponse.json({ success: true, data: mappedSubjects });
   } catch (error) {
-    console.error(
-      "Error fetching subjects from MongoDB, using dummy data:",
-      error
+    console.error("Error fetching subjects:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch subjects" },
+      { status: 500 }
     );
-    // Return dummy data if MongoDB is not available
-    return NextResponse.json(dummySubject);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    const client = await clientPromise;
+    const db = client.db("schedule_undip");
+
     const body = await request.json();
+    const subject = {
+      ...body,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    const subject = new Subject(body);
-    const savedSubject = await subject.save();
+    const result = await db.collection("subjects").insertOne(subject);
 
-    return NextResponse.json(savedSubject, { status: 201 });
+    // Return the subject with the MongoDB _id as the id field
+    const createdSubject = {
+      ...subject,
+      _id: result.insertedId,
+      id: result.insertedId.toString(), // Ensure id is the string version of _id
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: createdSubject,
+    });
   } catch (error) {
     console.error("Error creating subject:", error);
     return NextResponse.json(
-      { error: "Failed to create subject" },
+      { success: false, error: "Failed to create subject" },
       { status: 500 }
     );
   }
