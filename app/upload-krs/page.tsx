@@ -8,14 +8,12 @@ import {
   Check,
   AlertCircle,
   Trash2,
-  Eye,
   Loader2,
   BookOpen,
   Calendar,
   Clock,
   Home,
   User,
-  Server,
   BrainCircuit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,7 +35,6 @@ const UploadKRSPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Memproses...");
   const [parsedData, setParsedData] = useState<ParsedSubject[]>([]);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -86,8 +83,6 @@ const UploadKRSPage = () => {
     formData.append("file", file);
 
     try {
-      setLoadingMessage("1/3: Mengunggah file ke server...");
-      
       console.log("Sending file to server:", file.name, file.type, file.size);
       console.log("FormData:", formData);
       
@@ -106,16 +101,12 @@ const UploadKRSPage = () => {
       clearTimeout(timeoutId);
 
       console.log("Fetch completed, response received");
-      setLoadingMessage("2/3: Server sedang memproses dengan OCR dan AI... (Ini bagian terlama)");
-
       console.log("Response status:", response.status);
       console.log("Response headers:", Object.fromEntries(response.headers));
       
       console.log("Parsing response JSON...");
       const result = await response.json();
       console.log("Response data:", result);
-
-      setLoadingMessage("3/3: Mempersiapkan hasil preview...");
 
       if (!response.ok) {
         throw new Error(result.error || `Server error: ${response.status}`);
@@ -163,7 +154,6 @@ const UploadKRSPage = () => {
       }
     } finally {
       setIsProcessing(false);
-      setLoadingMessage("Memproses...");
     }
   };
 
@@ -234,30 +224,20 @@ const UploadKRSPage = () => {
     }
   };
 
-  // Loading Component
+  // Loading Component - Button yang disabled dengan icon loading
   const LoadingComponent = () => (
     <div className="text-center py-8 space-y-4">
-      <div className="flex items-center justify-center space-x-2">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-        <BrainCircuit className="w-6 h-6 text-blue-500 animate-pulse" />
-        <Server className="w-6 h-6 text-green-500 animate-bounce" />
-      </div>
-      <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
-        {loadingMessage}
-      </p>
-      <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-        <div className="flex items-center space-x-1">
-          <Eye className="w-4 h-4" />
-          <span>OCR</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <BrainCircuit className="w-4 h-4" />
-          <span>AI Analysis</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <BookOpen className="w-4 h-4" />
-          <span>Parsing</span>
-        </div>
+      <Button
+        disabled
+        className="w-full bg-indigo-600 text-white opacity-75 cursor-not-allowed flex items-center justify-center"
+      >
+        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        Memproses dengan AI & OCR...
+      </Button>
+      
+      <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
+        <p>Sedang menganalisis gambar IRS Anda...</p>
+        <p className="text-xs mt-1">Proses ini membutuhkan waktu beberapa saat</p>
       </div>
     </div>
   );
@@ -288,11 +268,11 @@ const UploadKRSPage = () => {
             </h3>
             <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
               <li className="flex items-start gap-2">
-                <Eye className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <Upload className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>Upload gambar IRS dalam format PNG, JPG, atau WEBP</span>
               </li>
               <li className="flex items-start gap-2">
-                <Server className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <FileText className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>Sistem akan membaca teks dengan OCR menggunakan Azure Computer Vision</span>
               </li>
               <li className="flex items-start gap-2">

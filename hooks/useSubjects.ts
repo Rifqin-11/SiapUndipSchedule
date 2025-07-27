@@ -134,6 +134,33 @@ export const useSubjects = () => {
     }
   };
 
+  const deleteAllSubjects = async () => {
+    try {
+      const response = await fetch("/api/subjects/delete-all", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete all subjects");
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setSubjects([]);
+        return { success: true, deletedCount: result.deletedCount };
+      } else {
+        throw new Error(result.error || "Failed to delete all subjects");
+      }
+    } catch (err) {
+      console.error("Error deleting all subjects:", err);
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      };
+    }
+  };
+
   useEffect(() => {
     fetchSubjects();
     
@@ -171,6 +198,7 @@ export const useSubjects = () => {
     createSubject,
     updateSubject,
     deleteSubject,
+    deleteAllSubjects,
   };
 };
 

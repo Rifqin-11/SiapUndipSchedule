@@ -25,6 +25,7 @@ const ManageSubjects = () => {
     createSubject,
     updateSubject,
     deleteSubject,
+    deleteAllSubjects,
   } = useSubjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
@@ -33,6 +34,9 @@ const ManageSubjects = () => {
   // Delete confirmation dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
+  // Delete all confirmation dialog states
+  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
   const handleAddSubject = () => {
     setEditingSubject(null);
@@ -99,6 +103,24 @@ const ManageSubjects = () => {
     setSubjectToDelete(null);
   };
 
+  const handleDeleteAllSubjects = () => {
+    setIsDeleteAllDialogOpen(true);
+  };
+
+  const confirmDeleteAllSubjects = async () => {
+    const result = await deleteAllSubjects();
+
+    if (result.success) {
+      toast.success(
+        `Berhasil menghapus semua mata kuliah! (${result.deletedCount || 0} mata kuliah dihapus)`
+      );
+    } else {
+      toast.error(`Error: ${result.error || "Gagal menghapus semua mata kuliah"}`);
+    }
+
+    setIsDeleteAllDialogOpen(false);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingSubject(null);
@@ -134,12 +156,28 @@ const ManageSubjects = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Kelola Mata Kuliah
           </h1>
-          <button
-            onClick={handleAddSubject}
-            className="flex items-center bg-blue-200 text-white px-2 py-2 rounded-full hover:bg-blue-400 transition-colors"
-          >
-            <Plus size={20} />
-          </button>
+          <div className="flex gap-3">
+            {/* Delete All Button - only show if there are subjects */}
+            {Array.isArray(subjects) && subjects.length > 0 && (
+              <button
+                onClick={handleDeleteAllSubjects}
+                className="flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                title="Hapus semua mata kuliah (untuk pindah semester)"
+              >
+                <Trash2 size={16} className="mr-2" />
+                Hapus Semua
+              </button>
+            )}
+            
+            {/* Add Subject Button */}
+            <button
+              onClick={handleAddSubject}
+              className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+            >
+              <Plus size={16} className="mr-2" />
+              Tambah Mata Kuliah
+            </button>
+          </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -296,6 +334,46 @@ const ManageSubjects = () => {
               className="bg-red-600 hover:bg-red-700"
             >
               Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteAllDialogOpen}
+        onOpenChange={setIsDeleteAllDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 size={20} />
+              Konfirmasi Hapus Semua Mata Kuliah
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-medium text-gray-900 dark:text-white">
+                ⚠️ PERINGATAN: Anda akan menghapus SEMUA mata kuliah yang ada!
+              </p>
+              <p>
+                Tindakan ini akan menghapus <strong>{subjects?.length || 0} mata kuliah</strong> secara permanen 
+                dan tidak dapat dibatalkan.
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Fitur ini berguna ketika semester telah selesai dan Anda ingin memulai 
+                semester baru dengan mata kuliah yang berbeda.
+              </p>
+              <p className="font-medium text-red-600">
+                Apakah Anda yakin ingin melanjutkan?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteAllSubjects}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Ya, Hapus Semua ({subjects?.length || 0} mata kuliah)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
