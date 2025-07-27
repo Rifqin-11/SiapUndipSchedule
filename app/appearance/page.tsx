@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Palette, Monitor, Sun, Moon } from "lucide-react";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "next-themes";
 import { useAppearanceSettings } from "@/hooks/useAppearanceSettings";
 import BackButton from "@/components/Back-Button";
 

@@ -52,7 +52,7 @@ const BottomNavbar = () => {
           </div>
 
           {/* Center Floating QR Button */}
-          <div className="absolute left-1/2 top-[-30%] transform -translate-x-1/2 bg-black/40 backdrop-blur-md p-1 rounded-full shadow-xl border border-white/20">
+          <div className="absolute left-1/2 top-[-30%] transform -translate-x-1/2  p-1 rounded-full shadow-xl">
             <button
               onClick={() => setIsQRScannerOpen(true)}
               className="bg-gradient-to-r from-blue-700 to-sky-800 hover:brightness-110 transition-all duration-300 w-16 h-16 rounded-full flex items-center justify-center border-4 border-black/40"
