@@ -1,6 +1,6 @@
 "use client";
 
-import { colorPairs, getCurrentDayAndDate } from "@/utils/date";
+import { colorPairs, getCurrentDayAndDate, normalizeDayName } from "@/utils/date";
 import Link from "next/link";
 import React from "react";
 import TodayCard from "./TodayCard";
@@ -13,9 +13,26 @@ const TodaySubject = () => {
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
 
-  const todaySubject = subjectsArray.filter(
-    (subject) => subject.day.toLowerCase() === currentDay.toLowerCase()
-  );
+  // Debug logging
+  console.log("TodaySubject Debug:");
+  console.log("Current day from utils:", currentDay);
+  console.log("All subjects:", subjectsArray);
+  console.log("Subjects count:", subjectsArray.length);
+  
+  // Check unique days in database
+  const uniqueDays = [...new Set(subjectsArray.map(s => s.day))];
+  console.log("Unique days in database:", uniqueDays);
+
+  const todaySubject = subjectsArray.filter((subject) => {
+    const normalizedSubjectDay = normalizeDayName(subject.day);
+    const normalizedCurrentDay = normalizeDayName(currentDay);
+    console.log(`Comparing normalized subject day "${normalizedSubjectDay}" with current day "${normalizedCurrentDay}"`);
+    console.log(`Original subject day: "${subject.day}", current day: "${currentDay}"`);
+    return normalizedSubjectDay === normalizedCurrentDay;
+  });
+  
+  console.log("Filtered subjects for today:", todaySubject);
+  console.log("Today subjects count:", todaySubject.length);
 
   if (loading) {
     return (

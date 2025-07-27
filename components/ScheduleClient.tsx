@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { getCurrentDayAndDate, colorPairs } from "@/utils/date";
+import { getCurrentDayAndDate, colorPairs, normalizeDayName } from "@/utils/date";
 import HorizonalCalendar from "@/components/HorizonalCalendar";
 import CalendarCard from "@/components/CalendarCard";
 import SubjectModal from "@/components/SubjectModal";
@@ -50,9 +50,27 @@ const ScheduleClient = () => {
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
 
-  const filteredSubjects = subjectsArray.filter(
-    (subject) => subject.day === selectedDay
-  );
+  // Debug logging
+  console.log("ScheduleClient Debug:");
+  console.log("Selected day:", selectedDay);
+  console.log("Current day from utils:", currentDay);
+  console.log("All subjects:", subjectsArray);
+  console.log("Subjects count:", subjectsArray.length);
+  
+  // Check unique days in database
+  const uniqueDays = [...new Set(subjectsArray.map(s => s.day))];
+  console.log("Unique days in database:", uniqueDays);
+
+  const filteredSubjects = subjectsArray.filter((subject) => {
+    const normalizedSubjectDay = normalizeDayName(subject.day);
+    const normalizedSelectedDay = normalizeDayName(selectedDay);
+    console.log(`Comparing normalized subject day "${normalizedSubjectDay}" with selected day "${normalizedSelectedDay}"`);
+    console.log(`Original subject day: "${subject.day}", selected day: "${selectedDay}"`);
+    return normalizedSubjectDay === normalizedSelectedDay;
+  });
+  
+  console.log("Filtered subjects for today:", filteredSubjects);
+  console.log("Today subjects count:", filteredSubjects.length);
 
   const handleAddSubject = () => {
     setSelectedSubject(null);

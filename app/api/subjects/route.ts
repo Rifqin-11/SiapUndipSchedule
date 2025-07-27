@@ -30,29 +30,54 @@ export async function POST(request: NextRequest) {
     const db = client.db("schedule_undip");
 
     const body = await request.json();
-    const subject = {
-      ...body,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    console.log("Received request body:", body);
 
-    const result = await db.collection("subjects").insertOne(subject);
+    // Check if this is a batch insert (array of subjects)
+    if (body.subjects && Array.isArray(body.subjects)) {
+      console.log("Processing batch insert for", body.subjects.length, "subjects");
+      
+      const subjectsToInsert = body.subjects.map((subject: Record<string, unknown>) => ({
+        ...subject,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
 
-    // Return the subject with the MongoDB _id as the id field
-    const createdSubject = {
-      ...subject,
-      _id: result.insertedId,
-      id: result.insertedId.toString(), // Ensure id is the string version of _id
-    };
+      const result = await db.collection("subjects").insertMany(subjectsToInsert);
+      console.log("Batch insert result:", result);
 
-    return NextResponse.json({
-      success: true,
-      data: createdSubject,
-    });
+      // Return success with inserted count
+      return NextResponse.json({
+        success: true,
+        message: `Successfully added ${result.insertedCount} subjects`,
+        insertedCount: result.insertedCount,
+        insertedIds: Object.values(result.insertedIds).map(id => id.toString())
+      });
+    } else {
+      // Single subject insert (existing functionality)
+      const subject = {
+        ...body,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const result = await db.collection("subjects").insertOne(subject);
+
+      // Return the subject with the MongoDB _id as the id field
+      const createdSubject = {
+        ...subject,
+        _id: result.insertedId,
+        id: result.insertedId.toString(), // Ensure id is the string version of _id
+      };
+
+      return NextResponse.json({
+        success: true,
+        data: createdSubject,
+      });
+    }
   } catch (error) {
-    console.error("Error creating subject:", error);
+    console.error("Error creating subject(s):", error);
     return NextResponse.json(
-      { success: false, error: "Failed to create subject" },
+      { success: false, error: "Failed to create subject(s)" },
       { status: 500 }
     );
   }

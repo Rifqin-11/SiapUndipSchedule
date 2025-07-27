@@ -1,14 +1,5 @@
 export const getCurrentDayAndDate = () => {
   const today = new Date();
-  const dayNames = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
   const currentDay = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     timeZone: "Asia/Jakarta",
@@ -21,6 +12,41 @@ export const getCurrentDayAndDate = () => {
     timeZone: "Asia/Jakarta",
   });
   return { currentDay, currentDate };
+};
+
+// Helper function to normalize day names
+export const normalizeDayName = (day: string): string => {
+  const dayMapping: Record<string, string> = {
+    // English to English (normalize case)
+    'monday': 'Monday',
+    'tuesday': 'Tuesday', 
+    'wednesday': 'Wednesday',
+    'thursday': 'Thursday',
+    'friday': 'Friday',
+    'saturday': 'Saturday',
+    'sunday': 'Sunday',
+    
+    // Indonesian to English
+    'senin': 'Monday',
+    'selasa': 'Tuesday',
+    'rabu': 'Wednesday', 
+    'kamis': 'Thursday',
+    'jumat': 'Friday',
+    'sabtu': 'Saturday',
+    'minggu': 'Sunday',
+    
+    // Common variations
+    'mon': 'Monday',
+    'tue': 'Tuesday',
+    'wed': 'Wednesday',
+    'thu': 'Thursday',
+    'fri': 'Friday',
+    'sat': 'Saturday',
+    'sun': 'Sunday'
+  };
+  
+  const normalizedKey = day.toLowerCase().trim();
+  return dayMapping[normalizedKey] || day;
 };
 
 export const getWeekDates = () => {

@@ -64,7 +64,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
       );
       setIsScanning(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -148,16 +148,18 @@ const QRScanner: React.FC<QRScannerProps> = ({
         toast.success("QR Code berhasil dipindai!");
         await saveAttendanceHistory(extractedCode);
         onScanSuccess?.(extractedCode);
-        
+
         // Buka halaman absen UNDIP
         const absenUrl = `https://siap.undip.ac.id/a/${extractedCode}`;
         setLastScannedUrl(absenUrl);
-        
+
         const newWindow = window.open(absenUrl, "_blank");
-        
+
         // Fallback jika popup diblokir
         if (!newWindow || newWindow.closed) {
-          toast.info("Popup diblokir! Klik tombol 'Buka Halaman Absen' di bawah untuk melanjutkan.");
+          toast.info(
+            "Popup diblokir! Klik tombol 'Buka Halaman Absen' di bawah untuk melanjutkan."
+          );
         } else {
           toast.success("Halaman absen telah dibuka di tab baru!");
           onClose();
@@ -334,7 +336,8 @@ const QRScanner: React.FC<QRScannerProps> = ({
           {lastScannedUrl && (
             <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-green-700 dark:text-green-300 text-sm mb-3">
-                QR Code berhasil dipindai! Jika halaman absen tidak terbuka otomatis, klik tombol di bawah:
+                QR Code berhasil dipindai! Jika halaman absen tidak terbuka
+                otomatis, klik tombol di bawah:
               </p>
               <div className="flex gap-2">
                 <Button

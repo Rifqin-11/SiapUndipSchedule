@@ -136,6 +136,31 @@ export const useSubjects = () => {
 
   useEffect(() => {
     fetchSubjects();
+    
+    // Listen for custom refresh events
+    const handleSubjectsUpdated = () => {
+      console.log("Subjects updated event received, refetching...");
+      fetchSubjects();
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('subjectsUpdated', handleSubjectsUpdated);
+      
+      // Also listen for storage changes
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'lastUpdateTime') {
+          console.log("Storage update detected, refetching...");
+          fetchSubjects();
+        }
+      };
+      
+      window.addEventListener('storage', handleStorageChange);
+      
+      return () => {
+        window.removeEventListener('subjectsUpdated', handleSubjectsUpdated);
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    }
   }, []);
 
   return {
