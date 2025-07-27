@@ -3,7 +3,7 @@
 import BackButton from "@/components/Back-Button";
 import SubjectModal from "@/components/SubjectModal";
 import { Edit3 } from "lucide-react";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useSubject, useSubjects, Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
@@ -15,6 +15,27 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { updateSubject } = useSubjects();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [prevScrollY, setPrevScrollY] = useState(0);
+  const [hideHeader, setHideHeader] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > prevScrollY && currentScrollY > 50) {
+        setHideHeader(true);
+      } else {
+        setHideHeader(false);
+      }
+
+      setPrevScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [prevScrollY]);
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -40,24 +61,40 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-      <div className="">
-        <section className="flex flex-row gap-2 items-center mt-4 mb-2 mx-5">
-          <BackButton />
-          <div className="flex flex-row justify-center items-center w-full">
-            <div className="flex flex-col gap-0.5 justify-center text-center">
-              <h1 className="font-bold text-xl">Subject Detail</h1>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Header yang bisa disembunyikan */}
+        <section
+          className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 transition-transform duration-300 ${
+            hideHeader ? "-translate-y-full" : "translate-y-0"
+          }`}
+        >
+          <div className="max-w-4xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <BackButton />
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Detail Mata Kuliah
+                  </h1>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Informasi lengkap tentang mata kuliah
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleEdit}
+                className="flex items-center px-2 py-2 hover:bg-blue-200 text-white rounded-full transition-colors"
+                title="Edit Subject"
+              >
+                <Edit3 className="w-5 h-5 text-blue-400" />
+              </button>
             </div>
           </div>
-          <button
-            onClick={handleEdit}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            title="Edit Subject"
-          >
-            <Edit3 className="w-5 h-5 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400" />
-          </button>
         </section>
 
-        {children}
+        {/* Content Area */}
+        <div className="pt-6 pb-12">{children}</div>
       </div>
 
       {/* Edit Subject Modal */}

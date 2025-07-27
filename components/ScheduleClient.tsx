@@ -8,8 +8,19 @@ import SubjectModal from "@/components/SubjectModal";
 import Link from "next/link";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import QRScanner from "./QRScanner";
 
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
@@ -29,6 +40,13 @@ const ScheduleClient = () => {
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
+  // Delete confirmation dialog states
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
+  // QR Scanner states
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
 
@@ -42,6 +60,11 @@ const ScheduleClient = () => {
     setIsModalOpen(true);
   };
 
+  const handleQRScanSuccess = (code: string) => {
+    console.log("QR Code scanned in schedule:", code);
+    // Additional handling if needed
+  };
+
   const handleEditSubject = (subject: Subject) => {
     setSelectedSubject(subject);
     setModalMode("edit");
@@ -49,19 +72,23 @@ const ScheduleClient = () => {
   };
 
   const handleDeleteSubject = async (subject: Subject) => {
-    if (
-      window.confirm(
-        `Apakah Anda yakin ingin menghapus mata kuliah "${subject.name}"?`
-      )
-    ) {
-      const result = await deleteSubject(subject.id);
-      if (result.success) {
-        toast.success("Mata kuliah berhasil dihapus!");
-        refetch();
-      } else {
-        toast.error(result.error || "Gagal menghapus mata kuliah");
-      }
+    setSubjectToDelete(subject);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSubject = async () => {
+    if (!subjectToDelete) return;
+
+    const result = await deleteSubject(subjectToDelete.id);
+    if (result.success) {
+      toast.success("Mata kuliah berhasil dihapus!");
+      refetch();
+    } else {
+      toast.error(result.error || "Gagal menghapus mata kuliah");
     }
+
+    setIsDeleteDialogOpen(false);
+    setSubjectToDelete(null);
   };
 
   const handleSaveSubject = async (subjectData: Omit<Subject, "_id">) => {
@@ -121,12 +148,14 @@ const ScheduleClient = () => {
       </div>
 
       <section className="mt-6">
-        <div className="mx-5 flex justify-between items-center">
+        <div className="mx-5 flex justify-between items-center mb-4">
           <h1 className="font-bold">Academic Schedule</h1>
-          <Button onClick={handleAddSubject} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Tambah
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleAddSubject} size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah
+            </Button>
+          </div>
         </div>
 
         {filteredSubjects.length > 0 ? (
@@ -178,6 +207,39 @@ const ScheduleClient = () => {
         subject={selectedSubject}
         mode={modalMode}
         preselectedDay={modalMode === "add" ? selectedDay : undefined}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus mata kuliah &ldquo;
+              {subjectToDelete?.name}&rdquo;? Tindakan ini tidak dapat
+              dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteSubject}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* QR Scanner */}
+      <QRScanner
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        onScanSuccess={handleQRScanSuccess}
       />
     </div>
   );

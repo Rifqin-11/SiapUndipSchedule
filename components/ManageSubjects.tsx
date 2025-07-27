@@ -3,6 +3,16 @@
 import React, { useState } from "react";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import SubjectModal from "@/components/SubjectModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,6 +29,10 @@ const ManageSubjects = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+
+  // Delete confirmation dialog states
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
   const handleAddSubject = () => {
     setEditingSubject(null);
@@ -65,15 +79,24 @@ const ManageSubjects = () => {
     }
   };
 
-  const handleDeleteSubject = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus mata kuliah ini?")) return;
-    const result = await deleteSubject(id);
+  const handleDeleteSubject = async (subject: Subject) => {
+    setSubjectToDelete(subject);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSubject = async () => {
+    if (!subjectToDelete) return;
+
+    const result = await deleteSubject(subjectToDelete.id);
 
     if (result.success) {
       toast.success("Mata kuliah berhasil dihapus!");
     } else {
       toast.error(`Error: ${result.error || "Gagal menghapus mata kuliah"}`);
     }
+
+    setIsDeleteDialogOpen(false);
+    setSubjectToDelete(null);
   };
 
   const handleCloseModal = () => {
@@ -113,10 +136,9 @@ const ManageSubjects = () => {
           </h1>
           <button
             onClick={handleAddSubject}
-            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            className="flex items-center bg-blue-200 text-white px-2 py-2 rounded-full hover:bg-blue-400 transition-colors"
           >
             <Plus size={20} />
-            Tambah Mata Kuliah
           </button>
         </div>
 
@@ -218,7 +240,7 @@ const ManageSubjects = () => {
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDeleteSubject(subject.id)}
+                            onClick={() => handleDeleteSubject(subject)}
                             className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                             title="Hapus"
                           >
@@ -252,6 +274,32 @@ const ManageSubjects = () => {
         subject={editingSubject}
         mode={modalMode}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus mata kuliah &ldquo;
+              {subjectToDelete?.name}&rdquo;? Tindakan ini tidak dapat
+              dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteSubject}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

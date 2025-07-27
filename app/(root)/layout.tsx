@@ -1,6 +1,6 @@
 import NotifIcon from "@/components/NotifIcon";
 import Image from "next/image";
-import React, { Children, ReactNode } from "react";
+import React, {  ReactNode } from "react";
 
 const page = ({ children }: { children: ReactNode }) => {
   return (

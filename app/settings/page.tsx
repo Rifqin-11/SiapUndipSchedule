@@ -1,7 +1,15 @@
 "use client";
 
 import React from "react";
-import { BookOpen, Monitor, Info, Palette, Database } from "lucide-react";
+import {
+  BookOpen,
+  Monitor,
+  Info,
+  Palette,
+  Database,
+  Upload,
+  History,
+} from "lucide-react";
 import Link from "next/link";
 
 const SettingsPage = () => {
@@ -13,6 +21,22 @@ const SettingsPage = () => {
       href: "/manage-subjects",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+    },
+    {
+      icon: Upload,
+      title: "Upload KRS",
+      description: "Import jadwal dari file KRS",
+      href: "/upload-krs",
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50",
+    },
+    {
+      icon: History,
+      title: "Riwayat Absen",
+      description: "Lihat riwayat scan QR code absen",
+      href: "/attendance-history",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
     },
     {
       icon: Palette,
@@ -109,32 +133,6 @@ const SettingsPage = () => {
       </div>
 
       {/* Quick Access */}
-      <div className="grid grid-cols-2 gap-4">
-        <Link
-          href="/manage-subjects"
-          className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all"
-        >
-          <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
-            Kelola
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Mata Kuliah
-          </div>
-        </Link>
-        <Link
-          href="/about"
-          className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all"
-        >
-          <Info className="w-8 h-8 text-gray-600 dark:text-gray-400 mx-auto mb-2" />
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
-            Tentang
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Aplikasi
-          </div>
-        </Link>
-      </div>
     </div>
   );
 };

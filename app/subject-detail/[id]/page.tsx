@@ -1,7 +1,14 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { Clock, PinIcon } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  User,
+  Calendar,
+  BookOpen,
+  TrendingUp,
+} from "lucide-react";
 import React, { use } from "react";
 import Timeline from "@/components/Timeline";
 import { useSubject } from "@/hooks/useSubjects";
@@ -12,22 +19,58 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        {/* Loading Header */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="animate-pulse">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            </div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+          </div>
+        </div>
+
+        {/* Loading Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
+              <div className="animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                </div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center h-64 gap-4">
-        <div className="text-red-600 text-lg font-semibold">{error}</div>
-        <button
-          onClick={() => window.history.back()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Kembali
-        </button>
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-2">
+            Gagal Memuat Data
+          </h3>
+          <p className="text-red-700 dark:text-red-300 mb-6">{error}</p>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+          >
+            Kembali
+          </button>
+        </div>
       </div>
     );
   }
@@ -37,62 +80,214 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   return (
-    <div className="flex flex-col mx-5 mt-6 gap-4">
-      {subject.category && (
-        <div className="bg-red-200 rounded w-15 text-center font-bold">
-          High
-        </div>
-      )}
-      <div className="flex flex-col gap-4">
-        <div>
-          <h1 className="font-bold text-xl">{subject.name}</h1>
-          <p className="text-justify mt-2">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sint
-            exercitationem soluta, commodi fugiat autem officia natus laborum
-            doloremque iusto excepturi dolores dolorem, cum aspernatur, iure
-            laudantium obcaecati earum officiis voluptates?
-          </p>
-        </div>
-
-        <div>
-          <h1 className="font-bold">Lecturer</h1>
-          <div className="flex flex-col gap-1">
-            {subject.lecturer.map((lect, index) => (
-              <p key={index}>{lect}</p>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h1 className="font-bold">Date:</h1>
-          <div className="flex flex-row justify-around mt-2">
-            <div className="flex flex-row gap-2 items-center justify-center">
-              <Clock className="" />
-              <div className="flex flex-col">
-                <p className="text-xs">Dates:</p>
-                <h1 className="font-bold">
-                  {subject.startTime} - {subject.endTime}
+    <div className="max-w-4xl mx-auto p-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+      {/* Header Card with Subject Info */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg transition-colors duration-200">
+                  <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {subject.name}
                 </h1>
               </div>
+
+              {subject.category && (
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    subject.category === "High"
+                      ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                      : subject.category === "Medium"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                      : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                  }`}
+                >
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  {subject.category} Priority
+                </span>
+              )}
             </div>
-            <div className="flex flex-row gap-2 items-center justify-center">
-              <PinIcon />
-              <div className="flex flex-col">
-                <p className="text-xs">Room:</p>
-                <h1 className="font-bold">{subject.room}</h1>
-              </div>
+          </div>
+
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+            Mata kuliah ini merupakan bagian integral dari kurikulum yang
+            dirancang untuk memberikan pemahaman mendalam tentang konsep-konsep
+            fundamental dalam bidang studi. Dengan pendekatan pembelajaran yang
+            interaktif dan komprehensif, mata kuliah ini bertujuan untuk
+            mengembangkan kemampuan analitis dan praktis mahasiswa.
+          </p>
+        </div>
+      </div>
+
+      {/* Quick Info Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Schedule Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg transition-colors duration-200">
+              <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Jadwal
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Hari</p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {subject.day}
+            </p>
           </div>
         </div>
 
-        <div className="mt-4">
-          <Timeline />
-          <Timeline />
-          <Timeline />
-          <Timeline />
-          <Timeline />
-          <Timeline />
-          <Timeline />
+        {/* Time Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg transition-colors duration-200">
+              <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Waktu
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Jam Kuliah
+            </p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {subject.startTime} - {subject.endTime}
+            </p>
+          </div>
+        </div>
+
+        {/* Location Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg transition-colors duration-200">
+              <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Lokasi
+            </h3>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Ruangan</p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {subject.room}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Lecturer Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+            <User className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Dosen Pengampu
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {subject.lecturer.map((lect, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {lect
+                  .split(" ")
+                  .map((name) => name[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {lect}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Dosen
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Progress & Timeline Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Progress Pembelajaran
+            </h3>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Pertemuan
+            </p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
+              {subject.meeting}/14
+            </p>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <span>Progress Kehadiran</span>
+            <span>{Math.round((subject.meeting / 14) * 100)}%</span>
+          </div>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-300"
+              style={{ width: `${(subject.meeting / 14) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Timeline */}
+        <div className="space-y-3">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-4">
+            Riwayat Pertemuan
+          </h4>
+          <div className="space-y-2">
+            {Array.from(
+              { length: Math.min(subject.meeting, 7) },
+              (_, index) => {
+                const meetingNumber = index + 1;
+                const dates = [
+                  "Mon, 5 February 2025",
+                  "Mon, 12 February 2025",
+                  "Mon, 19 February 2025",
+                  "Mon, 26 February 2025",
+                  "Mon, 5 March 2025",
+                  "Mon, 12 March 2025",
+                  "Mon, 19 March 2025",
+                ];
+                return (
+                  <Timeline
+                    key={index}
+                    meetingNumber={meetingNumber}
+                    date={dates[index] || `Meeting ${meetingNumber}`}
+                    isCompleted={true}
+                  />
+                );
+              }
+            )}
+          </div>
+          {subject.meeting > 7 && (
+            <button className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+              Lihat semua pertemuan ({subject.meeting - 7} lainnya)
+            </button>
+          )}
         </div>
       </div>
     </div>
