@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { Button } from "@/components/ui/button";
 import { Camera, X, RotateCcw, Loader2, ImagePlus } from "lucide-react";
@@ -24,27 +24,15 @@ const QRScanner: React.FC<QRScannerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [lastScannedUrl, setLastScannedUrl] = useState<string | null>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
-  useEffect(() => {
-    const handleScanner = async () => {
-      if (isOpen) {
-        await initScanner();
-      } else {
-        stopScanning();
-      }
-    };
-
-    handleScanner();
-    return () => {
-      stopScanning();
-    };
-  }, [isOpen]);
-
-  const initScanner = async () => {
+  const initScanner = useCallback(async () => {
     try {
       setError(null);
       setIsScanning(true);
+
+      // Request camera permission
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
@@ -76,7 +64,24 @@ const QRScanner: React.FC<QRScannerProps> = ({
       );
       setIsScanning(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const handleScanner = async () => {
+      if (isOpen) {
+        await initScanner();
+      } else {
+        stopScanning();
+        setLastScannedUrl(null); // Reset URL saat modal ditutup
+      }
+    };
+
+    handleScanner();
+    return () => {
+      stopScanning();
+    };
+  }, [isOpen, initScanner]);
 
   const startScanning = async (deviceId: string) => {
     try {
@@ -143,8 +148,20 @@ const QRScanner: React.FC<QRScannerProps> = ({
         toast.success("QR Code berhasil dipindai!");
         await saveAttendanceHistory(extractedCode);
         onScanSuccess?.(extractedCode);
-        window.open(`https://siap.undip.ac.id/a/${extractedCode}`, "_blank");
-        onClose();
+        
+        // Buka halaman absen UNDIP
+        const absenUrl = `https://siap.undip.ac.id/a/${extractedCode}`;
+        setLastScannedUrl(absenUrl);
+        
+        const newWindow = window.open(absenUrl, "_blank");
+        
+        // Fallback jika popup diblokir
+        if (!newWindow || newWindow.closed) {
+          toast.info("Popup diblokir! Klik tombol 'Buka Halaman Absen' di bawah untuk melanjutkan.");
+        } else {
+          toast.success("Halaman absen telah dibuka di tab baru!");
+          onClose();
+        }
       } else {
         toast.error(
           "QR Code tidak valid. Pastikan ini adalah QR code absen UNDIP."
@@ -309,6 +326,37 @@ const QRScanner: React.FC<QRScannerProps> = ({
                     onChange={handleImageUpload}
                   />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tombol manual untuk membuka halaman absen jika popup diblokir */}
+          {lastScannedUrl && (
+            <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <p className="text-green-700 dark:text-green-300 text-sm mb-3">
+                QR Code berhasil dipindai! Jika halaman absen tidak terbuka otomatis, klik tombol di bawah:
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    window.open(lastScannedUrl, "_blank");
+                    setLastScannedUrl(null);
+                    onClose();
+                  }}
+                  className="flex-1"
+                  size="sm"
+                >
+                  🌐 Buka Halaman Absen
+                </Button>
+                <Button
+                  onClick={() => {
+                    setLastScannedUrl(null);
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  ✕ Tutup
+                </Button>
               </div>
             </div>
           )}
