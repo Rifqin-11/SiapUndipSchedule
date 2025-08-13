@@ -215,7 +215,7 @@ const ScheduleClient = () => {
   return (
     <div>
       <ScheduleHeader selectedDay={selectedDay} />
-      
+
       <div className="mx-5">
         <HorizonalCalendar
           selectedDay={selectedDay}

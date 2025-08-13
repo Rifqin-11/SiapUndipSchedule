@@ -21,11 +21,11 @@ export async function GET() {
         updatedAt: new Date(),
       },
       {
-        id: "sample2", 
+        id: "sample2",
         name: "Web Programming",
         code: "CS302",
         day: "Monday",
-        time: "10:00-12:00", 
+        time: "10:00-12:00",
         room: "Lab 2",
         lecturer: "Prof. Johnson",
         credits: 3,
@@ -46,7 +46,7 @@ export async function GET() {
       },
       {
         id: "sample4",
-        name: "Software Engineering", 
+        name: "Software Engineering",
         code: "CS401",
         day: "Wednesday",
         time: "09:00-11:00",
@@ -60,7 +60,7 @@ export async function GET() {
         id: "sample5",
         name: "Computer Networks",
         code: "CS501",
-        day: "Wednesday", 
+        day: "Wednesday",
         time: "14:00-16:00",
         room: "Lab 3",
         lecturer: "Dr. Wilson",
@@ -74,7 +74,7 @@ export async function GET() {
         code: "CS601",
         day: "Thursday",
         time: "10:00-12:00",
-        room: "Lab 4", 
+        room: "Lab 4",
         lecturer: "Prof. Garcia",
         credits: 3,
         createdAt: new Date(),
@@ -91,7 +91,7 @@ export async function GET() {
         credits: 3,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      },
     ];
 
     // Clear existing data

@@ -1,9 +1,9 @@
 "use client";
 
-import Image from 'next/image';
-import React from 'react';
-import { useSubjects, Subject } from '@/hooks/useSubjects';
-import { getCurrentDayAndDate, normalizeDayName } from '@/utils/date';
+import Image from "next/image";
+import React from "react";
+import { useSubjects, Subject } from "@/hooks/useSubjects";
+import { getCurrentDayAndDate, normalizeDayName } from "@/utils/date";
 
 interface ScheduleHeaderProps {
   selectedDay?: string;
@@ -12,17 +12,17 @@ interface ScheduleHeaderProps {
 const ScheduleHeader = ({ selectedDay }: ScheduleHeaderProps) => {
   const { subjects, loading } = useSubjects();
   const { currentDay } = getCurrentDayAndDate();
-  
+
   // Use selectedDay if provided, otherwise use current day
   const dayToCheck = selectedDay || currentDay;
-  
+
   // Helper function to check if a subject has a valid schedule
   const hasValidSchedule = (subject: Subject) => {
     return (
-      subject.day && 
+      subject.day &&
       typeof subject.day === "string" &&
       subject.day.trim() !== "" &&
-      subject.startTime && 
+      subject.startTime &&
       typeof subject.startTime === "string" &&
       subject.startTime.trim() !== "" &&
       subject.endTime &&
@@ -32,29 +32,33 @@ const ScheduleHeader = ({ selectedDay }: ScheduleHeaderProps) => {
   };
 
   // Count subjects for the selected day
-  const subjectsToday = Array.isArray(subjects) ? subjects.filter(subject => {
-    if (!hasValidSchedule(subject)) return false;
-    
-    const normalizedSubjectDay = normalizeDayName(subject.day);
-    const normalizedSelectedDay = normalizeDayName(dayToCheck);
-    return normalizedSubjectDay === normalizedSelectedDay;
-  }) : [];
+  const subjectsToday = Array.isArray(subjects)
+    ? subjects.filter((subject) => {
+        if (!hasValidSchedule(subject)) return false;
+
+        const normalizedSubjectDay = normalizeDayName(subject.day);
+        const normalizedSelectedDay = normalizeDayName(dayToCheck);
+        return normalizedSubjectDay === normalizedSelectedDay;
+      })
+    : [];
 
   const subjectCount = subjectsToday.length;
-  
+
   // Generate appropriate message
   const getSubjectMessage = () => {
     if (loading) return "Loading subjects...";
-    
+
     const isToday = dayToCheck === currentDay;
     const dayText = isToday ? "today" : dayToCheck;
-    
+
     if (subjectCount === 0) {
       return `No classes scheduled for ${dayText}`;
     } else if (subjectCount === 1) {
-      return `You have 1 subject ${isToday ? 'today' : `on ${dayText}`}!`;
+      return `You have 1 subject ${isToday ? "today" : `on ${dayText}`}!`;
     } else {
-      return `You have ${subjectCount} subjects ${isToday ? 'today' : `on ${dayText}`}!`;
+      return `You have ${subjectCount} subjects ${
+        isToday ? "today" : `on ${dayText}`
+      }!`;
     }
   };
 

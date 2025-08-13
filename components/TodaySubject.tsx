@@ -5,14 +5,39 @@ import {
   getCurrentDayAndDate,
   normalizeDayName,
 } from "@/utils/date";
-import Link from "next/link";
 import React from "react";
 import TodayCard from "./TodayCard";
 import { useSubjects } from "@/hooks/useSubjects";
 
 const TodaySubject = () => {
   const { currentDay } = getCurrentDayAndDate();
-  const { subjects, loading, error } = useSubjects();
+  const { subjects, loading, error, refetch } = useSubjects();
+
+  // Handle attendance recording
+  const handleAttendance = async (subjectId: string) => {
+    try {
+      const response = await fetch(`/api/subjects/${subjectId}/attendance`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to record attendance");
+      }
+
+      // Refresh subjects data to get updated meeting count
+      await refetch();
+
+      return result;
+    } catch (error) {
+      console.error("Error recording attendance:", error);
+      throw error;
+    }
+  };
 
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
@@ -89,16 +114,24 @@ const TodaySubject = () => {
         todaySubject.map((subject) => {
           const randomColor =
             colorPairs[Math.floor(Math.random() * colorPairs.length)];
+
+          // Create subject object with color properties
+          const subjectWithColors = {
+            ...subject,
+            _id: subject._id || subject.id, // Ensure _id is always present
+            bgColor: randomColor.bg,
+            textColor: randomColor.text,
+            bgRoomColor: randomColor.roomBg,
+          };
+
           return (
-            <Link href={`/subject-detail/${subject.id}`} key={subject.id}>
+            <div key={subject.id}>
               <TodayCard
-                {...subject}
-                key={subject.id}
-                bgColor={randomColor.bg}
-                textColor={randomColor.text}
-                bgRoomColor={randomColor.roomBg}
+                subject={subjectWithColors}
+                currentDay={currentDay}
+                onAttendance={handleAttendance}
               />
-            </Link>
+            </div>
           );
         })
       ) : (

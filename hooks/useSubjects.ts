@@ -10,6 +10,7 @@ export interface Subject {
   endTime: string;
   lecturer: string[];
   meeting: number;
+  attendanceDates?: string[];
   category?: string;
 }
 

@@ -1,42 +1,120 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Users } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-type Subject = {
+interface Subject {
+  _id: string;
   name: string;
-  room: string;
+  lecturer: string[];
   startTime: string;
   endTime: string;
-  lecturer: string[];
-};
+  room: string;
+  bgColor: string;
+  bgRoomColor: string;
+  textColor: string;
+  day: string;
+  meeting: number;
+  attendanceDates?: string[];
+}
 
-const TodayCard = ({
-  name,
-  room,
-  startTime,
-  endTime,
-  lecturer,
-  bgColor,
-  textColor,
-  bgRoomColor,
-}: Subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
+interface TodayCardProps {
+  subject: Subject;
+  currentDay: string;
+  onAttendance: (subjectId: string) => Promise<void>;
+}
+
+const TodayCard: React.FC<TodayCardProps> = ({
+  subject,
+  currentDay,
+  onAttendance,
+}) => {
+  const [isAttending, setIsAttending] = useState(false);
+  const router = useRouter();
+
+  // Destructure subject properties
+  const {
+    _id: id,
+    name,
+    lecturer,
+    startTime,
+    endTime,
+    room,
+    bgColor,
+    bgRoomColor,
+    textColor,
+    day,
+    meeting,
+  } = subject;
+
+  const [currentMeeting, setCurrentMeeting] = useState(meeting);
+
+  // Check localStorage for attendance status
+  const getAttendanceKey = () => {
+    const today = new Date().toDateString();
+    return `attended_${id}_${today}`;
+  };
+
+  const [hasAttended, setHasAttended] = useState(false);
+
+  // Check localStorage on client side only
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const today = new Date().toDateString();
+      const attendanceKey = `attended_${id}_${today}`;
+      const attendanceStatus = localStorage.getItem(attendanceKey) === "true";
+      setHasAttended(attendanceStatus);
+    }
+  }, [id]);
+
+  // Check if today is the same as subject day
+  const isToday = day.toLowerCase() === currentDay.toLowerCase();
+
+  const handleAttendance = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking button
+    if (!onAttendance) return;
+
+    setIsAttending(true);
+    try {
+      await onAttendance(id);
+      setCurrentMeeting((prev: number) => prev + 1);
+      setHasAttended(true); // Mark as attended
+      localStorage.setItem(getAttendanceKey(), "true"); // Save to localStorage
+      toast.success(
+        `Attendance recorded for ${name}! Meeting ${currentMeeting + 1}/14`
+      );
+    } catch (error) {
+      console.error("Error recording attendance:", error);
+      toast.error("Failed to record attendance. Please try again.");
+    } finally {
+      setIsAttending(false);
+    }
+  };
+
+  const handleCardClick = () => {
+    router.push(`/subject-detail/${id}`);
+  };
   return (
     <div
-      className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35`}
+      onClick={handleCardClick}
+      className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35 cursor-pointer hover:scale-105 transition-transform duration-200`}
     >
       <div className="flex flex-row mt-2 justify-between items-center">
         <h1 className={`font-extrabold text max-w-50 ${textColor}`}>{name}</h1>
         <div className={`text-xs text-right ${textColor} `}>
-          {lecturer.map((lecturer, index) => (
+          {lecturer.map((lecturerName: string, index: number) => (
             <p
               key={index}
               className="truncate overflow-hidden whitespace-nowrap max-w-[140px]"
             >
-              {lecturer}
+              {lecturerName}
             </p>
           ))}
         </div>
       </div>
 
-      <div className="mt-3 flex flex-row justify-between items-center">
+      <div className="mt-6 flex flex-row justify-between items-center">
         <div className={textColor}>
           <h1 className="font-bold">{startTime}</h1>
           <p className="text-xs">Start</p>
@@ -51,10 +129,47 @@ const TodayCard = ({
           <p className="text-xs">End</p>
         </div>
       </div>
+
+      {/* Meeting progress and attendance button - only show if today is class day and haven't attended */}
+      {isToday && !hasAttended && (
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-1 ${textColor}`}>
+              <Users className="w-4 h-4" />
+              <span className="text-xs font-medium">
+                Meeting {currentMeeting}/14
+              </span>
+            </div>
+            <div className="w-20 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+              <div
+                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${(currentMeeting / 14) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleAttendance}
+            disabled={isAttending}
+            className={`w-full ${bgRoomColor} text-white text-sm py-2 transition-all duration-200`}
+            size="sm"
+          >
+            {isAttending ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Recording...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Attend Class
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
-
-
 
 export default TodayCard;

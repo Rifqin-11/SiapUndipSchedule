@@ -259,33 +259,47 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             Riwayat Pertemuan
           </h4>
           <div className="space-y-2">
-            {Array.from(
-              { length: Math.min(subject.meeting, 7) },
-              (_, index) => {
+            {subject.attendanceDates && subject.attendanceDates.length > 0 ? (
+              subject.attendanceDates.slice(0, 7).map((date: string, index: number) => {
                 const meetingNumber = index + 1;
-                const dates = [
-                  "Mon, 5 February 2025",
-                  "Mon, 12 February 2025",
-                  "Mon, 19 February 2025",
-                  "Mon, 26 February 2025",
-                  "Mon, 5 March 2025",
-                  "Mon, 12 March 2025",
-                  "Mon, 19 March 2025",
-                ];
                 return (
                   <Timeline
                     key={index}
                     meetingNumber={meetingNumber}
-                    date={dates[index] || `Meeting ${meetingNumber}`}
+                    date={date}
                     isCompleted={true}
                   />
                 );
-              }
+              })
+            ) : (
+              Array.from(
+                { length: Math.min(subject.meeting, 7) },
+                (_, index) => {
+                  const meetingNumber = index + 1;
+                  const fallbackDates = [
+                    "Mon, 5 February 2025",
+                    "Mon, 12 February 2025",
+                    "Mon, 19 February 2025",
+                    "Mon, 26 February 2025",
+                    "Mon, 5 March 2025",
+                    "Mon, 12 March 2025",
+                    "Mon, 19 March 2025",
+                  ];
+                  return (
+                    <Timeline
+                      key={index}
+                      meetingNumber={meetingNumber}
+                      date={fallbackDates[index] || `Meeting ${meetingNumber}`}
+                      isCompleted={true}
+                    />
+                  );
+                }
+              )
             )}
           </div>
-          {subject.meeting > 7 && (
+          {(subject.attendanceDates?.length || subject.meeting) > 7 && (
             <button className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
-              Lihat semua pertemuan ({subject.meeting - 7} lainnya)
+              Lihat semua pertemuan ({(subject.attendanceDates?.length || subject.meeting) - 7} lainnya)
             </button>
           )}
         </div>

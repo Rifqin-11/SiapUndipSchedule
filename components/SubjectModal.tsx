@@ -53,7 +53,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     name: "",
-    day: "",
+    day: "no-schedule", // Default to "no-schedule" instead of empty string
     room: "",
     startTime: "",
     endTime: "",
@@ -69,7 +69,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
       if (mode === "edit" && subject) {
         setFormData({
           name: subject.name || "",
-          day: subject.day || "",
+          day: subject.day || "no-schedule", // Use "no-schedule" if empty
           room: subject.room || "",
           startTime: subject.startTime || "",
           endTime: subject.endTime || "",
@@ -81,7 +81,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
         // Reset for add mode dengan hari yang sudah dipilih
         setFormData({
           name: "",
-          day: preselectedDay || "",
+          day: preselectedDay || "no-schedule", // Use "no-schedule" if no preselected day
           room: "",
           startTime: "",
           endTime: "",
@@ -136,7 +136,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
     }
 
     // Validate schedule consistency: if day is set, time must also be set, and vice versa
-    const hasDay = formData.day && formData.day.trim() !== "";
+    const hasDay = formData.day && formData.day.trim() !== "" && formData.day !== "no-schedule";
     const hasTime =
       formData.startTime &&
       formData.startTime.trim() !== "" &&
@@ -172,6 +172,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
       const subjectData = {
         ...formData,
         lecturer: filteredLecturers,
+        day: formData.day === "no-schedule" ? "" : formData.day, // Convert back to empty string
         id: mode === "edit" && subject ? subject.id : `${Date.now()}`, // Temporary ID for new subjects
       };
 
@@ -233,7 +234,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
                 <SelectValue placeholder="Select day (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Schedule</SelectItem>
+                <SelectItem value="no-schedule">No Schedule</SelectItem>
                 {days.map((day) => (
                   <SelectItem key={day} value={day}>
                     {day}
@@ -320,7 +321,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
               <Input
                 id="meeting"
                 type="number"
-                min="1"
+                min="0"
                 max="20"
                 value={formData.meeting}
                 onChange={(e) =>
