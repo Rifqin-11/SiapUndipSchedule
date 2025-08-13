@@ -317,7 +317,7 @@ const UploadKRSPage = () => {
             <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
               <li className="flex items-start gap-2">
                 <Eye className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Upload KRS image in PNG, JPG, or WEBP format</span>
+                <span>Upload IRS image in PNG, JPG, or WEBP format</span>
               </li>
               <li className="flex items-start gap-2">
                 <Server className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -804,7 +804,7 @@ const UploadKRSPage = () => {
             <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-blue-900 dark:text-blue-200">
-                How to Use Upload KRS
+                How to Use Upload IRS
               </h3>
               <div className="text-blue-800 dark:text-blue-300 text-sm mt-1 space-y-1">
                 <p>

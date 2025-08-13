@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import QRScanner from "./QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
+import ScheduleHeader from "./ScheduleHeader";
 
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
@@ -213,6 +214,8 @@ const ScheduleClient = () => {
 
   return (
     <div>
+      <ScheduleHeader selectedDay={selectedDay} />
+      
       <div className="mx-5">
         <HorizonalCalendar
           selectedDay={selectedDay}

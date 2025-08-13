@@ -25,16 +25,17 @@ const NotificationManager = () => {
 
     // Check if notifications are supported in this environment
     try {
-      const supported =
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        typeof Notification.requestPermission === "function";
+      if (typeof window !== "undefined") {
+        const supported =
+          "Notification" in window &&
+          typeof Notification.requestPermission === "function";
 
-      setIsSupported(supported);
+        setIsSupported(supported);
 
-      if (supported) {
-        setPermission(Notification.permission);
-        setNotificationsEnabled(Notification.permission === "granted");
+        if (supported) {
+          setPermission(Notification.permission);
+          setNotificationsEnabled(Notification.permission === "granted");
+        }
       }
     } catch (error) {
       console.warn("Error checking notification support:", error);
