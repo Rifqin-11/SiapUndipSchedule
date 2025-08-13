@@ -29,6 +29,24 @@ import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import ScheduleHeader from "./ScheduleHeader";
 
+interface SubjectWithReschedule extends Subject {
+  isReschedule?: boolean;
+  rescheduleDate?: string;
+  rescheduleInfo?: {
+    originalDate: Date;
+    newDate: Date;
+    reason: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
+    createdAt: Date;
+  };
+}
+
+interface SubjectToDelete extends SubjectWithReschedule {
+  deleteType?: "subject" | "reschedule";
+}
+
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
   const [selectedDay, setSelectedDay] = useState(currentDay);
@@ -52,7 +70,8 @@ const ScheduleClient = () => {
 
   // Delete confirmation dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+  const [subjectToDelete, setSubjectToDelete] =
+    useState<SubjectToDelete | null>(null);
 
   // QR Scanner states
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
@@ -129,8 +148,71 @@ const ScheduleClient = () => {
     return normalizedSubjectDay === normalizedSelectedDay;
   });
 
-  console.log("Filtered subjects for today:", filteredSubjects);
-  console.log("Today subjects count:", filteredSubjects.length);
+  // Get reschedule subjects for selected day
+  const getSelectedDayDate = () => {
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const today = new Date();
+    const currentDayIndex = today.getDay();
+    const selectedDayIndex = days.indexOf(selectedDay);
+
+    const dayDifference = selectedDayIndex - currentDayIndex;
+    const selectedDate = new Date(today);
+    selectedDate.setDate(today.getDate() + dayDifference);
+
+    return selectedDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+  };
+
+  const selectedDayString = getSelectedDayDate();
+
+  const rescheduleSubjects = subjectsArray
+    .filter((subject) => {
+      if (!subject.reschedules || subject.reschedules.length === 0)
+        return false;
+
+      return subject.reschedules.some((reschedule) => {
+        const rescheduleDate = new Date(reschedule.newDate);
+        const rescheduleString = rescheduleDate.toISOString().split("T")[0];
+        return rescheduleString === selectedDayString;
+      });
+    })
+    .map((subject) => {
+      // Find the reschedule for selected day
+      const dayReschedule = subject.reschedules?.find((reschedule) => {
+        const rescheduleDate = new Date(reschedule.newDate);
+        const rescheduleString = rescheduleDate.toISOString().split("T")[0];
+        return rescheduleString === selectedDayString;
+      });
+
+      return {
+        ...subject,
+        isReschedule: true,
+        rescheduleDate: selectedDayString,
+        rescheduleInfo: dayReschedule,
+        name: `${subject.name} (Reschedule)`, // Add indicator in name
+        // Use reschedule time and room if available, otherwise use original
+        startTime: dayReschedule?.startTime || subject.startTime,
+        endTime: dayReschedule?.endTime || subject.endTime,
+        room: dayReschedule?.room || subject.room,
+      };
+    });
+
+  // Combine regular subjects and reschedule subjects
+  const allFilteredSubjects: SubjectWithReschedule[] = [
+    ...filteredSubjects.map((s) => ({ ...s })),
+    ...rescheduleSubjects,
+  ];
+
+  console.log("Filtered subjects for selected day:", filteredSubjects);
+  console.log("Reschedule subjects for selected day:", rescheduleSubjects);
+  console.log("All subjects count:", allFilteredSubjects.length);
 
   const handleAddSubject = () => {
     setSelectedSubject(null);
@@ -149,20 +231,70 @@ const ScheduleClient = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteSubject = async (subject: Subject) => {
-    setSubjectToDelete(subject);
+  const handleDeleteSubject = async (subject: SubjectWithReschedule) => {
+    // If it's a reschedule subject, we need to delete the reschedule, not the subject
+    if (subject.isReschedule) {
+      setSubjectToDelete({
+        ...subject,
+        deleteType: "reschedule",
+      });
+    } else {
+      setSubjectToDelete({
+        ...subject,
+        deleteType: "subject",
+      });
+    }
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDeleteSubject = async () => {
     if (!subjectToDelete) return;
 
-    const result = await deleteSubject(subjectToDelete.id);
-    if (result.success) {
-      toast.success("Mata kuliah berhasil dihapus!");
-      refetch();
+    let result;
+
+    if (subjectToDelete.deleteType === "reschedule") {
+      // Delete reschedule entry
+      try {
+        const response = await fetch(
+          `/api/subjects/${subjectToDelete.id}/reschedule`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              rescheduleDate: subjectToDelete.rescheduleDate,
+            }),
+          }
+        );
+
+        const data = await response.json();
+        result = data;
+
+        if (result.success) {
+          toast.success("Jadwal reschedule berhasil dihapus!");
+        } else {
+          toast.error(result.error || "Gagal menghapus jadwal reschedule");
+        }
+      } catch (error) {
+        console.error("Error deleting reschedule:", error);
+        toast.error("Gagal menghapus jadwal reschedule");
+        result = { success: false };
+      }
     } else {
-      toast.error(result.error || "Gagal menghapus mata kuliah");
+      // Delete entire subject (only for selected day)
+      result = await deleteSubject(subjectToDelete.id);
+      if (result.success) {
+        toast.success(
+          `Mata kuliah berhasil dihapus untuk hari ${selectedDay}!`
+        );
+      } else {
+        toast.error(result.error || "Gagal menghapus mata kuliah");
+      }
+    }
+
+    if (result.success) {
+      refetch();
     }
 
     setIsDeleteDialogOpen(false);
@@ -234,8 +366,8 @@ const ScheduleClient = () => {
           </div>
         </div>
 
-        {filteredSubjects.length > 0 ? (
-          filteredSubjects.map((subject, index) => {
+        {allFilteredSubjects.length > 0 ? (
+          allFilteredSubjects.map((subject, index) => {
             // Use a consistent color based on subject ID hash instead of random
             const colorIndex = subject.id
               ? subject.id
@@ -245,20 +377,36 @@ const ScheduleClient = () => {
               : index % colorPairs.length;
             const assignedColor = colorPairs[colorIndex];
 
+            // Use amber color for reschedule subjects
+            const finalColor = subject.isReschedule
+              ? {
+                  bg: "bg-amber-100",
+                  text: "text-amber-800",
+                  roomBg: "bg-amber-200",
+                }
+              : assignedColor;
+
             console.log(
-              `Subject: ${subject.name}, ID: ${subject.id}, Index: ${index}`
+              `Subject: ${subject.name}, ID: ${subject.id}, Index: ${index}, IsReschedule: ${subject.isReschedule}`
             );
 
             return (
-              <Link href={`/subject-detail/${subject.id}`} key={subject.id}>
+              <Link
+                href={`/subject-detail/${subject.id}`}
+                key={`${subject.id}-${
+                  subject.isReschedule ? "reschedule" : "regular"
+                }`}
+              >
                 <CalendarCard
                   {...subject}
-                  bgColor={assignedColor.bg}
-                  textColor={assignedColor.text}
-                  bgRoomColor={assignedColor.roomBg}
+                  bgColor={finalColor.bg}
+                  textColor={finalColor.text}
+                  bgRoomColor={finalColor.roomBg}
                   showActions={true}
                   onEdit={() => handleEditSubject(subject)}
                   onDelete={() => handleDeleteSubject(subject)}
+                  isReschedule={subject.isReschedule}
+                  rescheduleInfo={subject.rescheduleInfo}
                 />
               </Link>
             );
@@ -294,9 +442,19 @@ const ScheduleClient = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus mata kuliah &ldquo;
-              {subjectToDelete?.name}&rdquo;? Tindakan ini tidak dapat
-              dibatalkan.
+              {subjectToDelete?.deleteType === "reschedule" ? (
+                <>
+                  Apakah Anda yakin ingin menghapus jadwal reschedule &ldquo;
+                  {subjectToDelete?.name}&rdquo; untuk hari {selectedDay}? Mata
+                  kuliah akan kembali ke jadwal normalnya.
+                </>
+              ) : (
+                <>
+                  Apakah Anda yakin ingin menghapus mata kuliah &ldquo;
+                  {subjectToDelete?.name}&rdquo; untuk hari {selectedDay}?
+                  Tindakan ini tidak dapat dibatalkan.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

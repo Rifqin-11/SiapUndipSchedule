@@ -26,6 +26,16 @@ interface CalendarCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   showActions?: boolean;
+  isReschedule?: boolean;
+  rescheduleInfo?: {
+    originalDate: Date;
+    newDate: Date;
+    reason: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
+    createdAt: Date;
+  };
 }
 
 const CalendarCard = ({
@@ -40,6 +50,8 @@ const CalendarCard = ({
   onEdit,
   onDelete,
   showActions = false,
+  isReschedule = false,
+  rescheduleInfo,
 }: CalendarCardProps) => {
   const proggressMeeting = (meeting / 14) * 100;
 
@@ -120,6 +132,41 @@ const CalendarCard = ({
               </p>
             ))}
           </div>
+
+          {/* Reschedule Info */}
+          {isReschedule && rescheduleInfo && (
+            <div className="mt-2 p-2 bg-white/20 rounded-lg">
+              <div className="flex items-center gap-1 text-xs">
+                <span className="text-amber-200">📅</span>
+                <span className={`${textColor} font-medium`}>Reschedule</span>
+              </div>
+              {(rescheduleInfo.startTime || rescheduleInfo.endTime) && (
+                <div className="flex items-center gap-1 text-xs mt-1">
+                  <span className="text-amber-200">🕐</span>
+                  <span className={`${textColor}`}>
+                    {rescheduleInfo.startTime && rescheduleInfo.endTime
+                      ? `${rescheduleInfo.startTime} - ${rescheduleInfo.endTime}`
+                      : rescheduleInfo.startTime || rescheduleInfo.endTime}
+                  </span>
+                </div>
+              )}
+              {rescheduleInfo.room && (
+                <div className="flex items-center gap-1 text-xs mt-1">
+                  <span className="text-amber-200">📍</span>
+                  <span className={`${textColor}`}>{rescheduleInfo.room}</span>
+                </div>
+              )}
+              {rescheduleInfo.reason && (
+                <div className="flex items-center gap-1 text-xs mt-1">
+                  <span className="text-amber-200">💬</span>
+                  <span className={`${textColor}`}>
+                    {rescheduleInfo.reason}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col mt-3 gap-1">
             <div className="flex flex-row justify-between items-center">
               <h1 className="text-xs text-gray-500">Progress</h1>

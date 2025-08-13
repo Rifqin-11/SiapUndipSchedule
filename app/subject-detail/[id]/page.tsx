@@ -8,14 +8,54 @@ import {
   Calendar,
   BookOpen,
   TrendingUp,
+  CalendarX,
 } from "lucide-react";
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import Timeline from "@/components/Timeline";
+import RescheduleModal from "@/components/RescheduleModal";
+import RescheduleHistory from "@/components/RescheduleHistory";
+import { Button } from "@/components/ui/button";
 import { useSubject } from "@/hooks/useSubjects";
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const { subject, loading, error } = useSubject(id);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [reschedules, setReschedules] = useState<
+    {
+      subjectId: string;
+      originalDate: string;
+      newDate: string;
+      reason: string;
+      startTime?: string;
+      endTime?: string;
+      room?: string;
+      createdAt: Date;
+    }[]
+  >([]);
+
+  // Fetch reschedules when component mounts
+  const fetchReschedules = React.useCallback(async () => {
+    try {
+      const response = await fetch(`/api/subjects/${id}/reschedule`);
+      const result = await response.json();
+      if (result.success) {
+        setReschedules(result.data.reschedules || []);
+      }
+    } catch (error) {
+      console.error("Error fetching reschedules:", error);
+    }
+  }, [id]);
+
+  React.useEffect(() => {
+    if (subject?._id || subject?.id) {
+      fetchReschedules();
+    }
+  }, [subject, fetchReschedules]);
+
+  const handleRescheduleAdded = () => {
+    fetchReschedules(); // Refresh reschedules list
+  };
 
   if (loading) {
     return (
@@ -259,51 +299,92 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             Riwayat Pertemuan
           </h4>
           <div className="space-y-2">
-            {subject.attendanceDates && subject.attendanceDates.length > 0 ? (
-              subject.attendanceDates.slice(0, 7).map((date: string, index: number) => {
-                const meetingNumber = index + 1;
-                return (
-                  <Timeline
-                    key={index}
-                    meetingNumber={meetingNumber}
-                    date={date}
-                    isCompleted={true}
-                  />
-                );
-              })
-            ) : (
-              Array.from(
-                { length: Math.min(subject.meeting, 7) },
-                (_, index) => {
-                  const meetingNumber = index + 1;
-                  const fallbackDates = [
-                    "Mon, 5 February 2025",
-                    "Mon, 12 February 2025",
-                    "Mon, 19 February 2025",
-                    "Mon, 26 February 2025",
-                    "Mon, 5 March 2025",
-                    "Mon, 12 March 2025",
-                    "Mon, 19 March 2025",
-                  ];
-                  return (
-                    <Timeline
-                      key={index}
-                      meetingNumber={meetingNumber}
-                      date={fallbackDates[index] || `Meeting ${meetingNumber}`}
-                      isCompleted={true}
-                    />
-                  );
-                }
-              )
-            )}
+            {subject.attendanceDates && subject.attendanceDates.length > 0
+              ? subject.attendanceDates
+                  .slice(0, 7)
+                  .map((date: string, index: number) => {
+                    const meetingNumber = index + 1;
+                    return (
+                      <Timeline
+                        key={index}
+                        meetingNumber={meetingNumber}
+                        date={date}
+                        isCompleted={true}
+                      />
+                    );
+                  })
+              : Array.from(
+                  { length: Math.min(subject.meeting, 7) },
+                  (_, index) => {
+                    const meetingNumber = index + 1;
+                    const fallbackDates = [
+                      "Mon, 5 February 2025",
+                      "Mon, 12 February 2025",
+                      "Mon, 19 February 2025",
+                      "Mon, 26 February 2025",
+                      "Mon, 5 March 2025",
+                      "Mon, 12 March 2025",
+                      "Mon, 19 March 2025",
+                    ];
+                    return (
+                      <Timeline
+                        key={index}
+                        meetingNumber={meetingNumber}
+                        date={
+                          fallbackDates[index] || `Meeting ${meetingNumber}`
+                        }
+                        isCompleted={true}
+                      />
+                    );
+                  }
+                )}
           </div>
           {(subject.attendanceDates?.length || subject.meeting) > 7 && (
             <button className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
-              Lihat semua pertemuan ({(subject.attendanceDates?.length || subject.meeting) - 7} lainnya)
+              Lihat semua pertemuan (
+              {(subject.attendanceDates?.length || subject.meeting) - 7}{" "}
+              lainnya)
             </button>
           )}
         </div>
       </div>
+
+      {/* Reschedule Management Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+              <CalendarX className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Class Reschedules
+            </h3>
+          </div>
+          <Button
+            onClick={() => setIsRescheduleModalOpen(true)}
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+            size="sm"
+          >
+            <CalendarX className="w-4 h-4 mr-2" />
+            Add Reschedule
+          </Button>
+        </div>
+
+        <RescheduleHistory
+          reschedules={reschedules}
+          subjectId={id}
+          onRescheduleUpdated={fetchReschedules}
+        />
+      </div>
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        subjectId={id}
+        subjectName={subject.name}
+        onRescheduleAdded={handleRescheduleAdded}
+      />
     </div>
   );
 };

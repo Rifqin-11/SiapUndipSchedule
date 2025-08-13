@@ -9,6 +9,16 @@ interface subject {
   lecturer: string[];
   meeting: number;
   attendanceDates?: string[];
+  reschedules?: {
+    subjectId: string;
+    originalDate: string;
+    newDate: string;
+    reason: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
+    createdAt: Date;
+  }[];
   category?: string;
   userId?: string;
 }

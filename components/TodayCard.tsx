@@ -17,18 +17,29 @@ interface Subject {
   day: string;
   meeting: number;
   attendanceDates?: string[];
+  reschedules?: Array<{
+    originalDate: Date;
+    newDate: Date;
+    reason: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
+    createdAt: Date;
+  }>;
 }
 
 interface TodayCardProps {
   subject: Subject;
   currentDay: string;
-  onAttendance: (subjectId: string) => Promise<void>;
+  onAttendance: (subjectId: string, rescheduleDate?: string) => Promise<void>;
+  rescheduleDate?: string; // Format: YYYY-MM-DD
 }
 
 const TodayCard: React.FC<TodayCardProps> = ({
   subject,
   currentDay,
   onAttendance,
+  rescheduleDate,
 }) => {
   const [isAttending, setIsAttending] = useState(false);
   const router = useRouter();
@@ -52,7 +63,7 @@ const TodayCard: React.FC<TodayCardProps> = ({
 
   // Check localStorage for attendance status
   const getAttendanceKey = () => {
-    const today = new Date().toDateString();
+    const today = rescheduleDate || new Date().toDateString();
     return `attended_${id}_${today}`;
   };
 
@@ -61,15 +72,17 @@ const TodayCard: React.FC<TodayCardProps> = ({
   // Check localStorage on client side only
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const today = new Date().toDateString();
+      const today = rescheduleDate || new Date().toDateString();
       const attendanceKey = `attended_${id}_${today}`;
       const attendanceStatus = localStorage.getItem(attendanceKey) === "true";
       setHasAttended(attendanceStatus);
     }
-  }, [id]);
+  }, [id, rescheduleDate]);
 
-  // Check if today is the same as subject day
-  const isToday = day.toLowerCase() === currentDay.toLowerCase();
+  // Check if today is the same as subject day OR if this is a reschedule date
+  const isToday = rescheduleDate
+    ? true
+    : day.toLowerCase() === currentDay.toLowerCase();
 
   const handleAttendance = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click when clicking button
@@ -77,12 +90,18 @@ const TodayCard: React.FC<TodayCardProps> = ({
 
     setIsAttending(true);
     try {
-      await onAttendance(id);
+      await onAttendance(id, rescheduleDate);
       setCurrentMeeting((prev: number) => prev + 1);
       setHasAttended(true); // Mark as attended
       localStorage.setItem(getAttendanceKey(), "true"); // Save to localStorage
+
+      const attendanceType = rescheduleDate
+        ? "reschedule class"
+        : "regular class";
       toast.success(
-        `Attendance recorded for ${name}! Meeting ${currentMeeting + 1}/14`
+        `Attendance recorded for ${name} (${attendanceType})! Meeting ${
+          currentMeeting + 1
+        }/14`
       );
     } catch (error) {
       console.error("Error recording attendance:", error);
@@ -101,7 +120,16 @@ const TodayCard: React.FC<TodayCardProps> = ({
       className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35 cursor-pointer hover:scale-105 transition-transform duration-200`}
     >
       <div className="flex flex-row mt-2 justify-between items-center">
-        <h1 className={`font-extrabold text max-w-50 ${textColor}`}>{name}</h1>
+        <div className="flex flex-col">
+          <h1 className={`font-extrabold text max-w-50 ${textColor}`}>
+            {name}
+          </h1>
+          {rescheduleDate && (
+            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded-full mt-1 w-fit">
+              Reschedule Class
+            </span>
+          )}
+        </div>
         <div className={`text-xs text-right ${textColor} `}>
           {lecturer.map((lecturerName: string, index: number) => (
             <p

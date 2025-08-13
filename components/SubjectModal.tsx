@@ -136,7 +136,10 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
     }
 
     // Validate schedule consistency: if day is set, time must also be set, and vice versa
-    const hasDay = formData.day && formData.day.trim() !== "" && formData.day !== "no-schedule";
+    const hasDay =
+      formData.day &&
+      formData.day.trim() !== "" &&
+      formData.day !== "no-schedule";
     const hasTime =
       formData.startTime &&
       formData.startTime.trim() !== "" &&

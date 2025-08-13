@@ -8,17 +8,22 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const body = await request.json();
+    const { rescheduleDate } = body; // Optional: if attending on a rescheduled date
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
     // Get current date in readable format
     const currentDate = new Date();
-    const attendanceDate = currentDate.toLocaleDateString('en-US', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'long', 
-      year: 'numeric'
-    });
+    const attendanceDate =
+      rescheduleDate ||
+      currentDate.toLocaleDateString("en-US", {
+        weekday: "short",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
 
     // First, increment the meeting count
     const result = await db.collection("subjects").updateOne(

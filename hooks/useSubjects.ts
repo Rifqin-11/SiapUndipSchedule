@@ -11,6 +11,15 @@ export interface Subject {
   lecturer: string[];
   meeting: number;
   attendanceDates?: string[];
+  reschedules?: {
+    originalDate: Date;
+    newDate: Date;
+    reason: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
+    createdAt: Date;
+  }[];
   category?: string;
 }
 

@@ -7,20 +7,42 @@ import {
 } from "@/utils/date";
 import React from "react";
 import TodayCard from "./TodayCard";
-import { useSubjects } from "@/hooks/useSubjects";
+import { useSubjects, Subject } from "@/hooks/useSubjects";
+
+interface SubjectWithReschedule extends Subject {
+  rescheduleDate?: string;
+  rescheduleInfo?: {
+    originalDate: Date;
+    newDate: Date;
+    reason: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
+    createdAt: Date;
+  };
+}
 
 const TodaySubject = () => {
   const { currentDay } = getCurrentDayAndDate();
   const { subjects, loading, error, refetch } = useSubjects();
 
   // Handle attendance recording
-  const handleAttendance = async (subjectId: string) => {
+  const handleAttendance = async (
+    subjectId: string,
+    rescheduleDate?: string
+  ) => {
     try {
+      const requestBody: { rescheduleDate?: string } = {};
+      if (rescheduleDate) {
+        requestBody.rescheduleDate = rescheduleDate;
+      }
+
       const response = await fetch(`/api/subjects/${subjectId}/attendance`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -89,8 +111,45 @@ const TodaySubject = () => {
     return normalizedSubjectDay === normalizedCurrentDay;
   });
 
+  // Get reschedule classes for today
+  const today = new Date();
+  const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+  const rescheduleSubjects: SubjectWithReschedule[] = subjectsArray
+    .filter((subject) => {
+      if (!subject.reschedules || subject.reschedules.length === 0)
+        return false;
+
+      return subject.reschedules.some((reschedule) => {
+        const rescheduleDate = new Date(reschedule.newDate);
+        const rescheduleString = rescheduleDate.toISOString().split("T")[0];
+        return rescheduleString === todayString;
+      });
+    })
+    .map((subject) => {
+      // Find the reschedule for today
+      const todayReschedule = subject.reschedules?.find((reschedule) => {
+        const rescheduleDate = new Date(reschedule.newDate);
+        const rescheduleString = rescheduleDate.toISOString().split("T")[0];
+        return rescheduleString === todayString;
+      });
+
+      return {
+        ...subject,
+        rescheduleDate: todayString,
+        rescheduleInfo: todayReschedule,
+      };
+    });
+
+  // Combine regular subjects and reschedule subjects
+  const allTodaySubjects: SubjectWithReschedule[] = [
+    ...todaySubject.map((s) => ({ ...s })),
+    ...rescheduleSubjects,
+  ];
+
   console.log("Filtered subjects for today:", todaySubject);
-  console.log("Today subjects count:", todaySubject.length);
+  console.log("Reschedule subjects for today:", rescheduleSubjects);
+  console.log("All today subjects count:", allTodaySubjects.length);
 
   if (loading) {
     return (
@@ -110,8 +169,8 @@ const TodaySubject = () => {
   }
   return (
     <div className="flex flex-col gap-4">
-      {todaySubject.length > 0 ? (
-        todaySubject.map((subject) => {
+      {allTodaySubjects.length > 0 ? (
+        allTodaySubjects.map((subject) => {
           const randomColor =
             colorPairs[Math.floor(Math.random() * colorPairs.length)];
 
@@ -125,11 +184,12 @@ const TodaySubject = () => {
           };
 
           return (
-            <div key={subject.id}>
+            <div key={`${subject.id}-${subject.rescheduleDate || "regular"}`}>
               <TodayCard
                 subject={subjectWithColors}
                 currentDay={currentDay}
                 onAttendance={handleAttendance}
+                rescheduleDate={subject.rescheduleDate}
               />
             </div>
           );
