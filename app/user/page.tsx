@@ -6,7 +6,8 @@ import {
   Shield,
   Bell,
   LogOut,
-  Camera
+  Camera,
+  User
 } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -36,7 +37,7 @@ const UserPage = () => {
       icon: Edit,
       title: "Edit Profile",
       description: "Update your profile information",
-      href: "/profile",
+      href: "/user/profile",
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
@@ -69,8 +70,21 @@ const UserPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen">
       {/* Header */}
+      <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
+        <div className="flex flex-row justify-center items-center w-full">
+          <div className="flex flex-col gap-0.5 justify-center text-center">
+            <div className="flex items-center justify-center gap-2">
+              <User className="w-6 h-6 text-green-600" />
+              <h1 className="font-bold text-xl text-gray-900 dark:text-white">
+                User
+              </h1>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div className="text-center space-y-4">
         <div className="relative inline-block">
           <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
@@ -202,6 +216,8 @@ const UserPage = () => {
         <LogOut className="w-5 h-5" />
         <span className="font-medium">Logout</span>
       </button>
+
+      </div>
     </div>
   );
 };

@@ -95,6 +95,40 @@ const TodayCard: React.FC<TodayCardProps> = ({
       setHasAttended(true); // Mark as attended
       localStorage.setItem(getAttendanceKey(), "true"); // Save to localStorage
 
+      // Save to attendance history
+      try {
+        const attendanceDate = rescheduleDate
+          ? new Date(rescheduleDate)
+          : new Date();
+
+        const historyData = {
+          subjectId: id,
+          subjectName: name,
+          attendanceDate: attendanceDate.toISOString(),
+          location: room,
+          notes: rescheduleDate
+            ? `Reschedule class - Meeting ${currentMeeting + 1}/14`
+            : `Regular class - Meeting ${currentMeeting + 1}/14`,
+        };
+
+        const historyResponse = await fetch("/api/attendance-history", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(historyData),
+        });
+
+        if (!historyResponse.ok) {
+          console.warn(
+            "Failed to save attendance history, but attendance was recorded"
+          );
+        }
+      } catch (historyError) {
+        console.warn("Error saving attendance history:", historyError);
+        // Don't show error to user as main attendance was successful
+      }
+
       const attendanceType = rescheduleDate
         ? "reschedule class"
         : "regular class";

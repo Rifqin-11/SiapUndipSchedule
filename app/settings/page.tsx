@@ -3,10 +3,8 @@
 import React from "react";
 import {
   BookOpen,
-  Monitor,
   Info,
   Palette,
-  Database,
   Upload,
   History,
 } from "lucide-react";
@@ -46,22 +44,6 @@ const SettingsPage = () => {
       href: "/settings/appearance",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-    },
-    {
-      icon: Monitor,
-      title: "Preferences",
-      description: "General app settings",
-      href: "/preferences",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      icon: Database,
-      title: "Data & Storage",
-      description: "Backup and data sync",
-      href: "/data-storage",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
     },
     {
       icon: Info,
