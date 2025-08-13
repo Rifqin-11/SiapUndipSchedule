@@ -12,7 +12,10 @@ interface ErrorBoundaryProps {
   fallback?: React.ComponentType<{ error?: Error; reset: () => void }>;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -24,7 +27,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
-    
+
     // Log additional device info for debugging
     console.log("User Agent:", navigator.userAgent);
     console.log("Error stack:", error.stack);
@@ -35,8 +38,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback;
         return (
-          <FallbackComponent 
-            error={this.state.error} 
+          <FallbackComponent
+            error={this.state.error}
             reset={() => this.setState({ hasError: false, error: undefined })}
           />
         );
@@ -49,11 +52,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               Oops! Something went wrong
             </h2>
             <p className="text-gray-600 mb-6">
-              We&apos;re sorry, but something unexpected happened. This might be due to browser compatibility issues.
+              We&apos;re sorry, but something unexpected happened. This might be
+              due to browser compatibility issues.
             </p>
             <div className="space-y-3">
               <button
-                onClick={() => this.setState({ hasError: false, error: undefined })}
+                onClick={() =>
+                  this.setState({ hasError: false, error: undefined })
+                }
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Try Again

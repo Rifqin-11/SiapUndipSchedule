@@ -8,17 +8,23 @@ const useClassNotifications = () => {
   // Check if notifications are supported (better iOS compatibility)
   const isNotificationSupported = () => {
     if (typeof window === "undefined") return false;
-    
+
     // iOS Safari has limited notification support
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    
+    const isSafari =
+      /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
     if (isIOS && isSafari) {
       // iOS Safari supports notifications but with limitations
-      console.log("iOS Safari detected - notifications may have limited functionality");
+      console.log(
+        "iOS Safari detected - notifications may have limited functionality"
+      );
     }
-    
-    return "Notification" in window && typeof Notification.requestPermission === "function";
+
+    return (
+      "Notification" in window &&
+      typeof Notification.requestPermission === "function"
+    );
   };
 
   // Request notification permission
@@ -44,7 +50,9 @@ const useClassNotifications = () => {
     options?: NotificationOptions
   ) => {
     if (!isNotificationSupported()) {
-      console.log("Notifications not supported, skipping notification creation");
+      console.log(
+        "Notifications not supported, skipping notification creation"
+      );
       return null;
     }
 

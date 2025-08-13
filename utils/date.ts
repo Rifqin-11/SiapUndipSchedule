@@ -26,14 +26,17 @@ export const getCurrentDayAndDate = () => {
     });
   } catch (error) {
     // Fallback for iOS Safari that might not support timezone
-    console.warn("Timezone not supported, using fallback date formatting", error);
+    console.warn(
+      "Timezone not supported, using fallback date formatting",
+      error
+    );
     currentDate = today.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
   }
-  
+
   return { currentDay, currentDate };
 };
 

@@ -23,14 +23,13 @@ export const useDeviceCompatibility = (): DeviceInfo => {
     const userAgent = navigator.userAgent;
     const isIOS = /iPad|iPhone|iPod/.test(userAgent);
     const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
-    
+
     const supportsCamera = !!(
-      navigator.mediaDevices && 
-      navigator.mediaDevices.getUserMedia
+      navigator.mediaDevices && navigator.mediaDevices.getUserMedia
     );
-    
+
     const supportsNotifications = !!(
-      "Notification" in window && 
+      "Notification" in window &&
       typeof Notification.requestPermission === "function"
     );
 

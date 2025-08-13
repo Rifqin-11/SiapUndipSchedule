@@ -20,6 +20,10 @@ if (!apiKey) {
 }
 const genAI = new GoogleGenerativeAI(apiKey!);
 
+interface OcrLine {
+  text: string;
+}
+
 interface ParsedSubject {
   id: string;
   name: string;
@@ -91,14 +95,33 @@ export async function POST(req: NextRequest) {
       `File diterima: ${file.name}, Size: ${file.size}, Type: ${file.type}`
     );
 
-    // Validasi tipe file
-    const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+    // Validasi tipe file - expand supported formats
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/bmp",
+      "image/tiff",
+    ];
     if (!allowedTypes.includes(file.type)) {
       console.log(`ERROR: File type tidak didukung: ${file.type}`);
       return NextResponse.json(
         {
           error:
-            "Format file tidak didukung. Hanya gunakan PNG, JPG, atau WEBP.",
+            "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WEBP, BMP, atau TIFF.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check file size (max 10MB for better OCR performance)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        {
+          error:
+            "File terlalu besar. Maksimal 10MB untuk performa OCR yang optimal.",
         },
         { status: 400 }
       );
@@ -180,24 +203,73 @@ export async function POST(req: NextRequest) {
         rawText.substring(0, 200)
       );
       console.log("Total karakter diekstrak:", rawText.length);
+      console.log("Raw result structure:", JSON.stringify(result, null, 2));
 
-      if (!rawText || rawText.trim().length < 10) {
+      // More lenient validation - just check if we got any meaningful text
+      if (!rawText || rawText.trim().length < 5) {
         console.log("ERROR: Azure OCR tidak menghasilkan teks yang cukup");
-        return NextResponse.json(
-          {
-            error:
-              "OCR tidak berhasil mengekstrak teks dari gambar. Pastikan gambar jelas dan terbaca.",
-          },
-          { status: 400 }
-        );
+        console.log("Full result object:", result);
+
+        // Try alternative text extraction methods
+        if (result.analyzeResult?.readResults) {
+          console.log("Alternative extraction attempt...");
+          let alternativeText = "";
+          for (const page of result.analyzeResult.readResults) {
+            if (page.lines) {
+              alternativeText +=
+                page.lines.map((line: OcrLine) => line.text).join(" ") + " ";
+            }
+          }
+          if (alternativeText.trim().length > 0) {
+            rawText = alternativeText;
+            console.log(
+              "Alternative extraction successful:",
+              rawText.substring(0, 100)
+            );
+          }
+        }
+
+        // If still no text, return more helpful error
+        if (!rawText || rawText.trim().length < 5) {
+          return NextResponse.json(
+            {
+              error:
+                "Failed to read text from image. Make sure the image is clear and readable. Try using a higher quality image or different format (PNG/JPG).",
+              details: "OCR extracted text length: " + rawText.length,
+            },
+            { status: 400 }
+          );
+        }
       }
     } catch (azureError) {
       console.error("Azure OCR Error:", azureError);
-      const errorMessage =
-        azureError instanceof Error ? azureError.message : "Azure OCR error";
+
+      // More detailed error messages based on error type
+      let errorMessage = "Azure OCR gagal memproses gambar.";
+
+      if (azureError instanceof Error) {
+        if (azureError.message.includes("timeout")) {
+          errorMessage =
+            "OCR timeout - coba dengan gambar yang lebih kecil atau format yang berbeda.";
+        } else if (azureError.message.includes("format")) {
+          errorMessage =
+            "Format gambar tidak didukung oleh OCR. Gunakan PNG atau JPG berkualitas tinggi.";
+        } else if (
+          azureError.message.includes("quota") ||
+          azureError.message.includes("limit")
+        ) {
+          errorMessage =
+            "OCR service quota exceeded. Coba lagi dalam beberapa menit.";
+        } else {
+          errorMessage = `OCR Error: ${azureError.message}`;
+        }
+      }
+
       return NextResponse.json(
         {
-          error: `Azure OCR gagal: ${errorMessage}`,
+          error: errorMessage,
+          suggestion:
+            "Tips: Pastikan gambar berkualitas tinggi, teks jelas terbaca, dan format PNG/JPG.",
         },
         { status: 500 }
       );
@@ -298,10 +370,10 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
           endTime: subject.endTime || "", // Empty string instead of "10:00"
           room: subject.room || "", // Empty string instead of "TBA"
           lecturer: Array.isArray(subject.lecturer)
-            ? subject.lecturer.filter(l => l && l.trim()) // Filter out empty lecturers
-            : subject.lecturer && subject.lecturer.trim() 
-              ? [subject.lecturer] 
-              : ["TBA"], // Only set TBA if completely empty
+            ? subject.lecturer.filter((l) => l && l.trim()) // Filter out empty lecturers
+            : subject.lecturer && subject.lecturer.trim()
+            ? [subject.lecturer]
+            : ["TBA"], // Only set TBA if completely empty
           meeting: subject.meeting || 0,
           category: subject.category || "Medium",
         })

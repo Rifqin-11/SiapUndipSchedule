@@ -19,9 +19,10 @@ const useAutoNotifications = () => {
     if (!isClient) return;
 
     // Check if browser supports notifications (iOS Safari has limited support)
-    const supportsNotifications = typeof window !== "undefined" && 
-                                  "Notification" in window && 
-                                  typeof Notification.requestPermission === "function";
+    const supportsNotifications =
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      typeof Notification.requestPermission === "function";
 
     if (!supportsNotifications) {
       console.log("Notifications not supported on this device/browser");

@@ -8,10 +8,11 @@ import { toast } from "sonner";
 
 const NotificationManager = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<NotificationPermission>("default");
   const [isClient, setIsClient] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
-  
+
   const {
     requestNotificationPermission,
     initializeNotifications,
@@ -24,10 +25,11 @@ const NotificationManager = () => {
 
     // Check if notifications are supported in this environment
     try {
-      const supported = typeof window !== "undefined" && 
-                       "Notification" in window && 
-                       typeof Notification.requestPermission === "function";
-      
+      const supported =
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        typeof Notification.requestPermission === "function";
+
       setIsSupported(supported);
 
       if (supported) {
