@@ -4,6 +4,7 @@ import "./globals.css";
 import BottomNavbar from "@/components/BottomNavbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const muliSans = Mulish({
   variable: "--font-mulish-sans",
@@ -31,9 +32,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <BottomNavbar />
-          <Toaster richColors />
+          <ErrorBoundary>
+            {children}
+            <BottomNavbar />
+            <Toaster richColors />
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

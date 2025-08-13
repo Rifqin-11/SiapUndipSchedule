@@ -8,9 +8,10 @@ import { toast } from "sonner";
 
 const NotificationManager = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [permission, setPermission] =
-    useState<NotificationPermission>("default");
+  const [permission, setPermission] = useState<NotificationPermission>("default");
   const [isClient, setIsClient] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
+  
   const {
     requestNotificationPermission,
     initializeNotifications,
@@ -18,17 +19,33 @@ const NotificationManager = () => {
   } = useClassNotifications();
 
   useEffect(() => {
-    // Set client-side flag
+    // Mark as client-side
     setIsClient(true);
 
-    // Check current notification permission
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setPermission(Notification.permission);
-      setNotificationsEnabled(Notification.permission === "granted");
+    // Check if notifications are supported in this environment
+    try {
+      const supported = typeof window !== "undefined" && 
+                       "Notification" in window && 
+                       typeof Notification.requestPermission === "function";
+      
+      setIsSupported(supported);
+
+      if (supported) {
+        setPermission(Notification.permission);
+        setNotificationsEnabled(Notification.permission === "granted");
+      }
+    } catch (error) {
+      console.warn("Error checking notification support:", error);
+      setIsSupported(false);
     }
   }, []);
 
   const handleEnableNotifications = async () => {
+    if (!isSupported) {
+      toast.error("Notifications are not supported on this device/browser.");
+      return;
+    }
+
     try {
       const granted = await requestNotificationPermission();
 
@@ -62,11 +79,8 @@ const NotificationManager = () => {
     }
   };
 
-  // Don't render if notifications are not supported or not on client
-  if (
-    !isClient ||
-    (typeof window !== "undefined" && !("Notification" in window))
-  ) {
+  // Don't render until client-side and if not supported
+  if (!isClient || !isSupported) {
     return null;
   }
 

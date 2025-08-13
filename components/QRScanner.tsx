@@ -32,10 +32,22 @@ const QRScanner: React.FC<QRScannerProps> = ({
       setError(null);
       setIsScanning(true);
 
-      // Request camera permission
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
+      // Check if running on iOS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      
+      // Check if camera API is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera API not supported on this device");
+      }
+
+      // Request camera permission with iOS-specific constraints
+      const constraints = {
+        video: isIOS 
+          ? { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+          : { facingMode: "environment" }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setHasPermission(true);
       stream.getTracks().forEach((track) => track.stop());
 

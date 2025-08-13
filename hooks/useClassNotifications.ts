@@ -5,13 +5,36 @@ import { useSubjects, Subject } from "@/hooks/useSubjects";
 const useClassNotifications = () => {
   const { subjects } = useSubjects();
 
+  // Check if notifications are supported (better iOS compatibility)
+  const isNotificationSupported = () => {
+    if (typeof window === "undefined") return false;
+    
+    // iOS Safari has limited notification support
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    
+    if (isIOS && isSafari) {
+      // iOS Safari supports notifications but with limitations
+      console.log("iOS Safari detected - notifications may have limited functionality");
+    }
+    
+    return "Notification" in window && typeof Notification.requestPermission === "function";
+  };
+
   // Request notification permission
   const requestNotificationPermission = async () => {
-    if ("Notification" in window) {
+    if (!isNotificationSupported()) {
+      console.log("Notifications not supported on this device");
+      return false;
+    }
+
+    try {
       const permission = await Notification.requestPermission();
       return permission === "granted";
+    } catch (error) {
+      console.warn("Error requesting notification permission:", error);
+      return false;
     }
-    return false;
   };
 
   // Create notification
@@ -20,24 +43,40 @@ const useClassNotifications = () => {
     body: string,
     options?: NotificationOptions
   ) => {
-    if ("Notification" in window && Notification.permission === "granted") {
+    if (!isNotificationSupported()) {
+      console.log("Notifications not supported, skipping notification creation");
+      return null;
+    }
+
+    if (Notification.permission !== "granted") {
+      console.log("Notification permission not granted");
+      return null;
+    }
+
+    try {
       const notification = new Notification(title, {
         body,
         icon: "/favicon.ico",
         badge: "/favicon.ico",
         tag: "class-reminder",
-        requireInteraction: true,
+        requireInteraction: false, // Changed to false for better iOS compatibility
         ...options,
       });
 
       // Auto close after 10 seconds
       setTimeout(() => {
-        notification.close();
+        try {
+          notification.close();
+        } catch (error) {
+          console.warn("Error closing notification:", error);
+        }
       }, 10000);
 
       return notification;
+    } catch (error) {
+      console.warn("Error creating notification:", error);
+      return null;
     }
-    return null;
   };
 
   // Calculate time until class starts

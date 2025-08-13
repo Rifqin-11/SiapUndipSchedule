@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   getCurrentDayAndDate,
   colorPairs,
@@ -55,6 +55,12 @@ const ScheduleClient = () => {
 
   // QR Scanner states
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client-side flag and check device compatibility
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
@@ -302,12 +308,14 @@ const ScheduleClient = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* QR Scanner */}
-      <QRScanner
-        isOpen={isQRScannerOpen}
-        onClose={() => setIsQRScannerOpen(false)}
-        onScanSuccess={handleQRScanSuccess}
-      />
+      {/* QR Scanner - Only render on client and if supported */}
+      {isClient && (
+        <QRScanner
+          isOpen={isQRScannerOpen}
+          onClose={() => setIsQRScannerOpen(false)}
+          onScanSuccess={handleQRScanSuccess}
+        />
+      )}
     </div>
   );
 };
