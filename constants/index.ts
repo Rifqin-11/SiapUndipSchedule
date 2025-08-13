@@ -1,3 +1,16 @@
+// Define the 'subject' type if not imported from elsewhere
+export type subject = {
+  id: string;
+  name: string;
+  room: string;
+  day: string;
+  startTime: string;
+  endTime: string;
+  lecturer: string[];
+  meeting: number;
+  category?: string;
+};
+
 export const dummySubject: subject[] = [
   {
     id: "1",

@@ -9,8 +9,8 @@ const ProfilePage = () => {
     name: "John Doe",
     nim: "24060120140157",
     email: "john.doe@students.undip.ac.id",
-    jurusan: "Teknik Informatika",
-    fakultas: "Sains dan Matematika",
+    jurusan: "Computer Science",
+    fakultas: "Science and Mathematics",
     angkatan: "2020",
   });
   const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +44,7 @@ const ProfilePage = () => {
             <div className="flex items-center justify-center gap-2">
               <User className="w-6 h-6 text-green-600" />
               <h1 className="font-bold text-xl text-gray-900 dark:text-white">
-                Profil
+                Profile
               </h1>
             </div>
           </div>
@@ -68,7 +68,7 @@ const ProfilePage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Informasi Profil
+              Profile Information
             </h2>
             {!isEditing ? (
               <button
@@ -85,13 +85,13 @@ const ProfilePage = () => {
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-4 h-4" />
-                  {isLoading ? "Menyimpan..." : "Simpan"}
+                  {isLoading ? "Saving..." : "Save"}
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
                   className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                 >
-                  Batal
+                  Cancel
                 </button>
               </div>
             )}

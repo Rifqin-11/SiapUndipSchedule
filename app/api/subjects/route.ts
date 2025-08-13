@@ -34,15 +34,23 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a batch insert (array of subjects)
     if (body.subjects && Array.isArray(body.subjects)) {
-      console.log("Processing batch insert for", body.subjects.length, "subjects");
-      
-      const subjectsToInsert = body.subjects.map((subject: Record<string, unknown>) => ({
-        ...subject,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      console.log(
+        "Processing batch insert for",
+        body.subjects.length,
+        "subjects"
+      );
 
-      const result = await db.collection("subjects").insertMany(subjectsToInsert);
+      const subjectsToInsert = body.subjects.map(
+        (subject: Record<string, unknown>) => ({
+          ...subject,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+
+      const result = await db
+        .collection("subjects")
+        .insertMany(subjectsToInsert);
       console.log("Batch insert result:", result);
 
       // Return success with inserted count
@@ -50,7 +58,9 @@ export async function POST(request: NextRequest) {
         success: true,
         message: `Successfully added ${result.insertedCount} subjects`,
         insertedCount: result.insertedCount,
-        insertedIds: Object.values(result.insertedIds).map(id => id.toString())
+        insertedIds: Object.values(result.insertedIds).map((id) =>
+          id.toString()
+        ),
       });
     } else {
       // Single subject insert (existing functionality)

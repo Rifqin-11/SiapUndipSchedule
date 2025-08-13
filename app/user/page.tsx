@@ -1,19 +1,29 @@
 "use client";
 
 import React from "react";
-import { Edit, Shield, Bell, LogOut, Camera } from "lucide-react";
+import {
+  Edit,
+  Shield,
+  Bell,
+  LogOut,
+  Camera
+} from "lucide-react";
 import Link from "next/link";
+import { useSubjects } from "@/hooks/useSubjects";
 
 const UserPage = () => {
+  // Get subjects data
+  const { subjects } = useSubjects();
+
   // Mock user data - remove when auth is implemented
   const user = {
     name: "John Doe",
     email: "john.doe@students.undip.ac.id",
     image: null,
-    jurusan: "Teknik Informatika",
+    jurusan: "Computer Science",
     nim: "24060120140157",
     angkatan: "2020",
-    fakultas: "Sains dan Matematika",
+    fakultas: "Science and Mathematics",
   };
 
   const handleLogout = async () => {
@@ -24,24 +34,24 @@ const UserPage = () => {
   const userMenuItems = [
     {
       icon: Edit,
-      title: "Edit Profil",
-      description: "Ubah informasi profil Anda",
+      title: "Edit Profile",
+      description: "Update your profile information",
       href: "/profile",
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
       icon: Shield,
-      title: "Keamanan",
-      description: "Password dan keamanan akun",
+      title: "Security",
+      description: "Password and account security",
       href: "/security",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
       icon: Bell,
-      title: "Notifikasi",
-      description: "Pengaturan pemberitahuan",
+      title: "Notifications",
+      description: "Notification settings",
       href: "/notifications",
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
@@ -87,10 +97,10 @@ const UserPage = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            9
+            {subjects?.length || 0}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Mata Kuliah
+            Subjects
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
@@ -98,7 +108,7 @@ const UserPage = () => {
             85%
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Kehadiran
+            Attendance
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
@@ -106,7 +116,7 @@ const UserPage = () => {
             {user?.angkatan || "2024"}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Angkatan
+            Class Year
           </div>
         </div>
       </div>
@@ -114,7 +124,7 @@ const UserPage = () => {
       {/* Account Settings */}
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white px-2">
-          Pengaturan Akun
+          Account Settings
         </h2>
         {userMenuItems.map((item, index) => {
           const IconComponent = item.icon;
@@ -163,23 +173,23 @@ const UserPage = () => {
 
       {/* Academic Info */}
       <div className="bg-gradient-to-r from-green-500 to-blue-600 rounded-xl p-6 text-white">
-        <h3 className="font-semibold text-lg mb-3">Informasi Akademik</h3>
+        <h3 className="font-semibold text-lg mb-3">Academic Information</h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-green-100">Fakultas</p>
-            <p className="font-medium">{user?.fakultas || "Belum diisi"}</p>
+            <p className="text-green-100">Faculty</p>
+            <p className="font-medium">{user?.fakultas || "Not filled"}</p>
           </div>
           <div>
-            <p className="text-green-100">Program Studi</p>
-            <p className="font-medium">{user?.jurusan || "Belum diisi"}</p>
+            <p className="text-green-100">Study Program</p>
+            <p className="font-medium">{user?.jurusan || "Not filled"}</p>
           </div>
           <div>
-            <p className="text-green-100">NIM</p>
-            <p className="font-medium">{user?.nim || "Belum diisi"}</p>
+            <p className="text-green-100">Student ID</p>
+            <p className="font-medium">{user?.nim || "Not filled"}</p>
           </div>
           <div>
-            <p className="text-green-100">Angkatan</p>
-            <p className="font-medium">{user?.angkatan || "Belum diisi"}</p>
+            <p className="text-green-100">Class Year</p>
+            <p className="font-medium">{user?.angkatan || "Not filled"}</p>
           </div>
         </div>
       </div>
@@ -190,7 +200,7 @@ const UserPage = () => {
         className="w-full p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center space-x-2"
       >
         <LogOut className="w-5 h-5" />
-        <span className="font-medium">Keluar dari Akun</span>
+        <span className="font-medium">Logout</span>
       </button>
     </div>
   );

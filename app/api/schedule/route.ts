@@ -26,8 +26,9 @@ export async function POST(req: Request) {
     const result = await col.insertMany(subjects);
 
     return NextResponse.json({ insertedCount: result.insertedCount });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("SCHEDULE ERROR:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

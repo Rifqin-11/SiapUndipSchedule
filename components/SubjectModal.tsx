@@ -131,26 +131,26 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
 
     // Validation
     if (!formData.name.trim()) {
-      toast.error("Nama mata kuliah harus diisi");
+      toast.error("Subject name is required");
       return;
     }
     if (!formData.day) {
-      toast.error("Hari harus dipilih");
+      toast.error("Day must be selected");
       return;
     }
     if (!formData.startTime || !formData.endTime) {
-      toast.error("Waktu mulai dan selesai harus diisi");
+      toast.error("Start time and end time are required");
       return;
     }
     if (!formData.room.trim()) {
-      toast.error("Ruangan harus diisi");
+      toast.error("Room is required");
       return;
     }
 
     // Filter out empty lecturers
     const filteredLecturers = formData.lecturer.filter((l) => l.trim() !== "");
     if (filteredLecturers.length === 0) {
-      toast.error("Minimal satu dosen harus diisi");
+      toast.error("At least one lecturer is required");
       return;
     }
 
@@ -168,15 +168,15 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
       if (result.success) {
         toast.success(
           mode === "add"
-            ? "Mata kuliah berhasil ditambahkan!"
-            : "Mata kuliah berhasil diperbarui!"
+            ? "Subject successfully added!"
+            : "Subject successfully updated!"
         );
         onClose();
       } else {
-        toast.error(result.error || "Terjadi kesalahan");
+        toast.error(result.error || "An error occurred");
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan tak terduga");
+      toast.error("An unexpected error occurred");
       console.error("Error saving subject:", error);
     } finally {
       setIsLoading(false);
@@ -188,35 +188,35 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
       <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {mode === "add" ? "Tambah Mata Kuliah" : "Edit Mata Kuliah"}
+            {mode === "add" ? "Add Subject" : "Edit Subject"}
           </DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Masukkan detail mata kuliah baru"
-              : "Perbarui detail mata kuliah"}
+              ? "Enter details for new subject"
+              : "Update subject details"}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nama Mata Kuliah *</Label>
+            <Label htmlFor="name">Subject Name *</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Contoh: Algoritma dan Pemrograman"
+              placeholder="Example: Algorithms and Programming"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="day">Hari *</Label>
+            <Label htmlFor="day">Day *</Label>
             <Select
               value={formData.day}
               onValueChange={(value) => handleInputChange("day", value)}
               disabled={mode === "add" && !!preselectedDay}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Pilih hari" />
+                <SelectValue placeholder="Select day" />
               </SelectTrigger>
               <SelectContent>
                 {days.map((day) => (
@@ -228,14 +228,14 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
             </Select>
             {mode === "add" && preselectedDay && (
               <p className="text-xs text-gray-500">
-                Mata kuliah akan ditambahkan pada hari {preselectedDay}
+                Subject will be added on {preselectedDay}
               </p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startTime">Waktu Mulai *</Label>
+              <Label htmlFor="startTime">Start Time *</Label>
               <Input
                 id="startTime"
                 type="time"
@@ -244,7 +244,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endTime">Waktu Selesai *</Label>
+              <Label htmlFor="endTime">End Time *</Label>
               <Input
                 id="endTime"
                 type="time"
@@ -255,23 +255,23 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="room">Ruangan *</Label>
+            <Label htmlFor="room">Room *</Label>
             <Input
               id="room"
               value={formData.room}
               onChange={(e) => handleInputChange("room", e.target.value)}
-              placeholder="Contoh: K201"
+              placeholder="Example: K201"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Dosen *</Label>
+            <Label>Lecturer *</Label>
             {formData.lecturer.map((lecturer, index) => (
               <div key={index} className="flex gap-2">
                 <Input
                   value={lecturer}
                   onChange={(e) => handleLecturerChange(index, e.target.value)}
-                  placeholder={`Nama dosen ${index + 1}`}
+                  placeholder={`Lecturer name ${index + 1}`}
                 />
                 {formData.lecturer.length > 1 && (
                   <Button
@@ -280,7 +280,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
                     size="sm"
                     onClick={() => removeLecturer(index)}
                   >
-                    Hapus
+                    Remove
                   </Button>
                 )}
               </div>
@@ -291,13 +291,13 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
               size="sm"
               onClick={addLecturer}
             >
-              + Tambah Dosen
+              + Add Lecturer
             </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="meeting">Jumlah Pertemuan</Label>
+              <Label htmlFor="meeting">Meeting Count</Label>
               <Input
                 id="meeting"
                 type="number"
@@ -310,26 +310,22 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category">Kategori</Label>
+              <Label htmlFor="category">Category</Label>
               <Input
                 id="category"
                 value={formData.category}
                 onChange={(e) => handleInputChange("category", e.target.value)}
-                placeholder="Opsional"
+                placeholder="Optional"
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Batal
+              Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading
-                ? "Menyimpan..."
-                : mode === "add"
-                ? "Tambah"
-                : "Perbarui"}
+              {isLoading ? "Saving..." : mode === "add" ? "Add" : "Update"}
             </Button>
           </DialogFooter>
         </form>

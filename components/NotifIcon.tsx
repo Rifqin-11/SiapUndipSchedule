@@ -38,7 +38,7 @@ export default function NotifIcon() {
             </li>
             <li>
               <Link
-                href="/manage-subjects"
+                href="/settings/manage-subjects"
                 className="flex flex-row items-center gap-1"
               >
                 <BookOpen className="size-4" />

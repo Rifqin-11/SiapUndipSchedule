@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  ArrowLeft,
-  History,
   ExternalLink,
   Calendar,
   Clock,
@@ -43,11 +41,11 @@ const AttendanceHistoryPage = () => {
       if (result.success) {
         setAttendanceHistory(result.data);
       } else {
-        setError("Gagal memuat riwayat absen");
+        setError("Failed to load attendance history");
       }
     } catch (error) {
       console.error("Fetch attendance history error:", error);
-      setError("Terjadi kesalahan saat memuat data");
+      setError("An error occurred while loading data");
     } finally {
       setLoading(false);
     }
@@ -55,7 +53,7 @@ const AttendanceHistoryPage = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", {
+    return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -65,7 +63,7 @@ const AttendanceHistoryPage = () => {
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString("id-ID", {
+    return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -73,7 +71,7 @@ const AttendanceHistoryPage = () => {
 
   const handleOpenUrl = (url: string) => {
     window.open(url, "_blank");
-    toast.success("Membuka halaman SIAP UNDIP");
+    toast.success("Opening SIAP UNDIP page");
   };
 
   if (loading) {
@@ -99,34 +97,12 @@ const AttendanceHistoryPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/settings">
-          <Button variant="ghost" size="sm" className="p-2">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-            <History className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Riwayat Absen
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Riwayat scan QR code untuk absen kuliah
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Error State */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
           <p className="text-red-700 dark:text-red-400">{error}</p>
           <Button onClick={fetchAttendanceHistory} className="mt-2" size="sm">
-            Coba Lagi
+            Try Again
           </Button>
         </div>
       )}
@@ -136,15 +112,15 @@ const AttendanceHistoryPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
           <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            Belum Ada Riwayat Absen
+            No Attendance History Yet
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Scan QR code untuk absen kuliah dan riwayat akan muncul di sini
+            Scan QR code for class attendance and history will appear here
           </p>
           <Link href="/schedule">
             <Button>
               <QrCode className="w-4 h-4 mr-2" />
-              Mulai Absen
+              Start Attendance
             </Button>
           </Link>
         </div>
@@ -155,7 +131,7 @@ const AttendanceHistoryPage = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-gray-900 dark:text-white">
-              {attendanceHistory.length} Riwayat Absen
+              {attendanceHistory.length} Attendance Records
             </h2>
             <Button
               onClick={fetchAttendanceHistory}
@@ -201,7 +177,7 @@ const AttendanceHistoryPage = () => {
                   className="ml-4 text-blue-600 border-blue-200 hover:bg-blue-50"
                 >
                   <ExternalLink className="w-4 h-4 mr-1" />
-                  Buka
+                  Open
                 </Button>
               </div>
             </div>

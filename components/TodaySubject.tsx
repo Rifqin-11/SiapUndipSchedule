@@ -1,6 +1,10 @@
 "use client";
 
-import { colorPairs, getCurrentDayAndDate, normalizeDayName } from "@/utils/date";
+import {
+  colorPairs,
+  getCurrentDayAndDate,
+  normalizeDayName,
+} from "@/utils/date";
 import Link from "next/link";
 import React from "react";
 import TodayCard from "./TodayCard";
@@ -18,19 +22,48 @@ const TodaySubject = () => {
   console.log("Current day from utils:", currentDay);
   console.log("All subjects:", subjectsArray);
   console.log("Subjects count:", subjectsArray.length);
-  
+
   // Check unique days in database
-  const uniqueDays = [...new Set(subjectsArray.map(s => s.day))];
+  const uniqueDays = [
+    ...new Set(
+      subjectsArray
+        .map((s) => s.day)
+        .filter((day) => day !== null && day !== undefined)
+    ),
+  ];
   console.log("Unique days in database:", uniqueDays);
 
+  // Check for subjects with invalid days
+  const invalidDaySubjects = subjectsArray.filter(
+    (s) => !s.day || typeof s.day !== "string"
+  );
+  if (invalidDaySubjects.length > 0) {
+    console.warn(
+      "Found subjects with invalid day property:",
+      invalidDaySubjects
+    );
+  }
+
   const todaySubject = subjectsArray.filter((subject) => {
+    // Skip subjects without a valid day property
+    if (!subject.day || typeof subject.day !== "string") {
+      console.log(
+        `Skipping subject with invalid day: ${JSON.stringify(subject)}`
+      );
+      return false;
+    }
+
     const normalizedSubjectDay = normalizeDayName(subject.day);
     const normalizedCurrentDay = normalizeDayName(currentDay);
-    console.log(`Comparing normalized subject day "${normalizedSubjectDay}" with current day "${normalizedCurrentDay}"`);
-    console.log(`Original subject day: "${subject.day}", current day: "${currentDay}"`);
+    console.log(
+      `Comparing normalized subject day "${normalizedSubjectDay}" with current day "${normalizedCurrentDay}"`
+    );
+    console.log(
+      `Original subject day: "${subject.day}", current day: "${currentDay}"`
+    );
     return normalizedSubjectDay === normalizedCurrentDay;
   });
-  
+
   console.log("Filtered subjects for today:", todaySubject);
   console.log("Today subjects count:", todaySubject.length);
 

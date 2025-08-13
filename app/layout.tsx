@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none dark:bg-black`}
+        className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none dark:bg-gray-900`}
       >
         <ThemeProvider
           attribute="class"

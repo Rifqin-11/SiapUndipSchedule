@@ -1,16 +1,23 @@
 import React from "react";
 
+type Subject = {
+  name: string;
+  room: string;
+  startTime: string;
+  endTime: string;
+  lecturer: string[];
+};
+
 const TodayCard = ({
   name,
   room,
   startTime,
   endTime,
   lecturer,
-  category,
   bgColor,
   textColor,
   bgRoomColor,
-}: subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
+}: Subject & { bgColor: string; textColor: string; bgRoomColor: string }) => {
   return (
     <div
       className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35`}

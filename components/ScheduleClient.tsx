@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { getCurrentDayAndDate, colorPairs, normalizeDayName } from "@/utils/date";
+import {
+  getCurrentDayAndDate,
+  colorPairs,
+  normalizeDayName,
+} from "@/utils/date";
 import HorizonalCalendar from "@/components/HorizonalCalendar";
 import CalendarCard from "@/components/CalendarCard";
 import SubjectModal from "@/components/SubjectModal";
@@ -56,19 +60,48 @@ const ScheduleClient = () => {
   console.log("Current day from utils:", currentDay);
   console.log("All subjects:", subjectsArray);
   console.log("Subjects count:", subjectsArray.length);
-  
+
   // Check unique days in database
-  const uniqueDays = [...new Set(subjectsArray.map(s => s.day))];
+  const uniqueDays = [
+    ...new Set(
+      subjectsArray
+        .map((s) => s.day)
+        .filter((day) => day !== null && day !== undefined)
+    ),
+  ];
   console.log("Unique days in database:", uniqueDays);
 
+  // Check for subjects with invalid days
+  const invalidDaySubjects = subjectsArray.filter(
+    (s) => !s.day || typeof s.day !== "string"
+  );
+  if (invalidDaySubjects.length > 0) {
+    console.warn(
+      "Found subjects with invalid day property:",
+      invalidDaySubjects
+    );
+  }
+
   const filteredSubjects = subjectsArray.filter((subject) => {
+    // Skip subjects without a valid day property
+    if (!subject.day || typeof subject.day !== "string") {
+      console.log(
+        `Skipping subject with invalid day: ${JSON.stringify(subject)}`
+      );
+      return false;
+    }
+
     const normalizedSubjectDay = normalizeDayName(subject.day);
     const normalizedSelectedDay = normalizeDayName(selectedDay);
-    console.log(`Comparing normalized subject day "${normalizedSubjectDay}" with selected day "${normalizedSelectedDay}"`);
-    console.log(`Original subject day: "${subject.day}", selected day: "${selectedDay}"`);
+    console.log(
+      `Comparing normalized subject day "${normalizedSubjectDay}" with selected day "${normalizedSelectedDay}"`
+    );
+    console.log(
+      `Original subject day: "${subject.day}", selected day: "${selectedDay}"`
+    );
     return normalizedSubjectDay === normalizedSelectedDay;
   });
-  
+
   console.log("Filtered subjects for today:", filteredSubjects);
   console.log("Today subjects count:", filteredSubjects.length);
 
@@ -112,7 +145,7 @@ const ScheduleClient = () => {
   const handleSaveSubject = async (subjectData: Omit<Subject, "_id">) => {
     try {
       if (modalMode === "add") {
-        // Pastikan mata kuliah ditambahkan hanya pada hari yang dipilih
+        // Ensure subject is added only on the selected day
         const subjectWithSelectedDay = {
           ...subjectData,
           day: selectedDay,
@@ -171,7 +204,7 @@ const ScheduleClient = () => {
           <div className="flex gap-2">
             <Button onClick={handleAddSubject} size="sm">
               <Plus className="w-4 h-4 mr-2" />
-              Tambah
+              Add
             </Button>
           </div>
         </div>

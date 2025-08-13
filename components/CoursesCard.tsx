@@ -1,7 +1,12 @@
 import React from "react";
 import { Progress } from "./ui/progress";
 
-const CoursesCard = ({ name, category, meeting }: subject) => {
+type Subject = {
+  name: string;
+  meeting: number;
+};
+
+const CoursesCard = ({ name, meeting }: Subject) => {
   const progressMeeting = (meeting / 14) * 100;
 
   return (

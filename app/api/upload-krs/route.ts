@@ -8,7 +8,9 @@ const azureEndpoint = process.env.AZURE_COMPUTER_VISION_ENDPOINT;
 const azureKey = process.env.AZURE_COMPUTER_VISION_KEY;
 
 if (!azureEndpoint || !azureKey) {
-  console.error("Azure Computer Vision credentials not found in environment variables");
+  console.error(
+    "Azure Computer Vision credentials not found in environment variables"
+  );
 }
 
 // Gemini AI setup
@@ -53,33 +55,53 @@ export async function POST(req: NextRequest) {
     console.log("Request headers:", Object.fromEntries(req.headers.entries()));
 
     const formData = await req.formData();
-    console.log("FormData entries:", Array.from(formData.entries()).map(([key, value]) => [key, (value && typeof value === 'object' && 'name' in value && 'size' in value) ? `File: ${value.name} (${value.size} bytes, ${value.type})` : value]));
+    console.log(
+      "FormData entries:",
+      Array.from(formData.entries()).map(([key, value]) => [
+        key,
+        value && typeof value === "object" && "name" in value && "size" in value
+          ? `File: ${value.name} (${value.size} bytes, ${value.type})`
+          : value,
+      ])
+    );
 
     const file = formData.get("file") as File;
 
     if (!file) {
       console.log("ERROR: File tidak ditemukan");
       console.log("Available form data keys:", Array.from(formData.keys()));
-      return NextResponse.json({ error: "File tidak ditemukan" }, { status: 400 });
+      return NextResponse.json(
+        { error: "File tidak ditemukan" },
+        { status: 400 }
+      );
     }
 
     // Additional validation to ensure file is valid
-    if (typeof file === 'string' || !file || !file.name || file.size === 0) {
+    if (typeof file === "string" || !file || !file.name || file.size === 0) {
       console.log("ERROR: File is not a valid File object");
       console.log("File type:", typeof file);
       console.log("File object:", file);
-      return NextResponse.json({ error: "File is not defined" }, { status: 400 });
+      return NextResponse.json(
+        { error: "File is not defined" },
+        { status: 400 }
+      );
     }
 
-    console.log(`File diterima: ${file.name}, Size: ${file.size}, Type: ${file.type}`);
+    console.log(
+      `File diterima: ${file.name}, Size: ${file.size}, Type: ${file.type}`
+    );
 
     // Validasi tipe file
     const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       console.log(`ERROR: File type tidak didukung: ${file.type}`);
-      return NextResponse.json({
-        error: "Format file tidak didukung. Hanya gunakan PNG, JPG, atau WEBP."
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            "Format file tidak didukung. Hanya gunakan PNG, JPG, atau WEBP.",
+        },
+        { status: 400 }
+      );
     }
 
     // 2. Proses OCR dengan Azure Computer Vision
@@ -99,15 +121,17 @@ export async function POST(req: NextRequest) {
 
       const submitResponse = await axios.post(readUrl, buffer, {
         headers: {
-          'Ocp-Apim-Subscription-Key': azureKey!,
-          'Content-Type': 'application/octet-stream'
-        }
+          "Ocp-Apim-Subscription-Key": azureKey!,
+          "Content-Type": "application/octet-stream",
+        },
       });
 
       // Get operation URL from response headers
-      const operationUrl = submitResponse.headers['operation-location'];
+      const operationUrl = submitResponse.headers["operation-location"];
       if (!operationUrl) {
-        throw new Error("Failed to get operation URL from Azure Computer Vision");
+        throw new Error(
+          "Failed to get operation URL from Azure Computer Vision"
+        );
       }
 
       console.log("Azure OCR operation submitted, URL:", operationUrl);
@@ -118,17 +142,19 @@ export async function POST(req: NextRequest) {
       const maxAttempts = 30; // Maximum 30 attempts (30 seconds)
 
       do {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
 
         const pollResponse = await axios.get(operationUrl, {
           headers: {
-            'Ocp-Apim-Subscription-Key': azureKey!
-          }
+            "Ocp-Apim-Subscription-Key": azureKey!,
+          },
         });
 
         result = pollResponse.data;
         attempts++;
-        console.log(`Azure OCR polling attempt ${attempts}, status: ${result.status}`);
+        console.log(
+          `Azure OCR polling attempt ${attempts}, status: ${result.status}`
+        );
 
         if (attempts >= maxAttempts) {
           throw new Error("Azure OCR timeout - proses terlalu lama");
@@ -149,22 +175,32 @@ export async function POST(req: NextRequest) {
       }
 
       console.log("Azure OCR selesai!");
-      console.log("Teks yang diekstrak (200 karakter pertama):", rawText.substring(0, 200));
+      console.log(
+        "Teks yang diekstrak (200 karakter pertama):",
+        rawText.substring(0, 200)
+      );
       console.log("Total karakter diekstrak:", rawText.length);
 
       if (!rawText || rawText.trim().length < 10) {
         console.log("ERROR: Azure OCR tidak menghasilkan teks yang cukup");
-        return NextResponse.json({
-          error: "OCR tidak berhasil mengekstrak teks dari gambar. Pastikan gambar jelas dan terbaca."
-        }, { status: 400 });
+        return NextResponse.json(
+          {
+            error:
+              "OCR tidak berhasil mengekstrak teks dari gambar. Pastikan gambar jelas dan terbaca.",
+          },
+          { status: 400 }
+        );
       }
-
     } catch (azureError) {
       console.error("Azure OCR Error:", azureError);
-      const errorMessage = azureError instanceof Error ? azureError.message : "Azure OCR error";
-      return NextResponse.json({
-        error: `Azure OCR gagal: ${errorMessage}`
-      }, { status: 500 });
+      const errorMessage =
+        azureError instanceof Error ? azureError.message : "Azure OCR error";
+      return NextResponse.json(
+        {
+          error: `Azure OCR gagal: ${errorMessage}`,
+        },
+        { status: 500 }
+      );
     }
 
     // 3. Analisis dengan Gemini AI
@@ -181,7 +217,7 @@ INSTRUKSI:
 1. Cari semua mata kuliah yang terdaftar dalam IRS
 2. Ekstrak informasi: nama mata kuliah, hari, jam mulai, jam selesai, ruangan, dan dosen
 3. Gunakan format 24 jam untuk waktu (contoh: "08:00", "14:30")
-4. Untuk hari, gunakan format: Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu
+4. Untuk hari, gunakan format: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
 5. Jika informasi tidak lengkap, gunakan nilai default yang masuk akal
 
 Kembalikan HANYA JSON array dengan format berikut:
@@ -194,8 +230,8 @@ Kembalikan HANYA JSON array dengan format berikut:
     "endTime": "jam_selesai",
     "room": "ruangan",
     "lecturer": ["nama_dosen"],
-    "meeting": 14,
-    "category": "Low"
+    "meeting": 0,
+    "category": "High"
   }
 ]
 
@@ -203,7 +239,7 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
     `.trim();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash-lite-preview-06-17",
     });
 
     console.log("Mengirim request ke Gemini AI...");
@@ -212,7 +248,10 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
     const aiText = response.text();
 
     console.log("Response dari Gemini AI diterima!");
-    console.log("AI Response (200 karakter pertama):", aiText.substring(0, 200));
+    console.log(
+      "AI Response (200 karakter pertama):",
+      aiText.substring(0, 200)
+    );
 
     // 4. Parse response JSON
     let subjects: ParsedSubject[];
@@ -230,54 +269,72 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
       const parsedData = JSON.parse(jsonMatch[0]);
 
       // Generate unique IDs if not provided
-      subjects = parsedData.map((subject: RawSubject, index: number): ParsedSubject => ({
-        id: subject.id || `irs_${Date.now()}_${index}`,
-        name: subject.name || "Mata Kuliah",
-        day: subject.day || "Senin",
-        startTime: subject.startTime || "08:00",
-        endTime: subject.endTime || "10:00",
-        room: subject.room || "TBA",
-        lecturer: Array.isArray(subject.lecturer) ? subject.lecturer : [subject.lecturer || "TBA"],
-        meeting: subject.meeting || 14,
-        category: subject.category || "Medium"
-      }));
+      subjects = parsedData.map(
+        (subject: RawSubject, index: number): ParsedSubject => ({
+          id: subject.id || `irs_${Date.now()}_${index}`,
+          name: subject.name || "Subject",
+          day: subject.day || "Monday",
+          startTime: subject.startTime || "08:00",
+          endTime: subject.endTime || "10:00",
+          room: subject.room || "TBA",
+          lecturer: Array.isArray(subject.lecturer)
+            ? subject.lecturer
+            : [subject.lecturer || "TBA"],
+          meeting: subject.meeting || 0,
+          category: subject.category || "Medium",
+        })
+      );
 
       console.log(`Successfully parsed ${subjects.length} subjects`);
-
     } catch (parseError) {
       console.error("Error parsing AI response:", parseError);
       console.log("Full AI Response that failed to parse:", aiText);
-      return NextResponse.json({
-        error: "AI response tidak dapat di-parse. Coba lagi dengan gambar yang lebih jelas."
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error:
+            "AI response tidak dapat di-parse. Coba lagi dengan gambar yang lebih jelas.",
+        },
+        { status: 500 }
+      );
     }
 
     // 5. Validasi hasil
     if (!Array.isArray(subjects) || subjects.length === 0) {
       console.log("ERROR: Tidak ada mata kuliah yang ditemukan");
-      return NextResponse.json({
-        error: "Tidak dapat menemukan jadwal kuliah dalam gambar. Pastikan gambar IRS jelas dan terbaca."
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            "Tidak dapat menemukan jadwal kuliah dalam gambar. Pastikan gambar IRS jelas dan terbaca.",
+        },
+        { status: 400 }
+      );
     }
 
-    console.log(`=== SUCCESS: ${subjects.length} mata kuliah berhasil diekstrak ===`);
+    console.log(
+      `=== SUCCESS: ${subjects.length} mata kuliah berhasil diekstrak ===`
+    );
     console.log(`Total processing time: ${Date.now() - startTime}ms`);
 
     return NextResponse.json({
       success: true,
       subjects: subjects,
-      message: `Berhasil mengekstrak ${subjects.length} mata kuliah dari IRS`
+      message: `Berhasil mengekstrak ${subjects.length} mata kuliah dari IRS`,
     });
-
   } catch (error: unknown) {
     console.error("=== UPLOAD-KRS ERROR ===");
     console.error("Error details:", error);
 
-    const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat memproses file";
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Terjadi kesalahan saat memproses file";
     console.error("Error message:", errorMessage);
 
-    return NextResponse.json({
-      error: errorMessage
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: errorMessage,
+      },
+      { status: 500 }
+    );
   }
 }

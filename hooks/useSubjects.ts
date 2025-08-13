@@ -145,7 +145,7 @@ export const useSubjects = () => {
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setSubjects([]);
         return { success: true, deletedCount: result.deletedCount };
@@ -163,29 +163,29 @@ export const useSubjects = () => {
 
   useEffect(() => {
     fetchSubjects();
-    
+
     // Listen for custom refresh events
     const handleSubjectsUpdated = () => {
       console.log("Subjects updated event received, refetching...");
       fetchSubjects();
     };
-    
-    if (typeof window !== 'undefined') {
-      window.addEventListener('subjectsUpdated', handleSubjectsUpdated);
-      
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("subjectsUpdated", handleSubjectsUpdated);
+
       // Also listen for storage changes
       const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'lastUpdateTime') {
+        if (e.key === "lastUpdateTime") {
           console.log("Storage update detected, refetching...");
           fetchSubjects();
         }
       };
-      
-      window.addEventListener('storage', handleStorageChange);
-      
+
+      window.addEventListener("storage", handleStorageChange);
+
       return () => {
-        window.removeEventListener('subjectsUpdated', handleSubjectsUpdated);
-        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener("subjectsUpdated", handleSubjectsUpdated);
+        window.removeEventListener("storage", handleStorageChange);
       };
     }
   }, []);

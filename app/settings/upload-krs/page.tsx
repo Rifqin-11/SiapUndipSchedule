@@ -7,16 +7,22 @@ import {
   FileText,
   Check,
   AlertCircle,
-  Trash2,
+  Eye,
   Loader2,
   BookOpen,
   Calendar,
   Clock,
   Home,
   User,
+  Server,
   BrainCircuit,
+  Edit2,
+  Save,
+  XCircle,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface ParsedSubject {
@@ -35,8 +41,11 @@ const UploadKRSPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Processing...");
   const [parsedData, setParsedData] = useState<ParsedSubject[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<ParsedSubject | null>(null);
 
   // Cleanup object URL on component unmount
   useEffect(() => {
@@ -53,22 +62,22 @@ const UploadKRSPage = () => {
       const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
       if (!allowedTypes.includes(selectedFile.type)) {
         toast.error(
-          "Format file tidak didukung. Hanya gunakan PNG, JPG, atau WEBP."
+          "File format not supported. Please use PNG, JPG, or WEBP only."
         );
         return;
       }
       if (selectedFile.size > 10 * 1024 * 1024) {
-        toast.error("Ukuran file terlalu besar. Maksimal 10MB.");
+        toast.error("File size too large. Maximum 10MB.");
         return;
       }
-      
+
       setFile(selectedFile);
-      
+
       // Create image preview URL
       const imageUrl = URL.createObjectURL(selectedFile);
       setImagePreview(imageUrl);
-      
-      toast.success("File berhasil dipilih: " + selectedFile.name);
+
+      toast.success("File successfully selected: " + selectedFile.name);
     }
   };
 
@@ -83,77 +92,80 @@ const UploadKRSPage = () => {
     formData.append("file", file);
 
     try {
-      console.log("Sending file to server:", file.name, file.type, file.size);
-      console.log("FormData:", formData);
-      
-      console.log("Making fetch request to /api/upload-krs...");
-      
+      setLoadingMessage("1/3: Uploading file to server...");
+
       // Add timeout to fetch request (10 minutes)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes
-      
+
       const response = await fetch("/api/upload-krs", {
         method: "POST",
         body: formData,
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
 
-      console.log("Fetch completed, response received");
-      console.log("Response status:", response.status);
-      console.log("Response headers:", Object.fromEntries(response.headers));
-      
-      console.log("Parsing response JSON...");
+      setLoadingMessage(
+        "2/3: Server is processing with OCR and AI... (This is the longest part)"
+      );
+
       const result = await response.json();
-      console.log("Response data:", result);
+
+      setLoadingMessage("3/3: Preparing preview results...");
 
       if (!response.ok) {
         throw new Error(result.error || `Server error: ${response.status}`);
       }
 
-      const parsedSubjects = result.subjects;
+      const parsedSubjects: ParsedSubject[] = result.subjects;
 
       if (Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
-        console.log("Parsed subjects:", parsedSubjects);
         setParsedData(parsedSubjects);
         setShowPreview(true);
-        toast.success(
-          `Berhasil! Ditemukan ${parsedSubjects.length} mata kuliah.`
-        );
+        toast.success(`Success! Found ${parsedSubjects.length} subjects.`);
       } else {
-        console.log("No subjects found in response");
         toast.error(
-          "AI tidak dapat menemukan data jadwal dalam file. Pastikan gambar IRS jelas dan mengandung jadwal kuliah."
+          "AI could not find schedule data in the file. Make sure the KRS image is clear and contains course schedule."
         );
       }
     } catch (error: unknown) {
-      console.error("Processing Error:", error);
-      
-      let errorMessage = "Terjadi kesalahan saat memproses file";
-      
+      let errorMessage = "An error occurred while processing the file";
+
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          errorMessage = "Request timeout - proses memakan waktu terlalu lama (lebih dari 10 menit)";
+        if (error.name === "AbortError") {
+          errorMessage =
+            "Request timeout - process took too long (more than 10 minutes)";
         } else {
           errorMessage = error.message;
         }
       }
-      
-      // Show more specific error messages
-      if (errorMessage.includes("fetch") || errorMessage.includes("Failed to fetch")) {
-        toast.error("Gagal terhubung ke server. Periksa koneksi internet Anda.");
+
+      if (
+        errorMessage.includes("fetch") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        toast.error(
+          "Failed to connect to server. Check your internet connection."
+        );
       } else if (errorMessage.includes("timeout")) {
-        toast.error("Proses terlalu lama. Coba dengan gambar yang lebih kecil atau lebih jelas.");
+        toast.error(
+          "Process took too long. Try with a smaller or clearer image."
+        );
       } else if (errorMessage.includes("OCR")) {
-        toast.error("Gagal membaca teks dari gambar. Pastikan gambar jelas dan terbaca.");
+        toast.error(
+          "Failed to read text from image. Make sure the image is clear and readable."
+        );
       } else if (errorMessage.includes("AI")) {
-        toast.error("Gagal menganalisis dengan AI. Coba lagi dengan gambar yang lebih jelas.");
+        toast.error(
+          "Failed to analyze with AI. Try again with a clearer image."
+        );
       } else {
-        toast.error(`Gagal memproses file: ${errorMessage}`);
+        toast.error(`Failed to process file: ${errorMessage}`);
       }
     } finally {
       setIsProcessing(false);
+      setLoadingMessage("Processing...");
     }
   };
 
@@ -162,11 +174,13 @@ const UploadKRSPage = () => {
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
-    
+
     setFile(null);
     setImagePreview(null);
     setParsedData([]);
     setShowPreview(false);
+    setEditingIndex(null);
+    setEditForm(null);
     const fileInput = document.getElementById("krs-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   };
@@ -174,8 +188,6 @@ const UploadKRSPage = () => {
   const submitSchedule = async () => {
     setIsProcessing(true);
     try {
-      console.log("Starting to add subjects:", parsedData);
-      
       const response = await fetch("/api/subjects", {
         method: "POST",
         headers: {
@@ -184,60 +196,96 @@ const UploadKRSPage = () => {
         body: JSON.stringify({ subjects: parsedData }),
       });
 
-      console.log("Response status:", response.status);
       const result = await response.json();
-      console.log("Response data:", result);
 
       if (response.ok && result.success) {
-        toast.success(`Berhasil menambahkan ${parsedData.length} mata kuliah ke jadwal!`);
-        
-        // Force refresh data di semua halaman dengan mengirim event
-        if (typeof window !== 'undefined') {
-          // Trigger custom event untuk refresh data
-          const refreshEvent = new CustomEvent('subjectsUpdated', {
-            detail: { subjects: parsedData }
+        toast.success(
+          `Successfully added ${parsedData.length} subjects to schedule!`
+        );
+
+        if (typeof window !== "undefined") {
+          const refreshEvent = new CustomEvent("subjectsUpdated", {
+            detail: { subjects: parsedData },
           });
           window.dispatchEvent(refreshEvent);
-          
-          // Also update localStorage untuk cache
-          localStorage.setItem('lastUpdateTime', Date.now().toString());
+          localStorage.setItem("lastUpdateTime", Date.now().toString());
         }
-        
-        // Reset form
+
         resetUpload();
         setParsedData([]);
         setShowPreview(false);
-        
-        // Redirect ke halaman schedule setelah berhasil
+
         setTimeout(() => {
-          window.location.href = '/schedule';
+          window.location.href = "/schedule";
         }, 2000);
       } else {
-        console.error("Error response:", result);
-        toast.error(result.error || "Gagal menambahkan mata kuliah");
+        toast.error(result.error || "Failed to add subjects");
       }
-    } catch (error) {
-      console.error("Error adding subjects:", error);
-      toast.error("Terjadi kesalahan saat menambahkan mata kuliah");
+    } catch {
+      toast.error("An error occurred while adding subjects");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Loading Component - Button yang disabled dengan icon loading
+  // Editing functions
+  const startEdit = (index: number) => {
+    setEditingIndex(index);
+    setEditForm({ ...parsedData[index] });
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditForm(null);
+  };
+
+  const saveEdit = () => {
+    if (editingIndex !== null && editForm) {
+      const updatedData = [...parsedData];
+      updatedData[editingIndex] = editForm;
+      setParsedData(updatedData);
+      setEditingIndex(null);
+      setEditForm(null);
+      toast.success("Data successfully updated");
+    }
+  };
+
+  const handleEditFormChange = (
+    field: keyof ParsedSubject,
+    value: string | string[]
+  ) => {
+    if (editForm) {
+      setEditForm({
+        ...editForm,
+        [field]: value as never,
+      });
+    }
+  };
+
+  // Loading Component
   const LoadingComponent = () => (
     <div className="text-center py-8 space-y-4">
-      <Button
-        disabled
-        className="w-full bg-indigo-600 text-white opacity-75 cursor-not-allowed flex items-center justify-center"
-      >
-        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-        Memproses dengan AI & OCR...
-      </Button>
-      
-      <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
-        <p>Sedang menganalisis gambar IRS Anda...</p>
-        <p className="text-xs mt-1">Proses ini membutuhkan waktu beberapa saat</p>
+      <div className="flex items-center justify-center space-x-2">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <BrainCircuit className="w-6 h-6 text-blue-500 animate-pulse" />
+        <Server className="w-6 h-6 text-green-500 animate-bounce" />
+      </div>
+      <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
+        {loadingMessage}
+      </p>
+      <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center space-x-1">
+          <Eye className="w-4 h-4" />
+          <span>OCR</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <BrainCircuit className="w-4 h-4" />
+          <span>AI Analysis</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <BookOpen className="w-4 h-4" />
+          <span>Parsing</span>
+        </div>
       </div>
     </div>
   );
@@ -253,10 +301,10 @@ const UploadKRSPage = () => {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                Upload IRS
+                Upload KRS
               </h1>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-                Import jadwal kuliah dari file IRS (Isian Rencana Studi) Anda
+                Import course schedule from your KRS (Study Plan Form) file
               </p>
             </div>
           </div>
@@ -264,24 +312,31 @@ const UploadKRSPage = () => {
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2 flex items-center gap-2">
               <BrainCircuit className="w-5 h-5" />
-              Fitur AI-Powered OCR untuk IRS
+              AI-Powered OCR for KRS
             </h3>
             <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
               <li className="flex items-start gap-2">
-                <Upload className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Upload gambar IRS dalam format PNG, JPG, atau WEBP</span>
+                <Eye className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>Upload KRS image in PNG, JPG, or WEBP format</span>
               </li>
               <li className="flex items-start gap-2">
-                <FileText className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Sistem akan membaca teks dengan OCR menggunakan Azure Computer Vision</span>
+                <Server className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>
+                  System will read text with OCR using Azure Computer Vision
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <BrainCircuit className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Gemini AI akan menganalisis dan mengekstrak jadwal kuliah secara otomatis</span>
+                <span>
+                  Gemini AI will analyze and extract course schedule
+                  automatically
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Preview akan ditampilkan sebelum data disimpan ke jadwal</span>
+                <span>
+                  Preview will be displayed before data is saved to schedule
+                </span>
               </li>
             </ul>
           </div>
@@ -314,10 +369,10 @@ const UploadKRSPage = () => {
                         <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500 dark:text-gray-400" />
                       </div>
                       <p className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        Klik untuk pilih file atau drag & drop
+                        Click to select file or drag & drop
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        PNG, JPG, atau WEBP (maks. 10MB)
+                        PNG, JPG, or WEBP (max. 10MB)
                       </p>
                     </label>
                   </div>
@@ -329,12 +384,12 @@ const UploadKRSPage = () => {
                     {imagePreview && (
                       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                          Preview Gambar IRS:
+                          KRS Image Preview:
                         </h3>
                         <div className="flex justify-center">
                           <Image
                             src={imagePreview}
-                            alt="Preview IRS"
+                            alt="Preview KRS"
                             width={800}
                             height={600}
                             className="max-w-full max-h-96 object-contain rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
@@ -368,7 +423,7 @@ const UploadKRSPage = () => {
                           className="text-red-600 border-red-300 hover:bg-red-50 w-full sm:w-auto"
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
-                          Hapus & Upload Ulang
+                          Delete & Upload Again
                         </Button>
                       </div>
                     </div>
@@ -381,12 +436,12 @@ const UploadKRSPage = () => {
                       {isProcessing ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          Memproses...
+                          Processing...
                         </>
                       ) : (
                         <>
                           <BrainCircuit className="w-4 h-4 mr-2" />
-                          Proses dengan AI & OCR
+                          Process with AI & OCR
                         </>
                       )}
                     </Button>
@@ -404,10 +459,10 @@ const UploadKRSPage = () => {
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <BrainCircuit className="w-5 h-5 text-indigo-600" />
-                    Preview Jadwal dari IRS (Hasil AI)
+                    Schedule Preview from KRS (AI Results)
                   </h2>
                   <p className="text-gray-600 dark:text-gray-300">
-                    {parsedData.length} mata kuliah berhasil diekstrak
+                    {parsedData.length} subjects successfully extracted
                   </p>
                 </div>
                 <Button
@@ -416,7 +471,7 @@ const UploadKRSPage = () => {
                   className="text-gray-600 w-full sm:w-auto"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Upload Ulang
+                  Upload Again
                 </Button>
               </div>
             </div>
@@ -430,59 +485,191 @@ const UploadKRSPage = () => {
                     key={index}
                     className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600"
                   >
-                    <div className="space-y-3">
-                      {/* Subject Name & Category */}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white break-words">
-                          {subject.name}
-                        </h3>
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${
-                            subject.category === "High"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                              : subject.category === "Medium"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                              : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                          }`}
-                        >
-                          {subject.category}
-                        </span>
-                      </div>
+                    {editingIndex === index ? (
+                      /* Edit Mode */
+                      <div className="space-y-3">
+                        {/* Subject Name */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            Subject Name
+                          </label>
+                          <Input
+                            value={editForm?.name || ""}
+                            onChange={(e) =>
+                              handleEditFormChange("name", e.target.value)
+                            }
+                            className="w-full"
+                          />
+                        </div>
 
-                      {/* Day & Time */}
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                        <Calendar className="w-4 h-4 flex-shrink-0" />
-                        <span>{subject.day}</span>
-                        <Clock className="w-4 h-4 flex-shrink-0 ml-2" />
-                        <span>{subject.startTime} - {subject.endTime}</span>
-                      </div>
+                        {/* Day */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            Day
+                          </label>
+                          <Input
+                            value={editForm?.day || ""}
+                            onChange={(e) =>
+                              handleEditFormChange("day", e.target.value)
+                            }
+                            className="w-full"
+                          />
+                        </div>
 
-                      {/* Room */}
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                        <Home className="w-4 h-4 flex-shrink-0" />
-                        <span>{subject.room}</span>
-                      </div>
+                        {/* Time */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                              Start Time
+                            </label>
+                            <Input
+                              value={editForm?.startTime || ""}
+                              onChange={(e) =>
+                                handleEditFormChange(
+                                  "startTime",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                              End Time
+                            </label>
+                            <Input
+                              value={editForm?.endTime || ""}
+                              onChange={(e) =>
+                                handleEditFormChange("endTime", e.target.value)
+                              }
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
 
-                      {/* Lecturer */}
-                      <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
-                        <User className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <div>
-                          {subject.lecturer.map((lecturer, idx) => (
-                            <div key={idx} className="break-words">
-                              {lecturer}
-                            </div>
-                          ))}
+                        {/* Room */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            Room
+                          </label>
+                          <Input
+                            value={editForm?.room || ""}
+                            onChange={(e) =>
+                              handleEditFormChange("room", e.target.value)
+                            }
+                            className="w-full"
+                          />
+                        </div>
+
+                        {/* Lecturer */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            Lecturer (separate with comma)
+                          </label>
+                          <Input
+                            value={(editForm?.lecturer || []).join(", ")}
+                            onChange={(e) =>
+                              handleEditFormChange(
+                                "lecturer",
+                                e.target.value
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter((s) => s.length > 0)
+                              )
+                            }
+                            className="w-full"
+                          />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            onClick={saveEdit}
+                            size="sm"
+                            className="bg-green-600 text-white hover:bg-green-700 flex-1"
+                          >
+                            <Save className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            onClick={cancelEdit}
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
                         </div>
                       </div>
+                    ) : (
+                      /* Display Mode */
+                      <div className="space-y-3">
+                        {/* Subject Name & Category */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white break-words">
+                            {subject.name}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${
+                                subject.category === "High"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                  : subject.category === "Medium"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                  : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                              }`}
+                            >
+                              {subject.category}
+                            </span>
+                            <Button
+                              onClick={() => startEdit(index)}
+                              size="sm"
+                              variant="outline"
+                              className="p-2"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
 
-                      {/* Status */}
-                      <div className="flex justify-end">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                          <Check className="w-3 h-3 mr-1" />
-                          Siap Import
-                        </span>
+                        {/* Day & Time */}
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span>{subject.day}</span>
+                          <Clock className="w-4 h-4 flex-shrink-0 ml-2" />
+                          <span>
+                            {subject.startTime} - {subject.endTime}
+                          </span>
+                        </div>
+
+                        {/* Room */}
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                          <Home className="w-4 h-4 flex-shrink-0" />
+                          <span>{subject.room}</span>
+                        </div>
+
+                        {/* Lecturer */}
+                        <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+                          <User className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                          <div>
+                            {subject.lecturer.map((lect, idx) => (
+                              <div key={idx} className="break-words">
+                                {lect}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex justify-end">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                            <Check className="w-3 h-3 mr-1" />
+                            Ready to Import
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -493,19 +680,19 @@ const UploadKRSPage = () => {
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Mata Kuliah
+                        Subject
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         <Calendar className="w-4 h-4 inline mr-1" />
-                        Hari & Waktu
+                        Day & Time
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         <Home className="w-4 h-4 inline mr-1" />
-                        Ruangan
+                        Room
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         <User className="w-4 h-4 inline mr-1" />
-                        Dosen
+                        Lecturer
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Status
@@ -552,9 +739,9 @@ const UploadKRSPage = () => {
                         </td>
                         <td className="px-4 py-4">
                           <div className="text-sm text-gray-900 dark:text-white max-w-xs">
-                            {subject.lecturer.map((lecturer, idx) => (
+                            {subject.lecturer.map((lect, idx) => (
                               <div key={idx} className="break-words">
-                                {lecturer}
+                                {lect}
                               </div>
                             ))}
                           </div>
@@ -562,7 +749,7 @@ const UploadKRSPage = () => {
                         <td className="px-4 py-4">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                             <Check className="w-3 h-3 mr-1" />
-                            Siap Import
+                            Ready to Import
                           </span>
                         </td>
                       </tr>
@@ -576,7 +763,8 @@ const UploadKRSPage = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
               <div className="space-y-4">
                 <p className="text-gray-700 dark:text-gray-200 font-medium text-center sm:text-left">
-                  Total {parsedData.length} mata kuliah akan ditambahkan ke jadwal Anda.
+                  Total {parsedData.length} subjects will be added to your
+                  schedule.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 w-full">
                   <Button
@@ -585,7 +773,7 @@ const UploadKRSPage = () => {
                     disabled={isProcessing}
                     className="w-full sm:w-auto sm:flex-1 order-2 sm:order-1"
                   >
-                    Batal
+                    Cancel
                   </Button>
                   <Button
                     onClick={submitSchedule}
@@ -595,12 +783,12 @@ const UploadKRSPage = () => {
                     {isProcessing ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Menyimpan...
+                        Saving...
                       </>
                     ) : (
                       <>
                         <Check className="w-4 h-4 mr-2" />
-                        Simpan ke Jadwal Saya
+                        Save to My Schedule
                       </>
                     )}
                   </Button>
@@ -616,13 +804,25 @@ const UploadKRSPage = () => {
             <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-blue-900 dark:text-blue-200">
-                Cara Menggunakan Upload IRS
+                How to Use Upload KRS
               </h3>
               <div className="text-blue-800 dark:text-blue-300 text-sm mt-1 space-y-1">
-                <p>1. <strong>Upload Gambar:</strong> Drag & drop atau klik untuk pilih file IRS (PNG, JPG, WEBP)</p>
-                <p>2. <strong>Preview:</strong> Gambar yang dipilih akan ditampilkan sebagai preview</p>
-                <p>3. <strong>Proses AI:</strong> Klik tombol &quot;Proses dengan AI & OCR&quot; untuk analisis otomatis</p>
-                <p>4. <strong>Review & Simpan:</strong> Periksa hasil ekstraksi jadwal dan simpan ke aplikasi</p>
+                <p>
+                  1. <strong>Upload Image:</strong> Drag & drop or click to
+                  select KRS file (PNG, JPG, WEBP)
+                </p>
+                <p>
+                  2. <strong>Preview:</strong> Selected image will be displayed
+                  as preview
+                </p>
+                <p>
+                  3. <strong>AI Process:</strong> Click &quot;Process with AI
+                  &amp; OCR&quot; button for automatic analysis
+                </p>
+                <p>
+                  4. <strong>Review & Save:</strong> Check extracted schedule
+                  results and save to application
+                </p>
               </div>
             </div>
           </div>

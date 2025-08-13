@@ -98,7 +98,7 @@ const CalendarCard = ({
             </div>
           )}
 
-          <div className="flex flex-row gap-2 justify-between items-center">
+          <div className="flex flex-row gap-2 justify-between items-center pr-4">
             <h1
               className={`font-bold ${textColor} ${showActions ? "pr-8" : ""}`}
             >

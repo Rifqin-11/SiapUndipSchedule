@@ -55,29 +55,25 @@ const ManageSubjects = () => {
       if (modalMode === "add") {
         const result = await createSubject(subjectData);
         if (result.success) {
-          toast.success("Mata kuliah berhasil ditambahkan!");
+          toast.success("Subject successfully added!");
           setIsModalOpen(false);
           return { success: true };
         } else {
-          toast.error(
-            `Error: ${result.error || "Gagal menambahkan mata kuliah"}`
-          );
+          toast.error(`Error: ${result.error || "Failed to add subject"}`);
           return { success: false, error: result.error };
         }
       } else if (modalMode === "edit" && editingSubject) {
         const result = await updateSubject(editingSubject.id, subjectData);
         if (result.success) {
-          toast.success("Mata kuliah berhasil diupdate!");
+          toast.success("Subject successfully updated!");
           setIsModalOpen(false);
           return { success: true };
         } else {
-          toast.error(
-            `Error: ${result.error || "Gagal mengupdate mata kuliah"}`
-          );
+          toast.error(`Error: ${result.error || "Failed to update subject"}`);
           return { success: false, error: result.error };
         }
       }
-      return { success: false, error: "Mode tidak valid" };
+      return { success: false, error: "Invalid mode" };
     } catch {
       return { success: false, error: "Terjadi kesalahan tak terduga" };
     }
@@ -112,10 +108,14 @@ const ManageSubjects = () => {
 
     if (result.success) {
       toast.success(
-        `Berhasil menghapus semua mata kuliah! (${result.deletedCount || 0} mata kuliah dihapus)`
+        `Berhasil menghapus semua mata kuliah! (${
+          result.deletedCount || 0
+        } mata kuliah dihapus)`
       );
     } else {
-      toast.error(`Error: ${result.error || "Gagal menghapus semua mata kuliah"}`);
+      toast.error(
+        `Error: ${result.error || "Gagal menghapus semua mata kuliah"}`
+      );
     }
 
     setIsDeleteAllDialogOpen(false);
@@ -165,17 +165,17 @@ const ManageSubjects = () => {
                 title="Hapus semua mata kuliah (untuk pindah semester)"
               >
                 <Trash2 size={16} className="mr-2" />
-                Hapus Semua
+                Delete All
               </button>
             )}
-            
+
             {/* Add Subject Button */}
             <button
               onClick={handleAddSubject}
               className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
             >
               <Plus size={16} className="mr-2" />
-              Tambah Mata Kuliah
+              Add Subject
             </button>
           </div>
         </div>
@@ -186,22 +186,22 @@ const ManageSubjects = () => {
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Mata Kuliah
+                    Subject
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Hari & Waktu
+                    Day & Time
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Ruangan
+                    Room
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Dosen
+                    Lecturer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Progress
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Aksi
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -292,8 +292,7 @@ const ManageSubjects = () => {
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center">
                       <p className="text-gray-500 dark:text-gray-400">
-                        Belum ada mata kuliah. Tambahkan mata kuliah pertama
-                        Anda!
+                        No subjects yet. Add your first subject!
                       </p>
                     </td>
                   </tr>
@@ -320,20 +319,19 @@ const ManageSubjects = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
+            <AlertDialogTitle>Delete Confirmation</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus mata kuliah &ldquo;
-              {subjectToDelete?.name}&rdquo;? Tindakan ini tidak dapat
-              dibatalkan.
+              Are you sure you want to delete the subject &ldquo;
+              {subjectToDelete?.name}&rdquo;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteSubject}
               className="bg-red-600 hover:bg-red-700"
             >
-              Hapus
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -348,32 +346,33 @@ const ManageSubjects = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-red-600">
               <Trash2 size={20} />
-              Konfirmasi Hapus Semua Mata Kuliah
+              Delete All Subjects Confirmation
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p className="font-medium text-gray-900 dark:text-white">
-                ⚠️ PERINGATAN: Anda akan menghapus SEMUA mata kuliah yang ada!
+                ⚠️ WARNING: You are about to delete ALL existing subjects!
               </p>
               <p>
-                Tindakan ini akan menghapus <strong>{subjects?.length || 0} mata kuliah</strong> secara permanen 
-                dan tidak dapat dibatalkan.
+                This action will permanently delete{" "}
+                <strong>{subjects?.length || 0} subjects</strong> and cannot be
+                undone.
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Fitur ini berguna ketika semester telah selesai dan Anda ingin memulai 
-                semester baru dengan mata kuliah yang berbeda.
+                This feature is useful when the semester has ended and you want
+                to start a new semester with different subjects.
               </p>
               <p className="font-medium text-red-600">
-                Apakah Anda yakin ingin melanjutkan?
+                Are you sure you want to continue?
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteAllSubjects}
               className="bg-red-600 hover:bg-red-700"
             >
-              Ya, Hapus Semua ({subjects?.length || 0} mata kuliah)
+              Yes, Delete All ({subjects?.length || 0} subjects)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
