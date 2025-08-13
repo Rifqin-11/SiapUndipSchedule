@@ -25,6 +25,7 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import QRScanner from "./QRScanner";
+import ScheduleSkeleton from "./ScheduleSkeleton";
 
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
@@ -173,11 +174,7 @@ const ScheduleClient = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <ScheduleSkeleton />;
   }
 
   if (error) {
