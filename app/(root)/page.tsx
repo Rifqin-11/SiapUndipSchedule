@@ -7,6 +7,7 @@ import CurrentDayDate from "@/components/CurrentDayDate";
 import FloatingActionButton from "@/components/FloatingActionButton";
 import SubjectModal from "@/components/SubjectModal";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { CheckCircle, TrendingUp, Award, BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/HomeSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
@@ -15,6 +16,7 @@ const MAX_MEETING = 14;
 
 const Page = () => {
   const { subjects, loading, createSubject, refetch } = useSubjects();
+  const { user } = useUserProfile();
 
   // Initialize auto notifications
   useAutoNotifications();
@@ -44,6 +46,10 @@ const Page = () => {
     (subject) => (subject.meeting / MAX_MEETING) * 100 >= 75
   );
 
+  // Get user name for greeting
+  const userName = user?.name || "User";
+  const firstName = userName.split(" ")[0];
+
   // Loading state: cukup balikin skeleton di sini saja
   if (loading) {
     return <HomeSkeleton />;
@@ -54,7 +60,7 @@ const Page = () => {
     <main className="animate-fadeIn">
       <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">
         <h1 className="text-xl font-extrabold tracking-tight">
-          Hi, here&apos;s your schedule
+          Hi {firstName}, here&apos;s your schedule
         </h1>
         <CurrentDayDate />
       </section>

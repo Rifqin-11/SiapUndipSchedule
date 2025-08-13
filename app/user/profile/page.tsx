@@ -1,39 +1,132 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Camera, Save } from "lucide-react";
 import BackButton from "@/components/Back-Button";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { toast } from "sonner";
+import Image from "next/image";
 
 const ProfilePage = () => {
+  const { user, loading, updateUserProfile, getInitials } = useUserProfile();
   const [formData, setFormData] = useState({
-    name: "John Doe",
-    nim: "24060120140157",
-    email: "john.doe@students.undip.ac.id",
-    jurusan: "Computer Science",
-    fakultas: "Science and Mathematics",
-    angkatan: "2020",
+    name: "",
+    nim: "",
+    email: "",
+    jurusan: "",
+    fakultas: "",
+    angkatan: "",
+    profileImage: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
+    null
+  );
+
+  // Update form data when user data is loaded
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        nim: user.nim || "",
+        email: user.email || "",
+        jurusan: user.jurusan || "",
+        fakultas: user.fakultas || "",
+        angkatan: user.angkatan || "",
+        profileImage: user.profileImage || "",
+      });
+      setProfileImagePreview(user.profileImage || null);
+    }
+  }, [user]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProfileImagePreview(result);
+        setFormData((prev) => ({ ...prev, profileImage: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      console.log("Sending profile update data:", formData);
+      const result = await updateUserProfile(formData);
 
-      // Mock API call - replace with actual API when implemented
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Profile updated successfully!");
-      setIsEditing(false);
+      if (result.success) {
+        toast.success("Profile updated successfully!");
+        setIsEditing(false);
+      } else {
+        toast.error(result.error || "Failed to update profile");
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleCancel = () => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        nim: user.nim || "",
+        email: user.email || "",
+        jurusan: user.jurusan || "",
+        fakultas: user.fakultas || "",
+        angkatan: user.angkatan || "",
+        profileImage: user.profileImage || "",
+      });
+      setProfileImagePreview(user.profileImage || null);
+    }
+    setIsEditing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
+          <BackButton />
+          <div className="flex flex-row justify-center items-center w-full">
+            <div className="flex flex-col gap-0.5 justify-center text-center">
+              <div className="flex items-center justify-center gap-2">
+                <User className="w-6 h-6 text-green-600" />
+                <h1 className="font-bold text-xl text-gray-900 dark:text-white">
+                  Profile
+                </h1>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -55,12 +148,31 @@ const ProfilePage = () => {
         {/* Profile Picture */}
         <div className="text-center">
           <div className="relative inline-block">
-            <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto">
-              RN
-            </div>
-            <button className="absolute bottom-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              <Camera className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            </button>
+            {profileImagePreview ? (
+              <Image
+                src={profileImagePreview}
+                alt="Profile"
+                width={128}
+                height={128}
+                className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
+              />
+            ) : (
+              <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto">
+                {getInitials(formData.name)}
+              </div>
+            )}
+
+            {isEditing && (
+              <label className="absolute bottom-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                <Camera className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
         </div>
 
@@ -88,7 +200,8 @@ const ProfilePage = () => {
                   {isLoading ? "Saving..." : "Save"}
                 </button>
                 <button
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleCancel}
+                  disabled={isLoading}
                   className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   Cancel
@@ -98,27 +211,127 @@ const ProfilePage = () => {
           </div>
 
           <div className="space-y-4">
-            {Object.entries(formData).map(([key, value]) => (
-              <div key={key}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 capitalize">
-                  {key === "nim" ? "NIM" : key}
-                </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [key]: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                ) : (
-                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
-                    {value}
-                  </div>
-                )}
-              </div>
-            ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Full Name
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              ) : (
+                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                  {formData.name}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                NIM
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.nim}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nim: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              ) : (
+                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                  {formData.nim}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email
+              </label>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              ) : (
+                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                  {formData.email}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Jurusan
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.jurusan}
+                  onChange={(e) =>
+                    setFormData({ ...formData, jurusan: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              ) : (
+                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                  {formData.jurusan}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Fakultas
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.fakultas}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fakultas: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              ) : (
+                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                  {formData.fakultas}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Angkatan
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.angkatan}
+                  onChange={(e) =>
+                    setFormData({ ...formData, angkatan: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              ) : (
+                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">
+                  {formData.angkatan}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

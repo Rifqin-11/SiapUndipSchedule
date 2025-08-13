@@ -104,7 +104,7 @@ const AboutPage = () => {
               Rifqi Naufal
             </h4>
             <p className="text-gray-600 dark:text-gray-400">
-              Computer Engineering, UNDIP
+              Electrical Engineering, UNDIP
             </p>
             <div className="flex items-center gap-4 mt-2">
               <a
