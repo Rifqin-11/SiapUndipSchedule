@@ -26,6 +26,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import QRScanner from "./QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
+import useAutoNotifications from "@/hooks/useAutoNotifications";
 
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
@@ -39,6 +40,9 @@ const ScheduleClient = () => {
     updateSubject,
     deleteSubject,
   } = useSubjects();
+
+  // Initialize auto notifications
+  useAutoNotifications();
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,11 +87,26 @@ const ScheduleClient = () => {
     );
   }
 
+  // Helper function to check if a subject has a valid schedule
+  const hasValidSchedule = (subject: Subject) => {
+    return (
+      subject.day &&
+      typeof subject.day === "string" &&
+      subject.day.trim() !== "" &&
+      subject.startTime &&
+      typeof subject.startTime === "string" &&
+      subject.startTime.trim() !== "" &&
+      subject.endTime &&
+      typeof subject.endTime === "string" &&
+      subject.endTime.trim() !== ""
+    );
+  };
+
   const filteredSubjects = subjectsArray.filter((subject) => {
-    // Skip subjects without a valid day property
-    if (!subject.day || typeof subject.day !== "string") {
+    // Only show subjects that have a valid schedule (day and time)
+    if (!hasValidSchedule(subject)) {
       console.log(
-        `Skipping subject with invalid day: ${JSON.stringify(subject)}`
+        `Skipping subject without valid schedule: ${subject.name} - Day: ${subject.day}, StartTime: ${subject.startTime}, EndTime: ${subject.endTime}`
       );
       return false;
     }

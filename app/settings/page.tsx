@@ -11,6 +11,7 @@ import {
   History,
 } from "lucide-react";
 import Link from "next/link";
+import NotificationManager from "@/components/NotificationManager";
 
 const SettingsPage = () => {
   const settingsItems = [
@@ -84,6 +85,11 @@ const SettingsPage = () => {
             <h1 className="text-2xl font-bold mb-2">Settings</h1>
             <p className="text-blue-100">Manage your app and preferences</p>
           </div>
+        </div>
+
+        {/* Notification Manager */}
+        <div className="mb-6">
+          <NotificationManager />
         </div>
 
         {/* Settings Items */}

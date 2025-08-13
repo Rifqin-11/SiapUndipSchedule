@@ -134,16 +134,28 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
       toast.error("Subject name is required");
       return;
     }
-    if (!formData.day) {
-      toast.error("Day must be selected");
+
+    // Validate schedule consistency: if day is set, time must also be set, and vice versa
+    const hasDay = formData.day && formData.day.trim() !== "";
+    const hasTime =
+      formData.startTime &&
+      formData.startTime.trim() !== "" &&
+      formData.endTime &&
+      formData.endTime.trim() !== "";
+
+    if (hasDay && !hasTime) {
+      toast.error("If day is selected, start time and end time are required");
       return;
     }
-    if (!formData.startTime || !formData.endTime) {
-      toast.error("Start time and end time are required");
+
+    if (hasTime && !hasDay) {
+      toast.error("If time is set, day must be selected");
       return;
     }
-    if (!formData.room.trim()) {
-      toast.error("Room is required");
+
+    // Room is only required if schedule is set
+    if ((hasDay || hasTime) && !formData.room.trim()) {
+      toast.error("Room is required when schedule is set");
       return;
     }
 
@@ -209,16 +221,19 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="day">Day *</Label>
+            <Label htmlFor="day">
+              Day (Optional - Leave blank for subjects without schedule)
+            </Label>
             <Select
               value={formData.day}
               onValueChange={(value) => handleInputChange("day", value)}
               disabled={mode === "add" && !!preselectedDay}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select day" />
+                <SelectValue placeholder="Select day (optional)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">No Schedule</SelectItem>
                 {days.map((day) => (
                   <SelectItem key={day} value={day}>
                     {day}
@@ -235,32 +250,36 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startTime">Start Time *</Label>
+              <Label htmlFor="startTime">Start Time (Optional)</Label>
               <Input
                 id="startTime"
                 type="time"
                 value={formData.startTime}
                 onChange={(e) => handleInputChange("startTime", e.target.value)}
+                placeholder="Only if scheduled"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endTime">End Time *</Label>
+              <Label htmlFor="endTime">End Time (Optional)</Label>
               <Input
                 id="endTime"
                 type="time"
                 value={formData.endTime}
                 onChange={(e) => handleInputChange("endTime", e.target.value)}
+                placeholder="Only if scheduled"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="room">Room *</Label>
+            <Label htmlFor="room">
+              Room (Required only if schedule is set)
+            </Label>
             <Input
               id="room"
               value={formData.room}
               onChange={(e) => handleInputChange("room", e.target.value)}
-              placeholder="Example: K201"
+              placeholder="Example: K201 (leave blank if no schedule)"
             />
           </div>
 

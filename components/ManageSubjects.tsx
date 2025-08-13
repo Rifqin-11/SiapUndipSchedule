@@ -38,6 +38,21 @@ const ManageSubjects = () => {
   // Delete all confirmation dialog states
   const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
+  // Helper function to check if a subject has a valid schedule
+  const hasValidSchedule = (subject: Subject) => {
+    return (
+      subject.day &&
+      typeof subject.day === "string" &&
+      subject.day.trim() !== "" &&
+      subject.startTime &&
+      typeof subject.startTime === "string" &&
+      subject.startTime.trim() !== "" &&
+      subject.endTime &&
+      typeof subject.endTime === "string" &&
+      subject.endTime.trim() !== ""
+    );
+  };
+
   const handleAddSubject = () => {
     setEditingSubject(null);
     setModalMode("add");
@@ -214,8 +229,15 @@ const ManageSubjects = () => {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {subject.name}
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {subject.name}
+                            </div>
+                            {!hasValidSchedule(subject) && (
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                No Schedule
+                              </span>
+                            )}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             ID: {subject.id}
@@ -236,12 +258,20 @@ const ManageSubjects = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {subject.day}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {subject.startTime} - {subject.endTime}
-                        </div>
+                        {hasValidSchedule(subject) ? (
+                          <>
+                            <div className="text-sm text-gray-900 dark:text-white">
+                              {subject.day}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {subject.startTime} - {subject.endTime}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-sm text-gray-400 dark:text-gray-500 italic">
+                            No schedule set
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {subject.room}

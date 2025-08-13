@@ -8,11 +8,16 @@ import FloatingActionButton from "@/components/FloatingActionButton";
 import SubjectModal from "@/components/SubjectModal";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { CheckCircle, TrendingUp, Award, BookOpen, Plus } from "lucide-react";
+import HomeSkeleton from "@/components/HomeSkeleton";
+import useAutoNotifications from "@/hooks/useAutoNotifications";
 
 const MAX_MEETING = 14;
 
 const Page = () => {
   const { subjects, loading, createSubject, refetch } = useSubjects();
+
+  // Initialize auto notifications
+  useAutoNotifications();
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,50 +44,12 @@ const Page = () => {
     (subject) => (subject.meeting / MAX_MEETING) * 100 >= 75
   );
 
+  // Loading state: cukup balikin skeleton di sini saja
   if (loading) {
-    return (
-      <main className="animate-fadeIn">
-        <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">
-          <h1 className="text-xl font-extrabold tracking-tight">
-            Hi, here&apos;s your schedule
-          </h1>
-          <CurrentDayDate />
-        </section>
-
-        <section className="mt-6 dark:text-white">
-          <div className="flex flex-row justify-between items-center mx-6 mb-2">
-            <h2 className="font-bold text-xl">Your Courses</h2>
-            <button className="text-xs text-blue-600 hover:underline dark:text-blue-400">
-              View more
-            </button>
-          </div>
-
-          <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-            <div className="flex gap-4">
-              <div className="animate-pulse">
-                <div className="w-[280px] h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-              </div>
-              <div className="animate-pulse">
-                <div className="w-[280px] h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-6 mx-6 dark:text-white">
-          <div className="flex flex-row justify-between items-center mb-2">
-            <h2 className="font-bold text-xl">Today&apos;s Schedule</h2>
-          </div>
-
-          <div className="animate-pulse space-y-3">
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-          </div>
-        </section>
-      </main>
-    );
+    return <HomeSkeleton />;
   }
 
+  // HANYA satu return di bawah ini
   return (
     <main className="animate-fadeIn">
       <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">

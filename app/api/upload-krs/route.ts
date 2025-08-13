@@ -23,10 +23,10 @@ const genAI = new GoogleGenerativeAI(apiKey!);
 interface ParsedSubject {
   id: string;
   name: string;
-  day: string;
-  startTime: string;
-  endTime: string;
-  room: string;
+  day: string; // Can be empty string
+  startTime: string; // Can be empty string
+  endTime: string; // Can be empty string
+  room: string; // Can be empty string
   lecturer: string[];
   meeting: number;
   category: string;
@@ -213,27 +213,47 @@ Dari teks hasil OCR berikut, ekstrak informasi jadwal kuliah dan kembalikan dala
 Teks IRS:
 ${rawText}
 
-INSTRUKSI:
+INSTRUKSI PENTING:
 1. Cari semua mata kuliah yang terdaftar dalam IRS
 2. Ekstrak informasi: nama mata kuliah, hari, jam mulai, jam selesai, ruangan, dan dosen
 3. Gunakan format 24 jam untuk waktu (contoh: "08:00", "14:30")
 4. Untuk hari, gunakan format: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-5. Jika informasi tidak lengkap, gunakan nilai default yang masuk akal
+5. PENTING: Jika pada IRS tidak terdapat informasi hari (day), jam mulai (startTime), jam selesai (endTime), atau ruangan (room), maka berikan nilai kosong ("") - JANGAN berikan nilai default
+6. Hanya berikan nilai jika informasi tersebut jelas tertulis dalam IRS
+7. Untuk mata kuliah tanpa jadwal (seperti skripsi, KKN, dll), kosongkan field day, startTime, endTime, dan room
 
 Kembalikan HANYA JSON array dengan format berikut:
 [
   {
     "id": "generated_unique_id",
     "name": "nama_mata_kuliah",
-    "day": "hari_kuliah",
-    "startTime": "jam_mulai",
-    "endTime": "jam_selesai",
-    "room": "ruangan",
-    "lecturer": ["nama_dosen"],
+    "day": "", // Kosong jika tidak ada informasi hari
+    "startTime": "", // Kosong jika tidak ada informasi jam mulai
+    "endTime": "", // Kosong jika tidak ada informasi jam selesai
+    "room": "", // Kosong jika tidak ada informasi ruangan
+    "lecturer": ["nama_dosen"], // Minimal harus ada, gunakan "TBA" jika tidak ada
     "meeting": 0,
     "category": "High"
   }
 ]
+
+Contoh untuk mata kuliah DENGAN jadwal:
+{
+  "name": "Algoritma dan Pemrograman",
+  "day": "Monday",
+  "startTime": "08:00",
+  "endTime": "10:00",
+  "room": "K201"
+}
+
+Contoh untuk mata kuliah TANPA jadwal:
+{
+  "name": "Skripsi",
+  "day": "",
+  "startTime": "",
+  "endTime": "",
+  "room": ""
+}
 
 Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
     `.trim();
@@ -273,13 +293,15 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
         (subject: RawSubject, index: number): ParsedSubject => ({
           id: subject.id || `irs_${Date.now()}_${index}`,
           name: subject.name || "Subject",
-          day: subject.day || "Monday",
-          startTime: subject.startTime || "08:00",
-          endTime: subject.endTime || "10:00",
-          room: subject.room || "TBA",
+          day: subject.day || "", // Empty string instead of "Monday"
+          startTime: subject.startTime || "", // Empty string instead of "08:00"
+          endTime: subject.endTime || "", // Empty string instead of "10:00"
+          room: subject.room || "", // Empty string instead of "TBA"
           lecturer: Array.isArray(subject.lecturer)
-            ? subject.lecturer
-            : [subject.lecturer || "TBA"],
+            ? subject.lecturer.filter(l => l && l.trim()) // Filter out empty lecturers
+            : subject.lecturer && subject.lecturer.trim() 
+              ? [subject.lecturer] 
+              : ["TBA"], // Only set TBA if completely empty
           meeting: subject.meeting || 0,
           category: subject.category || "Medium",
         })

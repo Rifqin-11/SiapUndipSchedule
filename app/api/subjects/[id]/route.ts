@@ -4,14 +4,15 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
     const subject = await db.collection("subjects").findOne({
-      $or: [{ _id: new ObjectId(params.id) }, { id: params.id }],
+      $or: [{ _id: new ObjectId(id) }, { id: id }],
     });
 
     if (!subject) {
@@ -39,9 +40,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
@@ -53,7 +55,7 @@ export async function PUT(
 
     const result = await db.collection("subjects").updateOne(
       {
-        $or: [{ _id: new ObjectId(params.id) }, { id: params.id }],
+        $or: [{ _id: new ObjectId(id) }, { id: id }],
       },
       { $set: updateData }
     );
@@ -77,14 +79,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
     const result = await db.collection("subjects").deleteOne({
-      $or: [{ _id: new ObjectId(params.id) }, { id: params.id }],
+      $or: [{ _id: new ObjectId(id) }, { id: id }],
     });
 
     if (result.deletedCount === 0) {
