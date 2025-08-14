@@ -2,7 +2,7 @@ import React from "react";
 
 const ManageSubjectsSkeleton = () => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 animate-pulse">
+    <div className="min-h-screen bg-background animate-pulse">
       {/* Header */}
       <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
         <div className="w-8 h-8 bg-gray-300 rounded"></div>

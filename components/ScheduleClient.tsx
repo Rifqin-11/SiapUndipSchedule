@@ -345,7 +345,7 @@ const ScheduleClient = () => {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-background">
       <ScheduleHeader selectedDay={selectedDay} />
 
       <div className="mx-5">

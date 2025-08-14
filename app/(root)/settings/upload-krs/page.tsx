@@ -291,7 +291,7 @@ const UploadKRSPage = () => {
   );
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
+    <div className="bg-background min-h-screen font-sans">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Header */}
         <header className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">

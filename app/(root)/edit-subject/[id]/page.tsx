@@ -71,7 +71,7 @@ const EditSubjectPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+    <div className="min-h-screen bg-background py-6">
       <SubjectForm
         subject={subject}
         onSubmit={handleUpdateSubject}

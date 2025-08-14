@@ -108,7 +108,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
         <BackButton />
         <div className="flex flex-row justify-center items-center w-full">

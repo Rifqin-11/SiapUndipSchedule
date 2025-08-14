@@ -73,7 +73,7 @@ const UserPage = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
         <div className="flex flex-row justify-center items-center w-full">

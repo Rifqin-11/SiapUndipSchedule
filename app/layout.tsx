@@ -13,7 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "SIAP UNDIP Schedule",
   description: "Schedule management app for UNDIP students",
-  themeColor: "#ffffff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#232323" }
+  ],
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -40,7 +43,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="min-h-screen mb-10">{children}</div>
+            <div className="min-h-screen bg-background mb-10">{children}</div>
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
