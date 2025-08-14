@@ -1,17 +1,15 @@
 "use client";
 
 import React from "react";
-import {
-  BookOpen,
-  Info,
-  Palette,
-  Upload,
-  History,
-} from "lucide-react";
+import { BookOpen, Info, Palette, Upload, History } from "lucide-react";
 import Link from "next/link";
 import NotificationManager from "@/components/NotificationManager";
+import SettingsPageSkeleton from "@/components/SettingsPageSkeleton";
+import { useSimulatedLoading } from "@/hooks/useLoadingState";
 
 const SettingsPage = () => {
+  const loading = useSimulatedLoading(1200); // Simulate 1.2 seconds loading
+
   const settingsItems = [
     {
       icon: BookOpen,
@@ -54,6 +52,10 @@ const SettingsPage = () => {
       bgColor: "bg-gray-50",
     },
   ];
+
+  if (loading) {
+    return <SettingsPageSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

@@ -6,16 +6,14 @@ import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import Image from "next/image";
+import UserPageSkeleton from "@/components/UserPageSkeleton";
 
 const UserPage = () => {
   // Get subjects data
   const { subjects } = useSubjects();
 
   // Get user profile data
-  const {
-    user,
-    loading: userLoading,
-  } = useUserProfile();
+  const { user, loading: userLoading } = useUserProfile();
 
   // Mock user data fallback - remove when auth is implemented
   const defaultUser = {
@@ -74,28 +72,7 @@ const UserPage = () => {
   };
 
   if (userLoading) {
-    return (
-      <div className="min-h-screen">
-        <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
-          <div className="flex flex-row justify-center items-center w-full">
-            <div className="flex flex-col gap-0.5 justify-center text-center">
-              <div className="flex items-center justify-center gap-2">
-                <User className="w-6 h-6 text-green-600" />
-                <h1 className="font-bold text-xl text-gray-900 dark:text-white">
-                  User
-                </h1>
-              </div>
-            </div>
-          </div>
-        </section>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading profile...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <UserPageSkeleton />;
   }
 
   return (

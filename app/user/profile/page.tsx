@@ -6,6 +6,7 @@ import BackButton from "@/components/Back-Button";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { toast } from "sonner";
 import Image from "next/image";
+import ProfilePageSkeleton from "@/components/ProfilePageSkeleton";
 
 const ProfilePage = () => {
   const { user, loading, updateUserProfile, getInitials } = useUserProfile();
@@ -103,29 +104,7 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
-          <BackButton />
-          <div className="flex flex-row justify-center items-center w-full">
-            <div className="flex flex-col gap-0.5 justify-center text-center">
-              <div className="flex items-center justify-center gap-2">
-                <User className="w-6 h-6 text-green-600" />
-                <h1 className="font-bold text-xl text-gray-900 dark:text-white">
-                  Profile
-                </h1>
-              </div>
-            </div>
-          </div>
-        </section>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading profile...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProfilePageSkeleton />;
   }
 
   return (
