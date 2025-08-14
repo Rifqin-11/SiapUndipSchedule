@@ -8,7 +8,7 @@ import SettingsPageSkeleton from "@/components/SettingsPageSkeleton";
 import { useSimulatedLoading } from "@/hooks/useLoadingState";
 
 const SettingsPage = () => {
-  const loading = useSimulatedLoading(1200); // Simulate 1.2 seconds loading
+  const loading = useSimulatedLoading(500); // Simulate 1.2 seconds loading
 
   const settingsItems = [
     {

@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+'use client';
+
+import { useAuth } from './useAuth';
 
 export interface UserProfile {
   id: string;
@@ -9,61 +11,37 @@ export interface UserProfile {
   fakultas: string;
   angkatan: string;
   profileImage?: string;
+  isEmailVerified: boolean;
+  lastLoginAt?: Date;
 }
 
 export const useUserProfile = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUserProfile = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/user/profile");
-      const data = await response.json();
-
-      if (data.success) {
-        setUser(data.user);
-        setError(null);
-      } else {
-        setError(data.error || "Failed to fetch user profile");
-      }
-    } catch (err) {
-      console.error("Error fetching user profile:", err);
-      setError("Failed to fetch user profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { user, loading, refreshUser } = useAuth();
 
   const updateUserProfile = async (profileData: Partial<UserProfile>) => {
     try {
-      setLoading(true);
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(profileData),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setUser(data.user);
-        setError(null);
+        // Refresh user data after successful update
+        await refreshUser();
         return { success: true, user: data.user };
       } else {
-        setError(data.error || "Failed to update profile");
         return { success: false, error: data.error };
       }
     } catch (err) {
       console.error("Error updating user profile:", err);
       const errorMessage = "Failed to update profile";
-      setError(errorMessage);
       return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -77,16 +55,13 @@ export const useUserProfile = () => {
       .slice(0, 2);
   };
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
   return {
     user,
     loading,
-    error,
+    error: null, // Auth provider handles errors
     updateUserProfile,
-    refetchUser: fetchUserProfile,
+    refetch: refreshUser,
+    refetchUser: refreshUser,
     getInitials,
   };
 };

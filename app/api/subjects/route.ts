@@ -1,12 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { verifyJWTToken } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    const subjects = await db.collection("subjects").find({}).toArray();
+    // Only fetch subjects that belong to the authenticated user
+    const subjects = await db.collection("subjects").find({ 
+      userId: decoded.userId 
+    }).toArray();
 
     // Ensure each subject has a consistent id field
     const mappedSubjects = subjects.map((subject) => ({
@@ -26,6 +48,24 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
@@ -43,6 +83,7 @@ export async function POST(request: NextRequest) {
       const subjectsToInsert = body.subjects.map(
         (subject: Record<string, unknown>) => ({
           ...subject,
+          userId: decoded.userId, // Add userId to each subject
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -66,6 +107,7 @@ export async function POST(request: NextRequest) {
       // Single subject insert (existing functionality)
       const subject = {
         ...body,
+        userId: decoded.userId, // Add userId to subject
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 export interface Subject {
   _id?: string;
   id: string;
+  userId: string;
   name: string;
   day: string;
   room: string;
@@ -33,10 +34,16 @@ export const useSubjects = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/subjects");
+      const response = await fetch("/api/subjects", {
+        credentials: 'include', // Include cookies for authentication
+      });
 
       if (!response.ok) {
-        setError("Gagal mengambil data mata kuliah");
+        if (response.status === 401) {
+          setError("Authentication required");
+        } else {
+          setError("Gagal mengambil data mata kuliah");
+        }
         setSubjects([]);
         return;
       }
@@ -73,10 +80,14 @@ export const useSubjects = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify(subjectData),
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to create subject");
       }
 
@@ -102,10 +113,14 @@ export const useSubjects = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify(subjectData),
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to update subject");
       }
 
@@ -127,9 +142,13 @@ export const useSubjects = () => {
     try {
       const response = await fetch(`/api/subjects/${id}`, {
         method: "DELETE",
+        credentials: 'include', // Include cookies for authentication
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to delete subject");
       }
 
@@ -223,11 +242,15 @@ export const useSubject = (id: string) => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/subjects/${id}`);
+        const response = await fetch(`/api/subjects/${id}`, {
+          credentials: 'include', // Include cookies for authentication
+        });
 
         if (!response.ok) {
           if (response.status === 404) {
             setError("Mata kuliah tidak ditemukan");
+          } else if (response.status === 401) {
+            setError("Authentication required");
           } else {
             setError("Gagal mengambil data mata kuliah");
           }

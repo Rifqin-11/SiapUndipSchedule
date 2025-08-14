@@ -1,12 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { verifyJWTToken } from "@/lib/auth";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { originalDate, newDate, reason, startTime, endTime, room } = body;
@@ -33,10 +52,13 @@ export async function POST(
       createdAt: new Date(),
     };
 
-    // Add reschedule to subject's reschedules array
+    // Add reschedule to subject's reschedules array (only for user's subjects)
     const result = await db.collection("subjects").updateOne(
       {
-        $or: [{ _id: new ObjectId(id) }, { id: id }],
+        $and: [
+          { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+          { userId: decoded.userId }
+        ]
       },
       {
         $set: { updatedAt: new Date() },
@@ -46,7 +68,10 @@ export async function POST(
     // Then add the reschedule data
     await db.collection("subjects").updateOne(
       {
-        $or: [{ _id: new ObjectId(id) }, { id: id }],
+        $and: [
+          { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+          { userId: decoded.userId }
+        ]
       },
       {
         $addToSet: { reschedules: rescheduleData },
@@ -83,6 +108,24 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { rescheduleDate } = body;
@@ -97,9 +140,12 @@ export async function DELETE(
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    // First, get the subject to find the exact reschedule entry
+    // First, get the subject to find the exact reschedule entry (only user's subjects)
     const subject = await db.collection("subjects").findOne({
-      $or: [{ _id: new ObjectId(id) }, { id: id }],
+      $and: [
+        { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+        { userId: decoded.userId }
+      ]
     });
 
     if (!subject) {
@@ -139,10 +185,13 @@ export async function DELETE(
 
     console.log(`Filtered reschedules:`, updatedReschedules);
 
-    // Update the subject with the filtered reschedules array
+    // Update the subject with the filtered reschedules array (only user's subjects)
     const result = await db.collection("subjects").updateOne(
       {
-        $or: [{ _id: new ObjectId(id) }, { id: id }],
+        $and: [
+          { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+          { userId: decoded.userId }
+        ]
       },
       {
         $set: {
@@ -181,13 +230,34 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    // Get subject with reschedules
+    // Get subject with reschedules (only user's subjects)
     const subject = await db.collection("subjects").findOne({
-      $or: [{ _id: new ObjectId(id) }, { id: id }],
+      $and: [
+        { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+        { userId: decoded.userId }
+      ]
     });
 
     if (!subject) {

@@ -1,18 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { verifyJWTToken } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
+    // Only find subject that belongs to the authenticated user
     const subject = await db.collection("subjects").findOne({
-      $or: [{ _id: new ObjectId(id) }, { id: id }],
+      $and: [
+        { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+        { userId: decoded.userId }
+      ]
     });
 
     if (!subject) {
@@ -43,6 +66,24 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
@@ -53,9 +94,13 @@ export async function PUT(
       updatedAt: new Date(),
     };
 
+    // Only update subject that belongs to the authenticated user
     const result = await db.collection("subjects").updateOne(
       {
-        $or: [{ _id: new ObjectId(id) }, { id: id }],
+        $and: [
+          { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+          { userId: decoded.userId }
+        ]
       },
       { $set: updateData }
     );
@@ -82,12 +127,34 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get user from authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
+    // Only delete subject that belongs to the authenticated user
     const result = await db.collection("subjects").deleteOne({
-      $or: [{ _id: new ObjectId(id) }, { id: id }],
+      $and: [
+        { $or: [{ _id: new ObjectId(id) }, { id: id }] },
+        { userId: decoded.userId }
+      ]
     });
 
     if (result.deletedCount === 0) {

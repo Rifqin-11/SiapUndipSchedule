@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { verifyJWTToken } from "@/lib/auth";
 
 // Azure Computer Vision setup
 const azureEndpoint = process.env.AZURE_COMPUTER_VISION_ENDPOINT;
@@ -53,6 +54,24 @@ export async function POST(req: NextRequest) {
   console.log(`=== UPLOAD-KRS API STARTED AT ${new Date().toISOString()} ===`);
 
   try {
+    // Check authentication first
+    const token = req.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     // 1. Parse form data dari request
     console.log("Step 1: Parsing form data...");
     console.log("Request URL:", req.url);

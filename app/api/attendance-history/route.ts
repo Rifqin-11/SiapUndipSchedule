@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { verifyJWTToken } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { subjectId, subjectName, attendanceDate, location, notes } = body;
 
@@ -17,8 +36,9 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    // Create attendance history record
+    // Create attendance history record with userId
     const attendanceRecord = {
+      userId: decoded.userId, // Add userId to attendance record
       subjectId,
       subjectName,
       attendanceDate: new Date(attendanceDate),
@@ -40,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(
-      `Attendance history saved: ${subjectName} on ${attendanceDate}`
+      `Attendance history saved: ${subjectName} on ${attendanceDate} for user ${decoded.userId}`
     );
 
     return NextResponse.json({
@@ -60,18 +80,37 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    // Get attendance history for last 7 days
+    // Get attendance history for last 7 days for the authenticated user
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const attendanceHistory = await db
       .collection("attendance_history")
       .find({
+        userId: decoded.userId, // Filter by authenticated user
         attendanceDate: {
           $gte: sevenDaysAgo,
         },

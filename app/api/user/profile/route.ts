@@ -1,32 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import User from "@/models/User";
+import { verifyJWTToken } from "@/lib/auth";
 
 // GET user profile
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     await connectMongoDB();
 
-    // For now, return mock data. In real app, you'd get this from session/auth
-    const mockUserId = "mock-user-id";
+    const user = await User.findById(decoded.userId);
 
-    let user = await User.findOne({ _id: mockUserId });
-
-    // If no user found, create default user
     if (!user) {
-      user = new User({
-        _id: mockUserId,
-        name: "John Doe",
-        nim: "24060120140157",
-        email: "email@students.undip.ac.id",
-        jurusan: "Computer Science",
-        fakultas: "Science and Mathematics",
-        angkatan: "2022",
-        profileImage: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await user.save();
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
@@ -54,6 +60,24 @@ export async function GET() {
 // PUT - Update user profile
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     await connectMongoDB();
 
     const body = await request.json();
@@ -68,10 +92,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const mockUserId = "mock-user-id";
-
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: mockUserId },
+    const updatedUser = await User.findByIdAndUpdate(
+      decoded.userId,
       {
         name,
         nim,
@@ -84,10 +106,16 @@ export async function PUT(request: NextRequest) {
       },
       {
         new: true,
-        upsert: true, // Create if doesn't exist
         runValidators: true,
       }
     );
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

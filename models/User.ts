@@ -9,7 +9,14 @@ export interface IUser extends Document {
   fakultas: string;
   angkatan: string;
   profileImage?: string;
-  password?: string;
+  password: string;
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  lastLoginAt?: Date;
+  rememberToken?: string;
+  rememberTokenExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,8 +34,9 @@ const UserSchema = new Schema<IUser>(
     },
     nim: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
+      sparse: true, // Allow null/undefined values, but ensure uniqueness when value exists
       trim: true,
     },
     email: {
@@ -59,7 +67,36 @@ const UserSchema = new Schema<IUser>(
     },
     password: {
       type: String,
+      required: true,
       select: false, // Don't include in queries by default
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    resetPasswordToken: {
+      type: String,
+      select: false,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      select: false,
+    },
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+    rememberToken: {
+      type: String,
+      select: false,
+    },
+    rememberTokenExpires: {
+      type: Date,
+      select: false,
     },
   },
   {

@@ -5,10 +5,17 @@ import { usePathname } from "next/navigation";
 import { Calendar, Home, Settings2, UserRound, QrCode } from "lucide-react";
 import { useState } from "react";
 import QRScanner from "./QRScanner";
+import { useAuth } from "@/hooks/useAuth";
 
 const BottomNavbar = () => {
   const pathname = usePathname();
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const { user } = useAuth();
+
+  // Don't show navbar on auth pages or when user is not logged in
+  if (!user || pathname.startsWith('/auth')) {
+    return null;
+  }
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },

@@ -11,6 +11,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { CheckCircle, TrendingUp, Award, BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/HomeSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
+import Link from "next/link";
 
 const MAX_MEETING = 14;
 
@@ -68,9 +69,9 @@ const Page = () => {
       <section className="mt-6 dark:text-white">
         <div className="flex flex-row justify-between items-center mx-6 mb-2">
           <h2 className="font-bold text-xl">Your Courses</h2>
-          <button className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+          <Link href="/setting/manage-subjects" className="text-xs text-blue-600 hover:underline dark:text-blue-400">
             View more
-          </button>
+          </Link>
         </div>
 
         <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">

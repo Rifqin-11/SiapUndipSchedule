@@ -1,27 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { verifyJWTToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
       return NextResponse.json(
-        { success: false, error: "User ID is required" },
-        { status: 400 }
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
       );
     }
 
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    const settings = await db.collection("settings").findOne({ userId });
+    const settings = await db.collection("settings").findOne({ userId: decoded.userId });
 
     if (!settings) {
       // Return default settings if none found
       const defaultSettings = {
-        userId,
+        userId: decoded.userId,
         theme: "light",
         notifications: true,
         language: "id",
@@ -42,6 +51,24 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
@@ -49,6 +76,7 @@ export async function POST(request: NextRequest) {
 
     const settings = {
       ...body,
+      userId: decoded.userId, // Use authenticated user ID
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -56,7 +84,7 @@ export async function POST(request: NextRequest) {
     // Use upsert to create or update
     await db
       .collection("settings")
-      .updateOne({ userId: body.userId }, { $set: settings }, { upsert: true });
+      .updateOne({ userId: decoded.userId }, { $set: settings }, { upsert: true });
 
     return NextResponse.json({
       success: true,

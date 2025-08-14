@@ -1,12 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { verifyJWTToken } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is trying to access their own data
+    if (decoded.userId !== params.id) {
+      return NextResponse.json(
+        { success: false, error: "Access denied. You can only access your own data." },
+        { status: 403 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
@@ -36,6 +63,32 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check authentication
+    const token = request.cookies.get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = verifyJWTToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is trying to update their own data
+    if (decoded.userId !== params.id) {
+      return NextResponse.json(
+        { success: false, error: "Access denied. You can only update your own data." },
+        { status: 403 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 

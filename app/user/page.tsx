@@ -5,8 +5,11 @@ import { Edit, Shield, Bell, LogOut, Camera, User } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 import UserPageSkeleton from "@/components/UserPageSkeleton";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const UserPage = () => {
   // Get subjects data
@@ -14,24 +17,18 @@ const UserPage = () => {
 
   // Get user profile data
   const { user, loading: userLoading } = useUserProfile();
-
-  // Mock user data fallback - remove when auth is implemented
-  const defaultUser = {
-    name: "John Doe",
-    email: "email@students.undip.ac.id",
-    profileImage: null,
-    jurusan: "Computer Science",
-    nim: "24060120140157",
-    angkatan: "2020",
-    fakultas: "Science and Mathematics",
-  };
-
-  // Use real user data if available, otherwise use default
-  const displayUser = user || defaultUser;
+  const { logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = async () => {
-    // Placeholder for logout functionality
-    console.log("Logout clicked");
+    try {
+      await logout();
+      toast.success("Logged out successfully");
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout");
+    }
   };
 
   const userMenuItems = [
@@ -93,9 +90,9 @@ const UserPage = () => {
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         <div className="text-center space-y-4">
           <div className="relative inline-block">
-            {displayUser?.profileImage ? (
+            {user?.profileImage ? (
               <Image
-                src={displayUser.profileImage}
+                src={user.profileImage}
                 alt="Profile"
                 width={96}
                 height={96}
@@ -103,7 +100,7 @@ const UserPage = () => {
               />
             ) : (
               <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
-                {getInitials(displayUser?.name || "User")}
+                {getInitials(user?.name || "User")}
               </div>
             )}
             <button className="absolute bottom-1 right-1 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -112,13 +109,13 @@ const UserPage = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {displayUser?.name}
+              {user?.name}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {displayUser?.jurusan} - NIM: {displayUser?.nim || "Belum diisi"}
+              {user?.jurusan} - NIM: {user?.nim || "Belum diisi"}
             </p>
             <p className="text-sm text-blue-600 dark:text-blue-400">
-              {displayUser?.email}
+              {user?.email}
             </p>
           </div>
         </div>
@@ -143,7 +140,7 @@ const UserPage = () => {
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {displayUser?.angkatan || "2024"}
+              {user?.angkatan || "2024"}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Class Year
@@ -208,23 +205,23 @@ const UserPage = () => {
             <div>
               <p className="text-green-100">Faculty</p>
               <p className="font-medium">
-                {displayUser?.fakultas || "Not filled"}
+                {user?.fakultas || "Not filled"}
               </p>
             </div>
             <div>
               <p className="text-green-100">Study Program</p>
               <p className="font-medium">
-                {displayUser?.jurusan || "Not filled"}
+                {user?.jurusan || "Not filled"}
               </p>
             </div>
             <div>
               <p className="text-green-100">Student ID</p>
-              <p className="font-medium">{displayUser?.nim || "Not filled"}</p>
+              <p className="font-medium">{user?.nim || "Not filled"}</p>
             </div>
             <div>
               <p className="text-green-100">Class Year</p>
               <p className="font-medium">
-                {displayUser?.angkatan || "Not filled"}
+                {user?.angkatan || "Not filled"}
               </p>
             </div>
           </div>
