@@ -5,8 +5,8 @@ import { verifyJWTToken } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    const settings = await db.collection("settings").findOne({ userId: decoded.userId });
+    const settings = await db
+      .collection("settings")
+      .findOne({ userId: decoded.userId });
 
     if (!settings) {
       // Return default settings if none found
@@ -52,8 +54,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -84,7 +86,11 @@ export async function POST(request: NextRequest) {
     // Use upsert to create or update
     await db
       .collection("settings")
-      .updateOne({ userId: decoded.userId }, { $set: settings }, { upsert: true });
+      .updateOne(
+        { userId: decoded.userId },
+        { $set: settings },
+        { upsert: true }
+      );
 
     return NextResponse.json({
       success: true,

@@ -1,24 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectMongoDB } from '@/lib/mongodb';
-import User from '@/models/User';
-import { 
-  comparePassword, 
-  generateJWTToken, 
-  generateRememberToken, 
+import { NextRequest, NextResponse } from "next/server";
+import { connectMongoDB } from "@/lib/mongodb";
+import User from "@/models/User";
+import {
+  comparePassword,
+  generateJWTToken,
+  generateRememberToken,
   getRememberTokenExpiration,
-  validateEmail 
-} from '@/lib/auth';
+  validateEmail,
+} from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
     await connectMongoDB();
-    
+
     const { email, password, rememberMe } = await request.json();
 
     // Validate required fields
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Email and password are required' },
+        { success: false, error: "Email and password are required" },
         { status: 400 }
       );
     }
@@ -26,18 +26,19 @@ export async function POST(request: NextRequest) {
     // Validate email format
     if (!validateEmail(email)) {
       return NextResponse.json(
-        { success: false, error: 'Please provide a valid email address' },
+        { success: false, error: "Please provide a valid email address" },
         { status: 400 }
       );
     }
 
     // Find user by email (include password for comparison)
-    const user = await User.findOne({ email: email.toLowerCase().trim() })
-      .select('+password +rememberToken +rememberTokenExpires');
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+    }).select("+password +rememberToken +rememberTokenExpires");
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email or password' },
+        { success: false, error: "Invalid email or password" },
         { status: 401 }
       );
     }
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email or password' },
+        { success: false, error: "Invalid email or password" },
         { status: 401 }
       );
     }
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Prepare response
     const response = NextResponse.json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       user: {
         id: user._id,
         name: user.name,
@@ -87,38 +88,37 @@ export async function POST(request: NextRequest) {
         isEmailVerified: user.isEmailVerified,
         lastLoginAt: user.lastLoginAt,
       },
-      token: jwtToken
+      token: jwtToken,
     });
 
     // Set HTTP-only cookies for security
-    const isProduction = process.env.NODE_ENV === 'production';
-    
+    const isProduction = process.env.NODE_ENV === "production";
+
     // Set JWT token cookie (7 days)
-    response.cookies.set('auth_token', jwtToken, {
+    response.cookies.set("auth_token", jwtToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'strict',
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-      path: '/'
+      path: "/",
     });
 
     // Set remember me token cookie if enabled (30 days)
     if (rememberMe && rememberToken) {
-      response.cookies.set('remember_token', rememberToken, {
+      response.cookies.set("remember_token", rememberToken, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: 'strict',
+        sameSite: "strict",
         maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-        path: '/'
+        path: "/",
       });
     }
 
     return response;
-
   } catch (error: unknown) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     return NextResponse.json(
-      { success: false, error: 'Login failed. Please try again.' },
+      { success: false, error: "Login failed. Please try again." },
       { status: 500 }
     );
   }

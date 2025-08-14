@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
 
   try {
     // Check authentication first
-    const token = req.cookies.get('auth_token')?.value;
-    
+    const token = req.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },

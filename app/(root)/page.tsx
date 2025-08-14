@@ -12,6 +12,8 @@ import { CheckCircle, TrendingUp, Award, BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/HomeSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import Link from "next/link";
+import Image from "next/image";
+import NotifIcon from "@/components/NotifIcon";
 
 const MAX_MEETING = 14;
 
@@ -31,7 +33,15 @@ const Page = () => {
 
   const handleSaveSubject = async (subjectData: Omit<Subject, "_id">) => {
     try {
-      const result = await createSubject(subjectData);
+      if (!user?.id) {
+        return { success: false, error: "User not authenticated" };
+      }
+
+      const subjectWithUserId = {
+        ...subjectData,
+        userId: user.id,
+      };
+      const result = await createSubject(subjectWithUserId);
       if (result.success) {
         refetch();
         return { success: true };
@@ -56,9 +66,43 @@ const Page = () => {
     return <HomeSkeleton />;
   }
 
-  // HANYA satu return di bawah ini
   return (
     <main className="animate-fadeIn">
+      {/* Header Section with Profile and Notifications */}
+      <section className="flex flex-row gap-2 items-center mt-4 mx-5">
+        <div className="flex flex-row justify-between items-center w-full">
+          <div className="flex flex-row gap-2 items-center">
+            {user?.profileImage ? (
+              <Image
+                src={user.profileImage}
+                alt="Profile Picture"
+                width={40}
+                height={40}
+                className="rounded-full size-10 object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                {userName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </div>
+            )}
+            <div>
+              <h1 className="font-bold">{userName}</h1>
+              <p className="text-xs text-gray-800 dark:text-gray-300">
+                Welcome Back!
+              </p>
+            </div>
+          </div>
+          <div>
+            <NotifIcon />
+          </div>
+        </div>
+      </section>
+
       <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">
         <h1 className="text-xl font-extrabold tracking-tight">
           Hi {firstName}, here&apos;s your schedule
@@ -69,7 +113,10 @@ const Page = () => {
       <section className="mt-6 dark:text-white">
         <div className="flex flex-row justify-between items-center mx-6 mb-2">
           <h2 className="font-bold text-xl">Your Courses</h2>
-          <Link href="/setting/manage-subjects" className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+          <Link
+            href="/settings/manage-subjects"
+            className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+          >
             View more
           </Link>
         </div>

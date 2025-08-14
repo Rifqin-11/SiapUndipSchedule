@@ -7,8 +7,8 @@ import { verifyJWTToken } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Check authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },

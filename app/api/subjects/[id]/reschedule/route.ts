@@ -9,8 +9,8 @@ export async function POST(
 ) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -57,8 +57,8 @@ export async function POST(
       {
         $and: [
           { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-          { userId: decoded.userId }
-        ]
+          { userId: decoded.userId },
+        ],
       },
       {
         $set: { updatedAt: new Date() },
@@ -70,8 +70,8 @@ export async function POST(
       {
         $and: [
           { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-          { userId: decoded.userId }
-        ]
+          { userId: decoded.userId },
+        ],
       },
       {
         $addToSet: { reschedules: rescheduleData },
@@ -109,8 +109,8 @@ export async function DELETE(
 ) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -144,8 +144,8 @@ export async function DELETE(
     const subject = await db.collection("subjects").findOne({
       $and: [
         { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-        { userId: decoded.userId }
-      ]
+        { userId: decoded.userId },
+      ],
     });
 
     if (!subject) {
@@ -190,8 +190,8 @@ export async function DELETE(
       {
         $and: [
           { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-          { userId: decoded.userId }
-        ]
+          { userId: decoded.userId },
+        ],
       },
       {
         $set: {
@@ -231,8 +231,8 @@ export async function GET(
 ) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -256,8 +256,8 @@ export async function GET(
     const subject = await db.collection("subjects").findOne({
       $and: [
         { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-        { userId: decoded.userId }
-      ]
+        { userId: decoded.userId },
+      ],
     });
 
     if (!subject) {

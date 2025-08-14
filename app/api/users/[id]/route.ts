@@ -9,8 +9,8 @@ export async function GET(
 ) {
   try {
     // Check authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -29,7 +29,10 @@ export async function GET(
     // Check if user is trying to access their own data
     if (decoded.userId !== params.id) {
       return NextResponse.json(
-        { success: false, error: "Access denied. You can only access your own data." },
+        {
+          success: false,
+          error: "Access denied. You can only access your own data.",
+        },
         { status: 403 }
       );
     }
@@ -64,8 +67,8 @@ export async function PUT(
 ) {
   try {
     // Check authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -84,7 +87,10 @@ export async function PUT(
     // Check if user is trying to update their own data
     if (decoded.userId !== params.id) {
       return NextResponse.json(
-        { success: false, error: "Access denied. You can only update your own data." },
+        {
+          success: false,
+          error: "Access denied. You can only update your own data.",
+        },
         { status: 403 }
       );
     }

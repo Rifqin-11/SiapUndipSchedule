@@ -13,7 +13,7 @@ const BottomNavbar = () => {
   const { user } = useAuth();
 
   // Don't show navbar on auth pages or when user is not logged in
-  if (!user || pathname.startsWith('/auth')) {
+  if (!user || pathname.startsWith("/auth")) {
     return null;
   }
 

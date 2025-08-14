@@ -1,46 +1,49 @@
 import type { Metadata } from "next";
-import { Mulish } from "next/font/google";
-import "./globals.css";
-import BottomNavbar from "@/components/BottomNavbar";
+import { Inter } from "next/font/google";
+import "./(root)/globals.css";
+import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { AuthProvider } from "@/hooks/useAuth";
 
-const muliSans = Mulish({
-  variable: "--font-mulish-sans",
+const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Schedule Siap Undip",
-  description: "Aplikasi untuk melihat jadwal kuliah",
+  title: "SIAP UNDIP Schedule",
+  description: "Schedule management app for UNDIP students",
+  themeColor: "#ffffff",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${muliSans.className} antialiased pattern pb-20 scrollbar-none dark:bg-gray-900`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <ErrorBoundary>
-              {children}
-              <BottomNavbar />
-              <Toaster richColors />
-            </ErrorBoundary>
-          </AuthProvider>
-        </ThemeProvider>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body className={inter.className}>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="min-h-screen mb-10">{children}</div>
+            <Toaster />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

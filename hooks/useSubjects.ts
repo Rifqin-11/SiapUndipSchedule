@@ -35,7 +35,7 @@ export const useSubjects = () => {
       setError(null);
 
       const response = await fetch("/api/subjects", {
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include", // Include cookies for authentication
       });
 
       if (!response.ok) {
@@ -80,7 +80,7 @@ export const useSubjects = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include", // Include cookies for authentication
         body: JSON.stringify(subjectData),
       });
 
@@ -113,7 +113,7 @@ export const useSubjects = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include", // Include cookies for authentication
         body: JSON.stringify(subjectData),
       });
 
@@ -142,7 +142,7 @@ export const useSubjects = () => {
     try {
       const response = await fetch(`/api/subjects/${id}`, {
         method: "DELETE",
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include", // Include cookies for authentication
       });
 
       if (!response.ok) {
@@ -243,7 +243,7 @@ export const useSubject = (id: string) => {
         setError(null);
 
         const response = await fetch(`/api/subjects/${id}`, {
-          credentials: 'include', // Include cookies for authentication
+          credentials: "include", // Include cookies for authentication
         });
 
         if (!response.ok) {

@@ -62,11 +62,13 @@ const SubjectSchema = new Schema<ISubject>(
       required: false,
       trim: true,
     },
-    lecturer: [{
-      type: String,
-      required: true,
-      trim: true,
-    }],
+    lecturer: [
+      {
+        type: String,
+        required: true,
+        trim: true,
+      },
+    ],
     meeting: {
       type: Number,
       required: true,
@@ -74,47 +76,51 @@ const SubjectSchema = new Schema<ISubject>(
       min: 0,
       max: 14,
     },
-    attendanceDates: [{
-      type: String, // Store as ISO date strings
-    }],
-    reschedules: [{
-      subjectId: {
-        type: String,
-        required: true,
+    attendanceDates: [
+      {
+        type: String, // Store as ISO date strings
       },
-      originalDate: {
-        type: String,
-        required: true,
+    ],
+    reschedules: [
+      {
+        subjectId: {
+          type: String,
+          required: true,
+        },
+        originalDate: {
+          type: String,
+          required: true,
+        },
+        newDate: {
+          type: String,
+          required: true,
+        },
+        reason: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        startTime: {
+          type: String,
+          trim: true,
+        },
+        endTime: {
+          type: String,
+          trim: true,
+        },
+        room: {
+          type: String,
+          trim: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
-      newDate: {
-        type: String,
-        required: true,
-      },
-      reason: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-      startTime: {
-        type: String,
-        trim: true,
-      },
-      endTime: {
-        type: String,
-        trim: true,
-      },
-      room: {
-        type: String,
-        trim: true,
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now,
-      },
-    }],
+    ],
     category: {
       type: String,
-      enum: ['High', 'Medium', 'Low'],
+      enum: ["High", "Medium", "Low"],
       required: false,
     },
   },

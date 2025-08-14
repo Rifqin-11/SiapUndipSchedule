@@ -1,12 +1,2 @@
-"use client";
-
-import { ReactNode } from "react";
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
-  // Temporarily disabled auth provider - just return children
-  return <>{children}</>;
-}
+// Re-export the AuthProvider from hooks/useAuth.tsx
+export { AuthProvider } from "@/hooks/useAuth";

@@ -1,23 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
-import { Mail, Lock, ArrowLeft, ArrowRight, User, Chrome } from 'lucide-react';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { Mail, Lock, ArrowLeft, ArrowRight, User, Chrome } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string | string[]}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string | string[] }>(
+    {}
+  );
 
   const { register, user } = useAuth();
   const router = useRouter();
@@ -25,47 +27,47 @@ export default function RegisterPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string | string[]} = {};
+    const newErrors: { [key: string]: string | string[] } = {};
 
     // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = "Name must be at least 2 characters";
     }
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -86,23 +88,25 @@ export default function RegisterPage() {
       const result = await register({
         name: formData.name.trim(),
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       });
 
       if (result.success) {
-        toast.success('Registration successful! Please check your email for verification.');
-        router.push('/auth/login');
+        toast.success(
+          "Registration successful! Please check your email for verification."
+        );
+        router.push("/auth/login");
       } else {
         if (result.passwordErrors) {
           setErrors({ password: result.passwordErrors });
         } else {
-          setErrors({ general: result.error || 'Registration failed' });
+          setErrors({ general: result.error || "Registration failed" });
         }
-        toast.error(result.error || 'Registration failed');
+        toast.error(result.error || "Registration failed");
       }
     } catch {
-      setErrors({ general: 'An unexpected error occurred' });
-      toast.error('An unexpected error occurred');
+      setErrors({ general: "An unexpected error occurred" });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -164,13 +168,19 @@ export default function RegisterPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${errors.name ? 'border-red-300' : 'border-[#E2E8F0] focus:border-[#2563EB]'}`}
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                  errors.name
+                    ? "border-red-300"
+                    : "border-[#E2E8F0] focus:border-[#2563EB]"
+                }`}
                 placeholder="Enter your full name"
                 disabled={isLoading}
               />
             </div>
             {errors.name && (
-              <p className="text-sm text-red-600 ml-1 animate-fade-in">{errors.name}</p>
+              <p className="text-sm text-red-600 ml-1 animate-fade-in">
+                {errors.name}
+              </p>
             )}
           </div>
 
@@ -186,13 +196,19 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${errors.email ? 'border-red-300' : 'border-[#E2E8F0] focus:border-[#2563EB]'}`}
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                  errors.email
+                    ? "border-red-300"
+                    : "border-[#E2E8F0] focus:border-[#2563EB]"
+                }`}
                 placeholder="Enter your email"
                 disabled={isLoading}
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-red-600 ml-1 animate-fade-in">{errors.email}</p>
+              <p className="text-sm text-red-600 ml-1 animate-fade-in">
+                {errors.email}
+              </p>
             )}
           </div>
 
@@ -208,7 +224,11 @@ export default function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${errors.password ? 'border-red-300' : 'border-[#E2E8F0] focus:border-[#2563EB]'}`}
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                  errors.password
+                    ? "border-red-300"
+                    : "border-[#E2E8F0] focus:border-[#2563EB]"
+                }`}
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
@@ -240,13 +260,19 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${errors.confirmPassword ? 'border-red-300' : 'border-[#E2E8F0] focus:border-[#2563EB]'}`}
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                  errors.confirmPassword
+                    ? "border-red-300"
+                    : "border-[#E2E8F0] focus:border-[#2563EB]"
+                }`}
                 placeholder="Confirm your password"
                 disabled={isLoading}
               />
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-red-600 ml-1 animate-fade-in">{errors.confirmPassword}</p>
+              <p className="text-sm text-red-600 ml-1 animate-fade-in">
+                {errors.confirmPassword}
+              </p>
             )}
           </div>
 
@@ -275,7 +301,9 @@ export default function RegisterPage() {
               <div className="w-full border-t border-[#E2E8F0]"></div>
             </div>
             <div className="relative bg-white px-4">
-              <span className="text-sm text-[#94A3B8]">— Or sign up with —</span>
+              <span className="text-sm text-[#94A3B8]">
+                — Or sign up with —
+              </span>
             </div>
           </div>
 
@@ -293,8 +321,12 @@ export default function RegisterPage() {
               className="flex items-center justify-center h-12 bg-white border border-[#E2E8F0] rounded-xl hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all duration-200 social-btn"
               disabled={isLoading}
             >
-              <svg className="w-5 h-5 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              <svg
+                className="w-5 h-5 text-[#1877F2]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             </button>
             <button
@@ -302,8 +334,12 @@ export default function RegisterPage() {
               className="flex items-center justify-center h-12 bg-white border border-[#E2E8F0] rounded-xl hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all duration-200 social-btn"
               disabled={isLoading}
             >
-              <svg className="w-5 h-5 text-[#1DA1F2]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              <svg
+                className="w-5 h-5 text-[#1DA1F2]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
               </svg>
             </button>
           </div>
@@ -313,7 +349,7 @@ export default function RegisterPage() {
       {/* Sign In Link */}
       <div className="mt-8 text-center">
         <p className="text-[#94A3B8] text-sm">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link
             href="/auth/login"
             className="text-[#2563EB] hover:text-[#1E3A8A] font-semibold transition-colors"

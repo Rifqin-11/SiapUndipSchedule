@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
-import { Mail, Lock, ArrowRight, Chrome } from 'lucide-react';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { Mail, Lock, ArrowRight, Chrome } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const { login, user } = useAuth();
   const router = useRouter();
@@ -23,23 +23,23 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, router]);
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
 
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
@@ -60,15 +60,15 @@ export default function LoginPage() {
       const result = await login(email, password, rememberMe);
 
       if (result.success) {
-        toast.success('Login successful!');
-        router.push('/');
+        toast.success("Login successful!");
+        router.push("/");
       } else {
-        setErrors({ general: result.error || 'Login failed' });
-        toast.error(result.error || 'Login failed');
+        setErrors({ general: result.error || "Login failed" });
+        toast.error(result.error || "Login failed");
       }
     } catch {
-      setErrors({ general: 'An unexpected error occurred' });
-      toast.error('An unexpected error occurred');
+      setErrors({ general: "An unexpected error occurred" });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +77,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7FF] to-[#E0E7FF] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       {/* Header Logo */}
-      <div className="mb-12 text-center">
+      <div className="mb-12 mt-10 text-center">
         <h1 className="text-4xl font-bold text-[#1E3A8A] tracking-tight">
           siap undip
         </h1>
@@ -119,13 +119,19 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${errors.email ? 'border-red-300' : 'border-[#E2E8F0] focus:border-[#2563EB]'}`}
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                  errors.email
+                    ? "border-red-300"
+                    : "border-[#E2E8F0] focus:border-[#2563EB]"
+                }`}
                 placeholder="Enter your email"
                 disabled={isLoading}
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-red-600 ml-1 animate-fade-in">{errors.email}</p>
+              <p className="text-sm text-red-600 ml-1 animate-fade-in">
+                {errors.email}
+              </p>
             )}
           </div>
 
@@ -141,13 +147,19 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${errors.password ? 'border-red-300' : 'border-[#E2E8F0] focus:border-[#2563EB]'}`}
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                  errors.password
+                    ? "border-red-300"
+                    : "border-[#E2E8F0] focus:border-[#2563EB]"
+                }`}
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
             </div>
             {errors.password && (
-              <p className="text-sm text-red-600 ml-1 animate-fade-in">{errors.password}</p>
+              <p className="text-sm text-red-600 ml-1 animate-fade-in">
+                {errors.password}
+              </p>
             )}
           </div>
 
@@ -201,7 +213,9 @@ export default function LoginPage() {
               <div className="w-full border-t border-[#E2E8F0]"></div>
             </div>
             <div className="relative bg-white px-4">
-              <span className="text-sm text-[#94A3B8]">— Or sign in with —</span>
+              <span className="text-sm text-[#94A3B8]">
+                — Or sign in with —
+              </span>
             </div>
           </div>
 
@@ -219,8 +233,12 @@ export default function LoginPage() {
               className="flex items-center justify-center h-12 bg-white border border-[#E2E8F0] rounded-xl hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all duration-200 social-btn"
               disabled={isLoading}
             >
-              <svg className="w-5 h-5 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              <svg
+                className="w-5 h-5 text-[#1877F2]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             </button>
             <button
@@ -228,8 +246,12 @@ export default function LoginPage() {
               className="flex items-center justify-center h-12 bg-white border border-[#E2E8F0] rounded-xl hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all duration-200 social-btn"
               disabled={isLoading}
             >
-              <svg className="w-5 h-5 text-[#1DA1F2]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              <svg
+                className="w-5 h-5 text-[#1DA1F2]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
               </svg>
             </button>
           </div>
@@ -239,7 +261,7 @@ export default function LoginPage() {
       {/* Sign Up Link */}
       <div className="mt-8 text-center">
         <p className="text-[#94A3B8] text-sm">
-          Don&#39;t have an account?{' '}
+          Don&#39;t have an account?{" "}
           <Link
             href="/auth/register"
             className="text-[#2563EB] hover:text-[#1E3A8A] font-semibold transition-colors"

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useAuth } from './useAuth';
+import { useAuth } from "./useAuth";
 
 export interface UserProfile {
   id: string;
@@ -25,7 +25,7 @@ export const useUserProfile = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(profileData),
       });
 

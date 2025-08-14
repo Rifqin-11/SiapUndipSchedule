@@ -5,8 +5,8 @@ import { verifyJWTToken } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -26,9 +26,12 @@ export async function GET(request: NextRequest) {
     const db = client.db("schedule_undip");
 
     // Only fetch subjects that belong to the authenticated user
-    const subjects = await db.collection("subjects").find({ 
-      userId: decoded.userId 
-    }).toArray();
+    const subjects = await db
+      .collection("subjects")
+      .find({
+        userId: decoded.userId,
+      })
+      .toArray();
 
     // Ensure each subject has a consistent id field
     const mappedSubjects = subjects.map((subject) => ({
@@ -49,8 +52,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },

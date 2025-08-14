@@ -9,8 +9,8 @@ export async function GET(
 ) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -34,8 +34,8 @@ export async function GET(
     const subject = await db.collection("subjects").findOne({
       $and: [
         { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-        { userId: decoded.userId }
-      ]
+        { userId: decoded.userId },
+      ],
     });
 
     if (!subject) {
@@ -67,8 +67,8 @@ export async function PUT(
 ) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -99,8 +99,8 @@ export async function PUT(
       {
         $and: [
           { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-          { userId: decoded.userId }
-        ]
+          { userId: decoded.userId },
+        ],
       },
       { $set: updateData }
     );
@@ -128,8 +128,8 @@ export async function DELETE(
 ) {
   try {
     // Get user from authentication
-    const token = request.cookies.get('auth_token')?.value;
-    
+    const token = request.cookies.get("auth_token")?.value;
+
     if (!token) {
       return NextResponse.json(
         { success: false, error: "Authentication required" },
@@ -153,8 +153,8 @@ export async function DELETE(
     const result = await db.collection("subjects").deleteOne({
       $and: [
         { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-        { userId: decoded.userId }
-      ]
+        { userId: decoded.userId },
+      ],
     });
 
     if (result.deletedCount === 0) {
