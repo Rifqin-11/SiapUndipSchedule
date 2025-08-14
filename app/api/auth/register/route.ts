@@ -13,8 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectMongoDB();
 
-    const { name, email, password, nim, jurusan, fakultas, angkatan } =
-      await request.json();
+    const { name, email, password } = await request.json();
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -54,17 +53,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only check NIM if provided
-    if (nim) {
-      const existingUserByNIM = await User.findOne({ nim });
-      if (existingUserByNIM) {
-        return NextResponse.json(
-          { success: false, error: "An account with this NIM already exists" },
-          { status: 409 }
-        );
-      }
-    }
-
     // Hash password
     const hashedPassword = await hashPassword(password);
 
@@ -78,10 +66,10 @@ export async function POST(request: NextRequest) {
       name: name.trim(),
       email: email.toLowerCase().trim(),
       password: hashedPassword,
-      nim: nim?.trim() || `TEMP_${Date.now()}`, // Generate temporary NIM if not provided
-      jurusan: jurusan?.trim() || "Computer Science",
-      fakultas: fakultas?.trim() || "Science and Mathematics",
-      angkatan: angkatan?.trim() || "2024",
+      nim: null,
+      jurusan: null,
+      fakultas: null,
+      angkatan: null,
       isEmailVerified: false,
       emailVerificationToken,
       profileImage: null,

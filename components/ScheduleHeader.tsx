@@ -4,6 +4,7 @@ import Image from "next/image";
 import React from "react";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { getCurrentDayAndDate, normalizeDayName } from "@/utils/date";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface ScheduleHeaderProps {
   selectedDay?: string;
@@ -11,10 +12,14 @@ interface ScheduleHeaderProps {
 
 const ScheduleHeader = ({ selectedDay }: ScheduleHeaderProps) => {
   const { subjects, loading } = useSubjects();
+  const { user } = useUserProfile();
   const { currentDay } = getCurrentDayAndDate();
 
   // Use selectedDay if provided, otherwise use current day
   const dayToCheck = selectedDay || currentDay;
+
+  // Get user name for initials
+  const userName = user?.name || "User";
 
   // Helper function to check if a subject has a valid schedule
   const hasValidSchedule = (subject: Subject) => {
@@ -72,13 +77,24 @@ const ScheduleHeader = ({ selectedDay }: ScheduleHeaderProps) => {
           </p>
         </div>
         <div className="flex flex-row gap-2 items-center">
-          <Image
-            src="/ProfilePicture.jpg"
-            alt="Profile Picture"
-            width={30}
-            height={30}
-            className="rounded-full size-10"
-          />
+          {user?.profileImage ? (
+            <Image
+              src={user.profileImage}
+              alt="Profile Picture"
+              width={30}
+              height={30}
+              className="rounded-full size-10 object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+              {userName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </div>
+          )}
         </div>
       </div>
     </section>

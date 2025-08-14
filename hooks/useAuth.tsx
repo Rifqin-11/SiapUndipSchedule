@@ -12,10 +12,10 @@ interface User {
   id: string;
   name: string;
   email: string;
-  nim: string;
-  jurusan: string;
-  fakultas: string;
-  angkatan: string;
+  nim?: string | null;
+  jurusan?: string | null;
+  fakultas?: string | null;
+  angkatan?: string | null;
   profileImage?: string;
   isEmailVerified: boolean;
   lastLoginAt?: Date;

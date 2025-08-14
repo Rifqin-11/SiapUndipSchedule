@@ -3,7 +3,6 @@
 import React from "react";
 import { BookOpen, Info, Palette, Upload, History } from "lucide-react";
 import Link from "next/link";
-import NotificationManager from "@/components/NotificationManager";
 import SettingsPageSkeleton from "@/components/SettingsPageSkeleton";
 import { useSimulatedLoading } from "@/hooks/useLoadingState";
 
@@ -69,11 +68,6 @@ const SettingsPage = () => {
             <h1 className="text-2xl font-bold mb-2">Settings</h1>
             <p className="text-blue-100">Manage your app and preferences</p>
           </div>
-        </div>
-
-        {/* Notification Manager */}
-        <div className="mb-6">
-          <NotificationManager />
         </div>
 
         {/* Settings Items */}

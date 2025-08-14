@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Edit, Shield, Bell, LogOut, Camera, User } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -20,7 +20,11 @@ const UserPage = () => {
   const { logout } = useAuth();
   const router = useRouter();
 
+  // State for logout loading
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await logout();
       toast.success("Logged out successfully");
@@ -28,6 +32,8 @@ const UserPage = () => {
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Failed to logout");
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -52,7 +58,7 @@ const UserPage = () => {
       icon: Bell,
       title: "Notifications",
       description: "Notification settings",
-      href: "/notifications",
+      href: "/user/notifications",
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
     },
@@ -112,7 +118,7 @@ const UserPage = () => {
               {user?.name}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {user?.jurusan} - NIM: {user?.nim || "Belum diisi"}
+              {user?.jurusan || "-"} - NIM: {user?.nim || "-"}
             </p>
             <p className="text-sm text-blue-600 dark:text-blue-400">
               {user?.email}
@@ -140,7 +146,7 @@ const UserPage = () => {
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {user?.angkatan || "2024"}
+              {user?.angkatan || "-"}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Class Year
@@ -204,25 +210,19 @@ const UserPage = () => {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-green-100">Faculty</p>
-              <p className="font-medium">
-                {user?.fakultas || "Not filled"}
-              </p>
+              <p className="font-medium">{user?.fakultas || "-"}</p>
             </div>
             <div>
               <p className="text-green-100">Study Program</p>
-              <p className="font-medium">
-                {user?.jurusan || "Not filled"}
-              </p>
+              <p className="font-medium">{user?.jurusan || "-"}</p>
             </div>
             <div>
               <p className="text-green-100">Student ID</p>
-              <p className="font-medium">{user?.nim || "Not filled"}</p>
+              <p className="font-medium">{user?.nim || "-"}</p>
             </div>
             <div>
               <p className="text-green-100">Class Year</p>
-              <p className="font-medium">
-                {user?.angkatan || "Not filled"}
-              </p>
+              <p className="font-medium">{user?.angkatan || "-"}</p>
             </div>
           </div>
         </div>
@@ -230,10 +230,20 @@ const UserPage = () => {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="w-full p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center space-x-2"
+          disabled={isLoggingOut}
+          className="w-full p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Logout</span>
+          {isLoggingOut ? (
+            <>
+              <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+              <span className="font-medium">Logging out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
+            </>
+          )}
         </button>
       </div>
     </div>

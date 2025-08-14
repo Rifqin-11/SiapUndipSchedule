@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "Schedule management app for UNDIP students",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#232323" }
+    { media: "(prefers-color-scheme: dark)", color: "#232323" },
   ],
   viewport: {
     width: "device-width",

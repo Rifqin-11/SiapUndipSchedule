@@ -3,11 +3,11 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IUser extends Document {
   _id: string;
   name: string;
-  nim: string;
+  nim?: string | null;
   email: string;
-  jurusan: string;
-  fakultas: string;
-  angkatan: string;
+  jurusan?: string | null;
+  fakultas?: string | null;
+  angkatan?: string | null;
   profileImage?: string;
   password: string;
   isEmailVerified: boolean;
@@ -38,6 +38,7 @@ const UserSchema = new Schema<IUser>(
       unique: true,
       sparse: true, // Allow null/undefined values, but ensure uniqueness when value exists
       trim: true,
+      default: null,
     },
     email: {
       type: String,
@@ -48,18 +49,21 @@ const UserSchema = new Schema<IUser>(
     },
     jurusan: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
+      default: null,
     },
     fakultas: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
+      default: null,
     },
     angkatan: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
+      default: null,
     },
     profileImage: {
       type: String,

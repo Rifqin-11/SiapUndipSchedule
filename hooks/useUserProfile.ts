@@ -5,11 +5,11 @@ import { useAuth } from "./useAuth";
 export interface UserProfile {
   id: string;
   name: string;
-  nim: string;
+  nim?: string | null;
   email: string;
-  jurusan: string;
-  fakultas: string;
-  angkatan: string;
+  jurusan?: string | null;
+  fakultas?: string | null;
+  angkatan?: string | null;
   profileImage?: string;
   isEmailVerified: boolean;
   lastLoginAt?: Date;
