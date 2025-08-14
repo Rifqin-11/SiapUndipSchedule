@@ -79,7 +79,7 @@ export default function LoginPage() {
       {/* Header Logo */}
       <div className="mb-12 mt-10 text-center">
         <h1 className="text-4xl font-bold text-[#1E3A8A] tracking-tight">
-          siap undip
+          SIAP Undip
         </h1>
         {/* Decorative dots */}
         <div className="flex justify-center space-x-1 mt-2">
@@ -119,7 +119,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.email
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -147,7 +147,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.password
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -259,7 +259,7 @@ export default function LoginPage() {
       </div>
 
       {/* Sign Up Link */}
-      <div className="mt-8 text-center">
+      <div className="mt-8 text-center mb-10">
         <p className="text-[#94A3B8] text-sm">
           Don&#39;t have an account?{" "}
           <Link

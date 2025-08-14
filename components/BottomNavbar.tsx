@@ -44,12 +44,12 @@ const BottomNavbar = () => {
               >
                 <Icon
                   className={`h-6 w-6 transition-colors ${
-                    isActive(href) ? "text-blue-500" : "text-white/70"
+                    isActive(href) ? "text-white fill-white" : "text-white/70"
                   }`}
                 />
                 <span
                   className={`text-xs ${
-                    isActive(href) ? "text-blue-500" : "text-white/60"
+                    isActive(href) ? "text-white" : "text-white/60"
                   }`}
                 >
                   {label}
@@ -78,12 +78,12 @@ const BottomNavbar = () => {
               >
                 <Icon
                   className={`h-6 w-6 transition-colors ${
-                    isActive(href) ? "text-blue-500" : "text-white/70"
+                    isActive(href) ? "text-white fill-white" : "text-white/70"
                   }`}
                 />
                 <span
                   className={`text-xs ${
-                    isActive(href) ? "text-blue-500" : "text-white/60"
+                    isActive(href) ? "text-white" : "text-white/60"
                   }`}
                 >
                   {label}

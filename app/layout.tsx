@@ -43,7 +43,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="min-h-screen bg-background mb-10">{children}</div>
+            <div className="min-h-screen bg-background">{children}</div>
             <Toaster />
           </ThemeProvider>
         </AuthProvider>
