@@ -1,24 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (user) {
-        router.push('/');
-      } else {
-        router.push('/auth/login');
+      // Wait for auth loading to complete
+      if (!loading) {
+        if (user) {
+          router.push("/");
+        } else {
+          router.push("/auth/login");
+        }
       }
-    }, 2000); // Show splash for 2 seconds
+    }, 3000); // Show splash for 3 seconds
 
     return () => clearTimeout(timer);
-  }, [user, router]);
+  }, [user, loading, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] flex items-center justify-center relative overflow-hidden">

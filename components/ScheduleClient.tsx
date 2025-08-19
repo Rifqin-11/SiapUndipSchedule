@@ -204,15 +204,33 @@ const ScheduleClient = () => {
       };
     });
 
+  // Helper function to convert time string to minutes for sorting
+  const timeToMinutes = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
   // Combine regular subjects and reschedule subjects
   const allFilteredSubjects: SubjectWithReschedule[] = [
     ...filteredSubjects.map((s) => ({ ...s })),
     ...rescheduleSubjects,
   ];
 
+  // Sort subjects by start time (from morning to evening)
+  allFilteredSubjects.sort((a, b) => {
+    const timeA = timeToMinutes(a.startTime || "");
+    const timeB = timeToMinutes(b.startTime || "");
+    return timeA - timeB;
+  });
+
   console.log("Filtered subjects for selected day:", filteredSubjects);
   console.log("Reschedule subjects for selected day:", rescheduleSubjects);
   console.log("All subjects count:", allFilteredSubjects.length);
+  console.log(
+    "Sorted subjects by time:",
+    allFilteredSubjects.map((s) => ({ name: s.name, startTime: s.startTime }))
+  );
 
   const handleAddSubject = () => {
     setSelectedSubject(null);
