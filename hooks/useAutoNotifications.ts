@@ -29,14 +29,27 @@ const useAutoNotifications = () => {
       return;
     }
 
+    console.log("Auto notifications check:", {
+      loading,
+      subjectsCount: subjects.length,
+      permission: Notification.permission,
+      isClient,
+    });
+
     // Only initialize when subjects are loaded and notifications are permitted
     if (!loading && subjects.length > 0) {
       if (Notification.permission === "granted") {
         try {
+          console.log("Initializing notifications...");
           initializeNotifications();
         } catch (error) {
           console.warn("Failed to initialize notifications:", error);
         }
+      } else {
+        console.log(
+          "Notification permission not granted yet. Current permission:",
+          Notification.permission
+        );
       }
     }
   }, [subjects, loading, initializeNotifications, isClient]);

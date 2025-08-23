@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Mail, Lock, ArrowRight, Chrome } from "lucide-react";
+import { Mail, Lock, ArrowRight, Chrome, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -110,7 +111,7 @@ export default function LoginPage() {
           {/* Email Input */}
           <div className="space-y-2">
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 z-10" />
               <Input
                 id="email"
                 name="email"
@@ -119,7 +120,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.email
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -138,16 +139,16 @@ export default function LoginPage() {
           {/* Password Input */}
           <div className="space-y-2">
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 z-10" />
               <Input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.password
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -155,6 +156,18 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors z-10"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
             </div>
             {errors.password && (
               <p className="text-sm text-red-600 ml-1 animate-fade-in">

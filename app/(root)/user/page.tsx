@@ -50,7 +50,7 @@ const UserPage = () => {
       icon: Shield,
       title: "Security",
       description: "Password and account security",
-      href: "/security",
+      href: "/user/security",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },

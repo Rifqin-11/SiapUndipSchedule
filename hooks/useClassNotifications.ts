@@ -87,13 +87,49 @@ const useClassNotifications = () => {
     }
   };
 
-  // Calculate time until class starts
-  const getTimeUntilClass = (day: string, startTime: string): number => {
+  // Calculate time until class starts (supports both recurring and date-specific subjects)
+  const getTimeUntilClass = (subject: Subject): number => {
     const now = new Date();
+
+    // For date-specific subjects
+    if (subject.specificDate) {
+      console.log(
+        `Processing date-specific subject: ${subject.name} on ${subject.specificDate}`
+      );
+
+      // Parse the specific date (YYYY-MM-DD format)
+      const [year, month, day] = subject.specificDate.split("-").map(Number);
+
+      // Parse start time (assuming format like "08:00" or "8:00 AM")
+      const [time, period] = subject.startTime.split(" ");
+      let [hours] = time.split(":").map(Number);
+      const [, minutes] = time.split(":").map(Number);
+
+      // Convert to 24-hour format if needed
+      if (period) {
+        if (period.toLowerCase() === "pm" && hours !== 12) hours += 12;
+        if (period.toLowerCase() === "am" && hours === 12) hours = 0;
+      }
+
+      // Create date for the specific class
+      const classDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      const timeUntil = classDate.getTime() - now.getTime();
+
+      console.log(
+        `Date-specific subject ${
+          subject.name
+        }: classDate=${classDate.toISOString()}, timeUntil=${
+          timeUntil / 1000 / 60
+        } minutes`
+      );
+      return timeUntil;
+    }
+
+    // For recurring subjects (legacy logic)
     const currentDay = now.toLocaleDateString("en-US", { weekday: "long" });
 
     // Parse start time (assuming format like "08:00" or "8:00 AM")
-    const [time, period] = startTime.split(" ");
+    const [time, period] = subject.startTime.split(" ");
     let [hours] = time.split(":").map(Number);
     const [, minutes] = time.split(":").map(Number);
 
@@ -108,11 +144,11 @@ const useClassNotifications = () => {
     classDate.setHours(hours, minutes, 0, 0);
 
     // If class is today but already passed, schedule for next week
-    if (day === currentDay && classDate <= now) {
+    if (subject.day === currentDay && classDate <= now) {
       classDate.setDate(classDate.getDate() + 7);
     }
     // If class is not today, find the next occurrence
-    else if (day !== currentDay) {
+    else if (subject.day !== currentDay) {
       const daysOfWeek = [
         "Sunday",
         "Monday",
@@ -123,7 +159,7 @@ const useClassNotifications = () => {
         "Saturday",
       ];
       const currentDayIndex = now.getDay();
-      const classDayIndex = daysOfWeek.indexOf(day);
+      const classDayIndex = daysOfWeek.indexOf(subject.day);
 
       if (classDayIndex === -1) return -1; // Invalid day
 
@@ -133,20 +169,42 @@ const useClassNotifications = () => {
       classDate.setDate(classDate.getDate() + daysUntilClass);
     }
 
-    return classDate.getTime() - now.getTime();
+    const timeUntil = classDate.getTime() - now.getTime();
+    console.log(
+      `Recurring subject ${
+        subject.name
+      }: classDate=${classDate.toISOString()}, timeUntil=${
+        timeUntil / 1000 / 60
+      } minutes`
+    );
+    return timeUntil;
   };
 
   // Schedule notification
   const scheduleNotification = (subject: Subject) => {
-    const timeUntilClass = getTimeUntilClass(subject.day, subject.startTime);
+    console.log(`Attempting to schedule notification for: ${subject.name}`);
 
-    if (timeUntilClass <= 0) return;
+    const timeUntilClass = getTimeUntilClass(subject);
+
+    if (timeUntilClass <= 0) {
+      console.log(
+        `Subject ${subject.name} is in the past, skipping notification`
+      );
+      return;
+    }
 
     // Schedule notification 15 minutes before class
     const notificationTime = timeUntilClass - 15 * 60 * 1000; // 15 minutes in milliseconds
 
     if (notificationTime > 0) {
+      console.log(
+        `Scheduling 15-min notification for ${subject.name} in ${
+          notificationTime / 1000 / 60
+        } minutes`
+      );
+
       setTimeout(() => {
+        console.log(`Triggering 15-min notification for ${subject.name}`);
         createNotification(
           "Class Reminder 📚",
           `${subject.name} will start in 15 minutes at ${subject.room}`,
@@ -158,19 +216,22 @@ const useClassNotifications = () => {
           }
         );
       }, notificationTime);
-
-      console.log(
-        `Notification scheduled for ${subject.name} in ${
-          notificationTime / 1000 / 60
-        } minutes`
-      );
+    } else {
+      console.log(`15-min notification time has passed for ${subject.name}`);
     }
 
     // Schedule notification 5 minutes before class
     const urgentNotificationTime = timeUntilClass - 5 * 60 * 1000; // 5 minutes in milliseconds
 
     if (urgentNotificationTime > 0) {
+      console.log(
+        `Scheduling 5-min notification for ${subject.name} in ${
+          urgentNotificationTime / 1000 / 60
+        } minutes`
+      );
+
       setTimeout(() => {
+        console.log(`Triggering 5-min notification for ${subject.name}`);
         createNotification(
           "Class Starting Soon! 🚨",
           `${subject.name} starts in 5 minutes at ${subject.room}. Get ready!`,
@@ -182,6 +243,8 @@ const useClassNotifications = () => {
           }
         );
       }, urgentNotificationTime);
+    } else {
+      console.log(`5-min notification time has passed for ${subject.name}`);
     }
   };
 
@@ -197,6 +260,28 @@ const useClassNotifications = () => {
     // Clear existing timeouts (in a real app, you'd want to track these)
     // Schedule notifications for all subjects that have a valid schedule
     const scheduledSubjects = subjects.filter((subject) => {
+      // For date-specific subjects
+      if (subject.specificDate) {
+        const hasValidSchedule =
+          subject.specificDate &&
+          subject.startTime &&
+          typeof subject.startTime === "string" &&
+          subject.startTime.trim() !== "";
+
+        if (!hasValidSchedule) {
+          console.log(
+            `Skipping notification for date-specific subject ${subject.name} - no valid schedule`
+          );
+          return false;
+        }
+
+        console.log(
+          `Valid date-specific subject found: ${subject.name} on ${subject.specificDate}`
+        );
+        return true;
+      }
+
+      // For recurring subjects
       const hasValidSchedule =
         subject.day &&
         typeof subject.day === "string" &&
@@ -207,11 +292,14 @@ const useClassNotifications = () => {
 
       if (!hasValidSchedule) {
         console.log(
-          `Skipping notification for ${subject.name} - no valid schedule`
+          `Skipping notification for recurring subject ${subject.name} - no valid schedule`
         );
         return false;
       }
 
+      console.log(
+        `Valid recurring subject found: ${subject.name} on ${subject.day}`
+      );
       return true;
     });
 

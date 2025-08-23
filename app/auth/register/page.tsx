@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Mail, Lock, ArrowLeft, ArrowRight, User, Chrome } from "lucide-react";
+import { Mail, Lock, ArrowLeft, ArrowRight, User, Chrome, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +16,8 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string | string[] }>(
     {}
@@ -39,6 +41,47 @@ export default function RegisterPage() {
     }));
   };
 
+  const getPasswordStrength = (password: string) => {
+    if (password.length === 0) return { strength: 0, text: "" };
+
+    let strength = 0;
+    const checks = [
+      password.length >= 8,
+      /[a-z]/.test(password),
+      /[A-Z]/.test(password),
+      /[0-9]/.test(password),
+      /[^A-Za-z0-9]/.test(password),
+    ];
+
+    strength = checks.filter(Boolean).length;
+
+    const strengthText = {
+      0: "",
+      1: "Very Weak",
+      2: "Weak",
+      3: "Fair",
+      4: "Good",
+      5: "Strong",
+    };
+
+    const strengthColor = {
+      0: "",
+      1: "text-red-500",
+      2: "text-orange-500",
+      3: "text-yellow-500",
+      4: "text-blue-500",
+      5: "text-green-500",
+    };
+
+    return {
+      strength,
+      text: strengthText[strength as keyof typeof strengthText],
+      color: strengthColor[strength as keyof typeof strengthColor],
+    };
+  };
+
+  const passwordStrength = getPasswordStrength(formData.password);
+
   const validateForm = () => {
     const newErrors: { [key: string]: string | string[] } = {};
 
@@ -59,8 +102,27 @@ export default function RegisterPage() {
     // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    } else {
+      const passwordErrors = [];
+      if (formData.password.length < 8) {
+        passwordErrors.push("Password must be at least 8 characters long");
+      }
+      if (!/[a-z]/.test(formData.password)) {
+        passwordErrors.push("Password must contain lowercase letters");
+      }
+      if (!/[A-Z]/.test(formData.password)) {
+        passwordErrors.push("Password must contain uppercase letters");
+      }
+      if (!/[0-9]/.test(formData.password)) {
+        passwordErrors.push("Password must contain numbers");
+      }
+      if (!/[^A-Za-z0-9]/.test(formData.password)) {
+        passwordErrors.push("Password must contain special characters");
+      }
+      
+      if (passwordErrors.length > 0) {
+        newErrors.password = passwordErrors;
+      }
     }
 
     // Confirm password validation
@@ -159,7 +221,7 @@ export default function RegisterPage() {
           {/* Name Input */}
           <div className="space-y-2">
             <div className="relative">
-              <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+              <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 z-10" />
               <Input
                 id="name"
                 name="name"
@@ -168,7 +230,7 @@ export default function RegisterPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.name
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -187,7 +249,7 @@ export default function RegisterPage() {
           {/* Email Input */}
           <div className="space-y-2">
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 z-10" />
               <Input
                 id="email"
                 name="email"
@@ -196,7 +258,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.email
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -215,16 +277,16 @@ export default function RegisterPage() {
           {/* Password Input */}
           <div className="space-y-2">
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 z-10" />
               <Input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                className={`pl-12 pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.password
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -232,7 +294,96 @@ export default function RegisterPage() {
                 placeholder="Enter your password"
                 disabled={isLoading}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors z-10"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
             </div>
+            
+            {/* Password Strength Indicator */}
+            {formData.password && (
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        passwordStrength.strength <= 2
+                          ? "bg-red-500"
+                          : passwordStrength.strength <= 3
+                          ? "bg-yellow-500"
+                          : passwordStrength.strength <= 4
+                          ? "bg-blue-500"
+                          : "bg-green-500"
+                      }`}
+                      style={{
+                        width: `${(passwordStrength.strength / 5) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <span
+                    className={`text-xs font-medium ${passwordStrength.color}`}
+                  >
+                    {passwordStrength.text}
+                  </span>
+                </div>
+                
+                {/* Password Requirements */}
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-gray-700 mb-2">Password requirements:</p>
+                  <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                    <div className="flex items-center space-x-1">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          formData.password.length >= 8 ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      ></div>
+                      <span>8+ characters</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          /[a-z]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      ></div>
+                      <span>Lowercase</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          /[A-Z]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      ></div>
+                      <span>Uppercase</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          /[0-9]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      ></div>
+                      <span>Numbers</span>
+                    </div>
+                    <div className="flex items-center space-x-1 col-span-2">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          /[^A-Za-z0-9]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      ></div>
+                      <span>Special characters (!@#$%^&*)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {errors.password && (
               <div className="text-sm text-red-600 ml-1 animate-fade-in">
                 {Array.isArray(errors.password) ? (
@@ -251,16 +402,16 @@ export default function RegisterPage() {
           {/* Confirm Password Input */}
           <div className="space-y-2">
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 z-10" />
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-white transition-all duration-200 input-focus ${
+                className={`pl-12 pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.confirmPassword
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -268,6 +419,18 @@ export default function RegisterPage() {
                 placeholder="Confirm your password"
                 disabled={isLoading}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors z-10"
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
             </div>
             {errors.confirmPassword && (
               <p className="text-sm text-red-600 ml-1 animate-fade-in">
