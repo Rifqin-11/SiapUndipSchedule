@@ -27,6 +27,10 @@ const ManageSubjects = () => {
     deleteSubject,
     deleteAllSubjects,
   } = useSubjects();
+
+  // Ensure subjects is always an array
+  const safeSubjects = Array.isArray(subjects) ? subjects : [];
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
@@ -173,7 +177,7 @@ const ManageSubjects = () => {
           </h1>
           <div className="flex gap-3">
             {/* Delete All Button - only show if there are subjects */}
-            {Array.isArray(subjects) && subjects.length > 0 && (
+            {safeSubjects.length > 0 && (
               <button
                 onClick={handleDeleteAllSubjects}
                 className="flex items-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
@@ -221,8 +225,8 @@ const ManageSubjects = () => {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {Array.isArray(subjects) && subjects.length > 0 ? (
-                  subjects.map((subject) => (
+                {safeSubjects.length > 0 ? (
+                  safeSubjects.map((subject) => (
                     <tr
                       key={subject.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -278,11 +282,16 @@ const ManageSubjects = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 dark:text-white">
-                          {subject.lecturer.map((lecturer, index) => (
+                          {Array.isArray(subject.lecturer) && subject.lecturer.map((lecturer, index) => (
                             <div key={index} className="truncate max-w-xs">
                               {lecturer}
                             </div>
                           ))}
+                          {(!Array.isArray(subject.lecturer) || subject.lecturer.length === 0) && (
+                            <div className="text-gray-500 dark:text-gray-400 italic">
+                              No lecturer assigned
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
