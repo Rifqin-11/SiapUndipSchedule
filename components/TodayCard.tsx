@@ -151,7 +151,7 @@ const TodayCard: React.FC<TodayCardProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35 cursor-pointer hover:scale-105 transition-transform duration-200`}
+      className={`flex flex-col ${bgColor} justify-around rounded-3xl p-3 w-full min-h-35 cursor-pointer hover:scale-101 transition-transform duration-200`}
     >
       <div className="flex flex-row mt-2 justify-between items-center">
         <div className="flex flex-col">

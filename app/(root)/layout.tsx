@@ -13,7 +13,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <Sidebar />
 
         {/* Main content area */}
-        <div className="flex-1 w-full lg:pl-72">
+        <div className="flex-1 w-full lg:pl-64">
           <div className="mb-25 lg:mb-0 min-h-screen w-full">{children}</div>
         </div>
 

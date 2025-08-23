@@ -58,7 +58,7 @@ const SettingsPage = () => {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-full mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white text-center">

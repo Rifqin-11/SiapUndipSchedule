@@ -40,7 +40,7 @@ const SettingsHeader = ({ title, description, icon }: SettingsHeaderProps) => {
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      <div className="max-w-4xl mx-auto px-6 py-4">
+      <div className="max-full mx-auto px-6 py-4">
         <div className="flex items-center gap-4">
           <BackButton />
           <div className="flex items-center gap-3">

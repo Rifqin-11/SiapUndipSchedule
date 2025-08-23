@@ -10,7 +10,6 @@ const layout = ({ children }: { children: ReactNode }) => {
         description="Add, edit, and delete your subjects"
         icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
       />
-
       <div className="pt-6 pb-12">{children}</div>
     </div>
   );

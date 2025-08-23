@@ -74,8 +74,8 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           startTime: subject.startTime || "",
           endTime: subject.endTime || "",
           lecturer: Array.isArray(subject.lecturer) ? subject.lecturer : [""],
-          meeting: subject.meeting || 1,
-          category: subject.category || "",
+          meeting: subject.meeting || 0,
+          category: subject.category || "Low",
         });
       } else {
         // Reset for add mode dengan hari yang sudah dipilih
@@ -86,8 +86,8 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           startTime: "",
           endTime: "",
           lecturer: [""],
-          meeting: 1,
-          category: "",
+          meeting: 0,
+          category: "Low",
         });
       }
     }
@@ -328,18 +328,22 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
                 max="20"
                 value={formData.meeting}
                 onChange={(e) =>
-                  handleInputChange("meeting", parseInt(e.target.value) || 1)
+                  handleInputChange("meeting", parseInt(e.target.value) || 0)
                 }
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Input
+              <select
                 id="category"
                 value={formData.category}
                 onChange={(e) => handleInputChange("category", e.target.value)}
-                placeholder="Optional"
-              />
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
             </div>
           </div>
 

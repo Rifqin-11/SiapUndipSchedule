@@ -64,12 +64,6 @@ const TodaySubject = () => {
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
 
-  // Debug logging
-  console.log("TodaySubject Debug:");
-  console.log("Current day from utils:", currentDay);
-  console.log("All subjects:", subjectsArray);
-  console.log("Subjects count:", subjectsArray.length);
-
   // Check unique days in database
   const uniqueDays = [
     ...new Set(
@@ -146,10 +140,6 @@ const TodaySubject = () => {
     ...todaySubject.map((s) => ({ ...s })),
     ...rescheduleSubjects,
   ];
-
-  console.log("Filtered subjects for today:", todaySubject);
-  console.log("Reschedule subjects for today:", rescheduleSubjects);
-  console.log("All today subjects count:", allTodaySubjects.length);
 
   if (loading) {
     return (

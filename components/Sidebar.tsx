@@ -6,9 +6,10 @@ import {
   Calendar,
   Home,
   Settings2,
-  UserRound,
+  ImageUp,
+  Album,
   QrCode,
-  Ticket, // untuk "Task"
+  ClipboardCheck,
   MoreHorizontal,
 } from "lucide-react";
 import { useState } from "react";
@@ -29,16 +30,20 @@ const Sidebar = () => {
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
-    { href: "/task", icon: Ticket, label: "Task" }, // optional: sesuaikan dengan rute kamu
-    { href: "/user", icon: UserRound, label: "Profile" },
+    { href: "/task", icon: ClipboardCheck, label: "Task" }, // optional: sesuaikan dengan rute kamu
+    {
+      href: "/settings/manage-subjects",
+      icon: Album,
+      label: "Manage Subjects",
+    },
+    { href: "/settings/upload-krs", icon: ImageUp, label: "Upload IRS" },
   ];
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
   const userName = user?.name || authUser?.name || "User";
-  const userEmail =
-    (user as any)?.email || (authUser as any)?.email || "youremail@gmail.com";
+  const userEmail = user?.email || authUser?.email || "youremail@gmail.com";
 
   // Helper untuk kelas item menu (aktif vs normal)
   const itemBase =
@@ -148,14 +153,14 @@ const Sidebar = () => {
                   </div>
                 )}
 
-                <div className="min-w-0 flex-1">
+                <Link href="/user" className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {userName}
                   </p>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
                     {userEmail}
                   </p>
-                </div>
+                </Link>
 
                 <button
                   type="button"

@@ -16,7 +16,7 @@ const SettingsPageSkeleton = () => {
         </div>
       </section>
 
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <div className="max-full mx-auto p-6 space-y-6">
         {/* Theme Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="h-6 w-32 bg-gray-300 rounded mb-4"></div>
