@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
 
@@ -30,7 +31,8 @@ interface SubjectModalProps {
   ) => Promise<{ success: boolean; error?: string }>;
   subject?: Subject | null;
   mode: "add" | "edit";
-  preselectedDay?: string; // Hari yang sudah dipilih dari ScheduleClient
+  preselectedDay?: string; // Hari yang sudah dipilih dari ScheduleClient (legacy)
+  selectedDate?: string; // Tanggal spesifik (YYYY-MM-DD format)
 }
 
 const days = [
@@ -50,6 +52,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
   subject,
   mode,
   preselectedDay,
+  selectedDate,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -61,6 +64,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
     meeting: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [repeatWeekly, setRepeatWeekly] = useState(false); // State for repeat checkbox
 
   // Reset form when modal opens/closes or subject changes
   useEffect(() => {
@@ -75,6 +79,8 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           lecturer: Array.isArray(subject.lecturer) ? subject.lecturer : [""],
           meeting: Number(subject.meeting) || 0,
         });
+        // For edit mode, set repeat based on whether subject is recurring or date-specific
+        setRepeatWeekly(!subject.specificDate); // If no specificDate, it's recurring
       } else {
         // Reset for add mode dengan hari yang sudah dipilih
         setFormData({
@@ -86,9 +92,11 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           lecturer: [""],
           meeting: 0,
         });
+        // For add mode, default to not repeating if selectedDate is provided
+        setRepeatWeekly(!selectedDate);
       }
     }
-  }, [isOpen, mode, subject, preselectedDay]);
+  }, [isOpen, mode, subject, preselectedDay, selectedDate]);
 
   // Clear schedule-related fields when "no-schedule" is selected
   useEffect(() => {
@@ -194,6 +202,10 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
         ...formData,
         lecturer: filteredLecturers,
         day: formData.day === "no-schedule" ? "" : formData.day, // Convert back to empty string
+        specificDate:
+          mode === "add" && selectedDate && !repeatWeekly
+            ? selectedDate
+            : undefined, // Use selectedDate only if not repeating weekly
         category: getAutoCategory(formData.meeting), // Auto-generated category
         id: mode === "edit" && subject ? subject.id : "", // Backend will generate for new subjects
         userId: mode === "edit" && subject ? subject.userId : "", // Backend will set from auth token for new subjects
@@ -245,29 +257,60 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="day">
-              Day (Optional - Leave blank for subjects without schedule)
-            </Label>
-            <Select
-              value={formData.day}
-              onValueChange={(value) => handleInputChange("day", value)}
-              disabled={mode === "add" && !!preselectedDay}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select day (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="no-schedule">No Schedule</SelectItem>
-                {days.map((day) => (
-                  <SelectItem key={day} value={day}>
-                    {day}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {mode === "add" && preselectedDay && (
-              <p className="text-xs text-gray-500">
-                Subject will be added on {preselectedDay}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="day">
+                Day (Optional - Leave blank for subjects without schedule)
+              </Label>
+            </div>
+            <div className="flex flex-row items-center gap-4">
+              <Select
+                value={formData.day}
+                onValueChange={(value) => handleInputChange("day", value)}
+                disabled={mode === "add" && !!preselectedDay}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select day (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no-schedule">No Schedule</SelectItem>
+                  {days.map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {mode === "add" && selectedDate && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="repeat-weekly"
+                    checked={repeatWeekly}
+                    onCheckedChange={(checked) =>
+                      setRepeatWeekly(checked === true)
+                    }
+                  />
+                  <Label htmlFor="repeat-weekly" className="text-sm font-normal">
+                    Repeat Weekly
+                  </Label>
+                </div>
+              )}
+            </div>
+            {mode === "add" && selectedDate && (
+              <p className="text-xs text-blue-600 font-medium">
+                {repeatWeekly
+                  ? `This subject will occur on ${new Date(
+                      selectedDate
+                    ).toLocaleDateString("id-ID", {
+                      weekday: "long",
+                    })} and repeat every week.`
+                  : `This subject will only occur on ${new Date(
+                      selectedDate
+                    ).toLocaleDateString("id-ID", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })} and will not repeat weekly.`}
               </p>
             )}
           </div>

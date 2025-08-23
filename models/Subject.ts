@@ -4,7 +4,8 @@ export interface ISubject extends Document {
   id: string;
   userId: string; // Reference to user who owns this subject
   name: string;
-  day: string;
+  day: string; // For recurring weekly subjects (legacy support)
+  specificDate?: string; // For date-specific subjects (YYYY-MM-DD format)
   room: string;
   startTime: string;
   endTime: string;
@@ -44,6 +45,11 @@ const SubjectSchema = new Schema<ISubject>(
     },
     day: {
       type: String,
+      required: false,
+      trim: true,
+    },
+    specificDate: {
+      type: String, // Store as YYYY-MM-DD format
       required: false,
       trim: true,
     },
@@ -131,6 +137,7 @@ const SubjectSchema = new Schema<ISubject>(
 
 // Create compound index for userId and other commonly queried fields
 SubjectSchema.index({ userId: 1, day: 1 });
+SubjectSchema.index({ userId: 1, specificDate: 1 });
 SubjectSchema.index({ userId: 1, name: 1 });
 
 export default mongoose.models.Subject ||

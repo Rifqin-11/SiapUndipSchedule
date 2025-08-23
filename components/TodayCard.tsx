@@ -18,6 +18,7 @@ interface Subject {
   bgRoomColor: string;
   textColor: string;
   day: string;
+  specificDate?: string; // For date-specific subjects
   meeting: number;
   attendanceDates?: string[];
   reschedules?: Array<{

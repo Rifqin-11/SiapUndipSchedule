@@ -5,7 +5,8 @@ export interface Subject {
   id: string;
   userId: string;
   name: string;
-  day: string;
+  day: string; // For recurring weekly subjects (legacy support)
+  specificDate?: string; // For date-specific subjects (YYYY-MM-DD format)
   room: string;
   startTime: string;
   endTime: string;

@@ -11,6 +11,7 @@ import { useSubjects, Subject } from "@/hooks/useSubjects";
 
 interface SubjectWithReschedule extends Subject {
   rescheduleDate?: string;
+  specificDate?: string; // For date-specific subjects
   rescheduleInfo?: {
     originalDate: Date;
     newDate: Date;
@@ -86,6 +87,15 @@ const TodaySubject = () => {
   }
 
   const todaySubject = subjectsArray.filter((subject) => {
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+    // Check if subject is date-specific for today
+    if (subject.specificDate) {
+      return subject.specificDate === todayString;
+    }
+
+    // For recurring subjects, check day match
     // Skip subjects without a valid day property
     if (!subject.day || typeof subject.day !== "string") {
       console.log(

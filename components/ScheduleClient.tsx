@@ -52,6 +52,7 @@ const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
   const [selectedDay, setSelectedDay] = useState(currentDay);
   const [selectedDate, setSelectedDate] = useState<string>(); // Add selected date state
+  const [weekOffset, setWeekOffset] = useState(0); // Add week offset state
   const {
     subjects,
     loading,
@@ -98,8 +99,9 @@ const ScheduleClient = () => {
   // Handle week change from HorizonalCalendar
   const handleWeekChange = (weekOffset: number) => {
     console.log("Week changed to offset:", weekOffset);
-    // Clear selection when week changes to avoid confusion
-    // The user will need to select a day in the new week
+    setWeekOffset(weekOffset); // Update week offset state
+    // Reset selected date when week changes to avoid confusion
+    setSelectedDate(undefined);
   };
 
   // Handle day selection from HorizonalCalendar
@@ -167,26 +169,6 @@ const ScheduleClient = () => {
     );
   };
 
-  const filteredSubjects = subjectsArray.filter((subject) => {
-    // Only show subjects that have a valid schedule (day and time)
-    if (!hasValidSchedule(subject)) {
-      console.log(
-        `Skipping subject without valid schedule: ${subject.name} - Day: ${subject.day}, StartTime: ${subject.startTime}, EndTime: ${subject.endTime}`
-      );
-      return false;
-    }
-
-    const normalizedSubjectDay = normalizeDayName(subject.day);
-    const normalizedSelectedDay = normalizeDayName(selectedDay);
-    console.log(
-      `Comparing normalized subject day "${normalizedSubjectDay}" with selected day "${normalizedSelectedDay}"`
-    );
-    console.log(
-      `Original subject day: "${subject.day}", selected day: "${selectedDay}"`
-    );
-    return normalizedSubjectDay === normalizedSelectedDay;
-  });
-
   // Get reschedule subjects for selected day
   const getSelectedDayDate = () => {
     // Use selectedDate if available, otherwise calculate from selectedDay
@@ -210,10 +192,38 @@ const ScheduleClient = () => {
 
     const dayDifference = selectedDayIndex - currentDayIndex;
     const selectedDateCalc = new Date(today);
-    selectedDateCalc.setDate(today.getDate() + dayDifference);
-
+    selectedDateCalc.setDate(today.getDate() + dayDifference + weekOffset * 7);
     return selectedDateCalc.toISOString().split("T")[0]; // YYYY-MM-DD format
   };
+
+  const filteredSubjects = subjectsArray.filter((subject) => {
+    const selectedDayDate = getSelectedDayDate();
+
+    // Check if subject is date-specific
+    if (subject.specificDate) {
+      // For date-specific subjects, only show if it matches the selected date
+      return subject.specificDate === selectedDayDate;
+    }
+
+    // For recurring subjects (legacy), check day match and valid schedule
+    // Only show subjects that have a valid schedule (day and time)
+    if (!hasValidSchedule(subject)) {
+      console.log(
+        `Skipping subject without valid schedule: ${subject.name} - Day: ${subject.day}, StartTime: ${subject.startTime}, EndTime: ${subject.endTime}`
+      );
+      return false;
+    }
+
+    const normalizedSubjectDay = normalizeDayName(subject.day);
+    const normalizedSelectedDay = normalizeDayName(selectedDay);
+    console.log(
+      `Comparing normalized subject day "${normalizedSubjectDay}" with selected day "${normalizedSelectedDay}"`
+    );
+    console.log(
+      `Original subject day: "${subject.day}", selected day: "${selectedDay}"`
+    );
+    return normalizedSubjectDay === normalizedSelectedDay;
+  });
 
   const selectedDayString = getSelectedDayDate();
 
@@ -495,6 +505,7 @@ const ScheduleClient = () => {
         subject={selectedSubject}
         mode={modalMode}
         preselectedDay={modalMode === "add" ? selectedDay : undefined}
+        selectedDate={modalMode === "add" ? getSelectedDayDate() : undefined}
       />
 
       {/* Delete Confirmation Dialog */}
