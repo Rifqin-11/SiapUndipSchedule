@@ -132,8 +132,8 @@ const Sidebar = () => {
               <span>Settings</span>
             </Link>
 
-            <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-              <div className="flex items-center gap-3">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3 hover:bg-gray-50">
+              <Link href="/user" className="flex items-center gap-3">
                 {user?.profileImage ? (
                   <Image
                     src={user.profileImage}
@@ -153,14 +153,14 @@ const Sidebar = () => {
                   </div>
                 )}
 
-                <Link href="/user" className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {userName}
                   </p>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
                     {userEmail}
                   </p>
-                </Link>
+                </div>
 
                 <button
                   type="button"
@@ -169,7 +169,7 @@ const Sidebar = () => {
                 >
                   <MoreHorizontal className="h-4 w-4 text-gray-500" />
                 </button>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
