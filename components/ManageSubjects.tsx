@@ -282,12 +282,14 @@ const ManageSubjects = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 dark:text-white">
-                          {Array.isArray(subject.lecturer) && subject.lecturer.map((lecturer, index) => (
-                            <div key={index} className="truncate max-w-xs">
-                              {lecturer}
-                            </div>
-                          ))}
-                          {(!Array.isArray(subject.lecturer) || subject.lecturer.length === 0) && (
+                          {Array.isArray(subject.lecturer) &&
+                            subject.lecturer.map((lecturer, index) => (
+                              <div key={index} className="truncate max-w-xs">
+                                {lecturer}
+                              </div>
+                            ))}
+                          {(!Array.isArray(subject.lecturer) ||
+                            subject.lecturer.length === 0) && (
                             <div className="text-gray-500 dark:text-gray-400 italic">
                               No lecturer assigned
                             </div>

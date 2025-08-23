@@ -289,7 +289,10 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
                       setRepeatWeekly(checked === true)
                     }
                   />
-                  <Label htmlFor="repeat-weekly" className="text-sm font-normal">
+                  <Label
+                    htmlFor="repeat-weekly"
+                    className="text-sm font-normal"
+                  >
                     Repeat Weekly
                   </Label>
                 </div>
@@ -384,23 +387,26 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
             </Button>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="meeting">Meeting Count</Label>
-            <Input
-              id="meeting"
-              type="number"
-              min="0"
-              max="20"
-              value={formData.meeting || 0}
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                handleInputChange(
-                  "meeting",
-                  isNaN(value) ? 0 : Math.max(0, value)
-                );
-              }}
-            />
-          </div>
+          {/* Meeting Count - Only show in edit mode */}
+          {mode === "edit" && (
+            <div className="space-y-2">
+              <Label htmlFor="meeting">Meeting Count</Label>
+              <Input
+                id="meeting"
+                type="number"
+                min="0"
+                max="20"
+                value={formData.meeting || 0}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  handleInputChange(
+                    "meeting",
+                    isNaN(value) ? 0 : Math.max(0, value)
+                  );
+                }}
+              />
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
