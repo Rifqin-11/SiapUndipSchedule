@@ -28,7 +28,7 @@ const BottomNavbar = () => {
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 xl:hidden">
         <div
           className="w-[360px] h-[70px] px-6 rounded-full flex justify-between items-center
           shadow-xl relative border border-white/20

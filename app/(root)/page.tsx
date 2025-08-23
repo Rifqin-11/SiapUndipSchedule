@@ -68,8 +68,8 @@ const Page = () => {
 
   return (
     <main className="animate-fadeIn">
-      {/* Header Section with Profile and Notifications */}
-      <section className="flex flex-row gap-2 items-center mt-4 mx-5">
+      {/* Header Section with Profile and Notifications - Hide on desktop since it's in sidebar */}
+      <section className="flex flex-row gap-2 items-center mt-4 mx-5 lg:hidden">
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row gap-2 items-center">
             {user?.profileImage ? (
@@ -121,6 +121,7 @@ const Page = () => {
           </Link>
         </div>
 
+        {/* This div maintains overflow-x auto for horizontal scrolling */}
         <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
           <div className="flex gap-4">
             {subjects.length === 0 ? (
