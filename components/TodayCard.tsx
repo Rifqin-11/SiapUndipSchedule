@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -68,6 +70,12 @@ const TodayCard: React.FC<TodayCardProps> = ({
   };
 
   const [hasAttended, setHasAttended] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Mark component as client-side rendered
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Check localStorage on client side only
   useEffect(() => {
@@ -83,6 +91,11 @@ const TodayCard: React.FC<TodayCardProps> = ({
   const isToday = rescheduleDate
     ? true
     : day.toLowerCase() === currentDay.toLowerCase();
+
+  // Compute whether to show attendance section with stable memoization
+  const shouldShowAttendance = useMemo(() => {
+    return isClient && isToday && !hasAttended;
+  }, [isClient, isToday, hasAttended]);
 
   const handleAttendance = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click when clicking button
@@ -193,7 +206,7 @@ const TodayCard: React.FC<TodayCardProps> = ({
       </div>
 
       {/* Meeting progress and attendance button - only show if today is class day and haven't attended */}
-      {isToday && !hasAttended && (
+      {shouldShowAttendance && (
         <div className="mt-3 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-1 ${textColor}`}>

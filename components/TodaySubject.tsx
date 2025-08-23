@@ -161,16 +161,22 @@ const TodaySubject = () => {
     <div className="flex flex-col gap-4">
       {allTodaySubjects.length > 0 ? (
         allTodaySubjects.map((subject) => {
-          const randomColor =
-            colorPairs[Math.floor(Math.random() * colorPairs.length)];
+          // Use subject ID to generate consistent color index
+          const subjectId = subject._id || subject.id || "";
+          const colorIndex =
+            subjectId
+              .split("")
+              .reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+            colorPairs.length;
+          const consistentColor = colorPairs[colorIndex];
 
           // Create subject object with color properties
           const subjectWithColors = {
             ...subject,
             _id: subject._id || subject.id, // Ensure _id is always present
-            bgColor: randomColor.bg,
-            textColor: randomColor.text,
-            bgRoomColor: randomColor.roomBg,
+            bgColor: consistentColor.bg,
+            textColor: consistentColor.text,
+            bgRoomColor: consistentColor.roomBg,
           };
 
           return (

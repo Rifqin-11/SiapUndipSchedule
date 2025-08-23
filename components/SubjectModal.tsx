@@ -58,8 +58,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
     startTime: "",
     endTime: "",
     lecturer: [""],
-    meeting: 1,
-    category: "",
+    meeting: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -74,8 +73,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           startTime: subject.startTime || "",
           endTime: subject.endTime || "",
           lecturer: Array.isArray(subject.lecturer) ? subject.lecturer : [""],
-          meeting: subject.meeting || 0,
-          category: subject.category || "Low",
+          meeting: Number(subject.meeting) || 0,
         });
       } else {
         // Reset for add mode dengan hari yang sudah dipilih
@@ -87,11 +85,22 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           endTime: "",
           lecturer: [""],
           meeting: 0,
-          category: "Low",
         });
       }
     }
   }, [isOpen, mode, subject, preselectedDay]);
+
+  // Clear schedule-related fields when "no-schedule" is selected
+  useEffect(() => {
+    if (formData.day === "no-schedule") {
+      setFormData((prev) => ({
+        ...prev,
+        startTime: "",
+        endTime: "",
+        room: "",
+      }));
+    }
+  }, [formData.day]);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData((prev) => ({
@@ -172,11 +181,22 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
     setIsLoading(true);
 
     try {
+      // Auto-generate category based on meeting count
+      const getAutoCategory = (meetingCount: number): string => {
+        if (meetingCount >= 11) {
+          return "Low";
+        } else {
+          return "High";
+        }
+      };
+
       const subjectData = {
         ...formData,
         lecturer: filteredLecturers,
         day: formData.day === "no-schedule" ? "" : formData.day, // Convert back to empty string
-        id: mode === "edit" && subject ? subject.id : `${Date.now()}`, // Temporary ID for new subjects
+        category: getAutoCategory(formData.meeting), // Auto-generated category
+        id: mode === "edit" && subject ? subject.id : "", // Backend will generate for new subjects
+        userId: mode === "edit" && subject ? subject.userId : "", // Backend will set from auth token for new subjects
       };
 
       const result = await onSave(subjectData);
@@ -261,6 +281,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
                 value={formData.startTime}
                 onChange={(e) => handleInputChange("startTime", e.target.value)}
                 placeholder="Only if scheduled"
+                disabled={formData.day === "no-schedule"}
               />
             </div>
             <div className="space-y-2">
@@ -271,6 +292,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
                 value={formData.endTime}
                 onChange={(e) => handleInputChange("endTime", e.target.value)}
                 placeholder="Only if scheduled"
+                disabled={formData.day === "no-schedule"}
               />
             </div>
           </div>
@@ -284,6 +306,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
               value={formData.room}
               onChange={(e) => handleInputChange("room", e.target.value)}
               placeholder="Example: K201 (leave blank if no schedule)"
+              disabled={formData.day === "no-schedule"}
             />
           </div>
 
@@ -318,33 +341,22 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="meeting">Meeting Count</Label>
-              <Input
-                id="meeting"
-                type="number"
-                min="0"
-                max="20"
-                value={formData.meeting}
-                onChange={(e) =>
-                  handleInputChange("meeting", parseInt(e.target.value) || 0)
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <select
-                id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange("category", e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="meeting">Meeting Count</Label>
+            <Input
+              id="meeting"
+              type="number"
+              min="0"
+              max="20"
+              value={formData.meeting || 0}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                handleInputChange(
+                  "meeting",
+                  isNaN(value) ? 0 : Math.max(0, value)
+                );
+              }}
+            />
           </div>
 
           <DialogFooter>

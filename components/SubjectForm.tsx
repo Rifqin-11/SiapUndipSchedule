@@ -20,8 +20,6 @@ const DAYS = [
   "Sunday",
 ];
 
-const CATEGORIES = ["High", "Medium", "Low"];
-
 const SubjectForm: React.FC<SubjectFormProps> = ({
   subject,
   onSubmit,
@@ -37,7 +35,6 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
     endTime: "",
     lecturer: [""],
     meeting: 0,
-    category: "",
   });
 
   useEffect(() => {
@@ -51,7 +48,6 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
         endTime: subject.endTime,
         lecturer: subject.lecturer.length > 0 ? subject.lecturer : [""],
         meeting: subject.meeting,
-        category: subject.category || "",
       });
     }
   }, [subject]);
@@ -62,11 +58,20 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
     // Filter empty lecturers
     const filteredLecturers = formData.lecturer.filter((l) => l.trim() !== "");
 
+    // Auto-generate category based on meeting count
+    const getAutoCategory = (meetingCount: number): string => {
+      if (meetingCount >= 11) {
+        return "Low";
+      } else {
+        return "High";
+      }
+    };
+
     const subjectData = {
       ...formData,
       lecturer: filteredLecturers,
       meeting: Number(formData.meeting),
-      category: formData.category || undefined,
+      category: getAutoCategory(formData.meeting), // Auto-generated category
     };
 
     onSubmit(subjectData);
@@ -231,47 +236,25 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
           </button>
         </div>
 
-        {/* Meeting and Category */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Pertemuan (0-14)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="14"
-              value={formData.meeting}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  meeting: parseInt(e.target.value) || 0,
-                })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Kategori (Opsional)
-            </label>
-            <select
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            >
-              <option value="">Pilih Kategori</option>
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Meeting Count */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Pertemuan (0-14)
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="14"
+            value={formData.meeting}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                meeting: parseInt(e.target.value) || 0,
+              })
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            required
+          />
         </div>
 
         {/* Buttons */}
