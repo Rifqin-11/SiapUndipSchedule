@@ -33,48 +33,125 @@ const NotifIcon = () => {
     setIsClient(true);
   }, []);
 
-  // Check for missed classes
+    // Check for missed classes
   useEffect(() => {
     if (!isClient || !subjects.length) return;
 
-    const checkMissedClasses = () => {
+    const checkMissedClasses = async () => {
       const now = new Date();
       const today = now.toISOString().split("T")[0];
       const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
 
+      try {
+        // Get attendance status for today from database
+        const response = await fetch(`/api/attendance-status?date=${today}`);
+        let attendanceStatus: Record<string, boolean> = {};
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            attendanceStatus = data.attendanceStatus;
+          }
+        }
+
+        const missed: MissedClass[] = [];
+
+        subjects.forEach((subject) => {
+          // Skip subjects without valid schedule
+          if (!subject.day || !subject.startTime || !subject.endTime) return;
+
+          // Get day name
+          const dayNames = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ];
+          const todayName = dayNames[now.getDay()];
+
+          // Only check for today's classes
+          if (subject.day !== todayName) return;
+
+          // Parse end time
+          const [endHour, endMinute] = subject.endTime.split(":").map(Number);
+          const endTimeInMinutes = endHour * 60 + endMinute;
+
+          // Check if class has ended
+          if (currentTime > endTimeInMinutes) {
+            // Check attendance status from database first, fallback to localStorage
+            const hasAttendedInDB = attendanceStatus[subject.id] === true;
+            const attendanceKey = `attended_${subject.id}_${today}`;
+            const hasAttendedLocal = localStorage.getItem(attendanceKey) === "true";
+            const hasAttended = hasAttendedInDB || hasAttendedLocal;
+
+            // If attended in DB but not in localStorage, sync it
+            if (hasAttendedInDB && !hasAttendedLocal) {
+              localStorage.setItem(attendanceKey, "true");
+            }
+
+            if (!hasAttended) {
+              // Check if this missed class notification was already dismissed
+              const dismissKey = `dismissed_${subject.id}_${today}`;
+              const wasDismissed = localStorage.getItem(dismissKey) === "true";
+
+              if (!wasDismissed) {
+                missed.push({
+                  id: subject.id,
+                  name: subject.name,
+                  room: subject.room,
+                  startTime: subject.startTime,
+                  endTime: subject.endTime,
+                  day: subject.day,
+                  date: today,
+                });
+              }
+            }
+          }
+        });
+
+        setMissedClasses(missed);
+      } catch (error) {
+        console.warn("Error checking missed classes:", error);
+        // Fallback to localStorage-only check on error
+        checkMissedClassesLocal();
+      }
+    };
+
+    // Fallback function that only uses localStorage (original logic)
+    const checkMissedClassesLocal = () => {
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+
       const missed: MissedClass[] = [];
 
       subjects.forEach((subject) => {
-        // Skip subjects without valid schedule
         if (!subject.day || !subject.startTime || !subject.endTime) return;
 
-        // Get day name
         const dayNames = [
           "Sunday",
-          "Monday", 
+          "Monday",
           "Tuesday",
           "Wednesday",
           "Thursday",
           "Friday",
-          "Saturday"
+          "Saturday",
         ];
         const todayName = dayNames[now.getDay()];
 
-        // Only check for today's classes
         if (subject.day !== todayName) return;
 
-        // Parse end time
         const [endHour, endMinute] = subject.endTime.split(":").map(Number);
         const endTimeInMinutes = endHour * 60 + endMinute;
 
-        // Check if class has ended
         if (currentTime > endTimeInMinutes) {
-          // Check attendance status in localStorage
           const attendanceKey = `attended_${subject.id}_${today}`;
           const hasAttended = localStorage.getItem(attendanceKey) === "true";
 
           if (!hasAttended) {
-            // Check if this missed class notification was already dismissed
             const dismissKey = `dismissed_${subject.id}_${today}`;
             const wasDismissed = localStorage.getItem(dismissKey) === "true";
 
@@ -108,15 +185,15 @@ const NotifIcon = () => {
   const dismissNotification = (classId: string, date: string) => {
     const dismissKey = `dismissed_${classId}_${date}`;
     localStorage.setItem(dismissKey, "true");
-    
+
     // Remove from missed classes
-    setMissedClasses(prev => 
-      prev.filter(missed => !(missed.id === classId && missed.date === date))
+    setMissedClasses((prev) =>
+      prev.filter((missed) => !(missed.id === classId && missed.date === date))
     );
   };
 
   const dismissAllNotifications = () => {
-    missedClasses.forEach(missed => {
+    missedClasses.forEach((missed) => {
       const dismissKey = `dismissed_${missed.id}_${missed.date}`;
       localStorage.setItem(dismissKey, "true");
     });
@@ -152,19 +229,17 @@ const NotifIcon = () => {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {missedClasses.length === 0 ? (
           <DropdownMenuItem disabled className="py-4 text-center">
-            <div className="flex flex-col items-center space-y-2">
+            <div className="flex flex-col items-center justify-center text-center space-y-2">
               <Bell className="h-8 w-8 text-gray-400" />
-              <span className="text-sm text-gray-500">
-                No missed classes
-              </span>
+              <span className="text-sm text-gray-500">No missed classes</span>
             </div>
           </DropdownMenuItem>
         ) : (
           missedClasses.map((missed) => (
-            <DropdownMenuItem 
+            <DropdownMenuItem
               key={`${missed.id}-${missed.date}`}
               className="flex-col items-start p-4 space-y-2"
               onClick={(e) => e.preventDefault()}

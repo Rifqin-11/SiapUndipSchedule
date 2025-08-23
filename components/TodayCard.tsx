@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -65,7 +66,9 @@ const TodayCard: React.FC<TodayCardProps> = ({
 
   // Check localStorage for attendance status
   const getAttendanceKey = () => {
-    const today = rescheduleDate || new Date().toDateString();
+    const today = rescheduleDate 
+      ? new Date(rescheduleDate).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0];
     return `attended_${id}_${today}`;
   };
 
@@ -77,15 +80,47 @@ const TodayCard: React.FC<TodayCardProps> = ({
     setIsClient(true);
   }, []);
 
+  // Function to check attendance status from database and localStorage
+  const checkAttendanceStatus = useCallback(async () => {
+    try {
+      const today = rescheduleDate 
+        ? new Date(rescheduleDate).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+      
+      // First, check database for attendance status
+      const response = await fetch(`/api/attendance-status?date=${today}&subjectId=${id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.hasAttended) {
+          // Found in database - sync to localStorage and update state
+          const attendanceKey = `attended_${id}_${today}`;
+          localStorage.setItem(attendanceKey, "true");
+          setHasAttended(true);
+          return;
+        }
+      }
+      
+      // Fallback to localStorage if database check fails or no record found
+      const attendanceKey = `attended_${id}_${rescheduleDate || new Date().toDateString()}`;
+      const localStatus = localStorage.getItem(attendanceKey) === "true";
+      setHasAttended(localStatus);
+      
+    } catch (error) {
+      console.warn("Error checking attendance status:", error);
+      // Fallback to localStorage on error
+      const attendanceKey = `attended_${id}_${rescheduleDate || new Date().toDateString()}`;
+      const localStatus = localStorage.getItem(attendanceKey) === "true";
+      setHasAttended(localStatus);
+    }
+  }, [id, rescheduleDate]);
+
   // Check localStorage on client side only
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const today = rescheduleDate || new Date().toDateString();
-      const attendanceKey = `attended_${id}_${today}`;
-      const attendanceStatus = localStorage.getItem(attendanceKey) === "true";
-      setHasAttended(attendanceStatus);
+      checkAttendanceStatus();
     }
-  }, [id, rescheduleDate]);
+  }, [checkAttendanceStatus]);
 
   // Check if today is the same as subject day OR if this is a reschedule date
   const isToday = rescheduleDate
