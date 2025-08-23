@@ -1,68 +1,199 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
+import { Bell, X } from "lucide-react";
+import { useSubjects } from "@/hooks/useSubjects";
 import {
-  BellPlus,
-  Calendar,
-  Home,
-  LogOut,
-  Settings2,
-  BookOpen,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
-export default function NotifIcon() {
-  const [isOpen, setIsOpen] = useState(false);
+interface MissedClass {
+  id: string;
+  name: string;
+  room: string;
+  startTime: string;
+  endTime: string;
+  day: string;
+  date: string;
+}
+
+const NotifIcon = () => {
+  const { subjects } = useSubjects();
+  const [missedClasses, setMissedClasses] = useState<MissedClass[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client-side flag
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Check for missed classes
+  useEffect(() => {
+    if (!isClient || !subjects.length) return;
+
+    const checkMissedClasses = () => {
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+      const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
+
+      const missed: MissedClass[] = [];
+
+      subjects.forEach((subject) => {
+        // Skip subjects without valid schedule
+        if (!subject.day || !subject.startTime || !subject.endTime) return;
+
+        // Get day name
+        const dayNames = [
+          "Sunday",
+          "Monday", 
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ];
+        const todayName = dayNames[now.getDay()];
+
+        // Only check for today's classes
+        if (subject.day !== todayName) return;
+
+        // Parse end time
+        const [endHour, endMinute] = subject.endTime.split(":").map(Number);
+        const endTimeInMinutes = endHour * 60 + endMinute;
+
+        // Check if class has ended
+        if (currentTime > endTimeInMinutes) {
+          // Check attendance status in localStorage
+          const attendanceKey = `attended_${subject.id}_${today}`;
+          const hasAttended = localStorage.getItem(attendanceKey) === "true";
+
+          if (!hasAttended) {
+            // Check if this missed class notification was already dismissed
+            const dismissKey = `dismissed_${subject.id}_${today}`;
+            const wasDismissed = localStorage.getItem(dismissKey) === "true";
+
+            if (!wasDismissed) {
+              missed.push({
+                id: subject.id,
+                name: subject.name,
+                room: subject.room,
+                startTime: subject.startTime,
+                endTime: subject.endTime,
+                day: subject.day,
+                date: today,
+              });
+            }
+          }
+        }
+      });
+
+      setMissedClasses(missed);
+    };
+
+    // Check immediately
+    checkMissedClasses();
+
+    // Check every minute
+    const interval = setInterval(checkMissedClasses, 60000);
+
+    return () => clearInterval(interval);
+  }, [subjects, isClient]);
+
+  const dismissNotification = (classId: string, date: string) => {
+    const dismissKey = `dismissed_${classId}_${date}`;
+    localStorage.setItem(dismissKey, "true");
+    
+    // Remove from missed classes
+    setMissedClasses(prev => 
+      prev.filter(missed => !(missed.id === classId && missed.date === date))
+    );
+  };
+
+  const dismissAllNotifications = () => {
+    missedClasses.forEach(missed => {
+      const dismissKey = `dismissed_${missed.id}_${missed.date}`;
+      localStorage.setItem(dismissKey, "true");
+    });
+    setMissedClasses([]);
+  };
+
+  if (!isClient) return null;
 
   return (
-    <div className="relative">
-      <button onClick={() => setIsOpen(!isOpen)}>
-        <BellPlus />
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 top-10 bg-white shadow-lg rounded-lg p-4 z-50 w-40">
-          <ul className="flex flex-col gap-2 text-sm">
-            <li>
-              <Link href="/" className="flex flex-row items-center gap-1">
-                <Home className="size-4" /> Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/calendar"
-                className="flex flex-row items-center gap-1"
-              >
-                <Calendar className="size-4" /> Calendar
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/settings/manage-subjects"
-                className="flex flex-row items-center gap-1"
-              >
-                <BookOpen className="size-4" />
-                Kelola MK
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/settings"
-                className="flex flex-row items-center gap-1"
-              >
-                <Settings2 className="size-4" />
-                Settings
-              </Link>
-            </li>
-            <li>
-              <Link href="/logout" className="flex flex-row items-center gap-1">
-                <LogOut className="size-4" />
-                Logout
-              </Link>
-            </li>
-          </ul>
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="relative p-2">
+          <Bell className="h-5 w-5" />
+          {missedClasses.length > 0 && (
+            <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-medium">
+              {missedClasses.length}
+            </div>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-80">
+        <DropdownMenuLabel className="flex justify-between items-center">
+          <span>Missed Classes</span>
+          {missedClasses.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={dismissAllNotifications}
+              className="text-xs h-6 px-2"
+            >
+              Clear All
+            </Button>
+          )}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        
+        {missedClasses.length === 0 ? (
+          <DropdownMenuItem disabled className="py-4 text-center">
+            <div className="flex flex-col items-center space-y-2">
+              <Bell className="h-8 w-8 text-gray-400" />
+              <span className="text-sm text-gray-500">
+                No missed classes
+              </span>
+            </div>
+          </DropdownMenuItem>
+        ) : (
+          missedClasses.map((missed) => (
+            <DropdownMenuItem 
+              key={`${missed.id}-${missed.date}`}
+              className="flex-col items-start p-4 space-y-2"
+              onClick={(e) => e.preventDefault()}
+            >
+              <div className="flex justify-between items-start w-full">
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm">{missed.name}</h4>
+                  <p className="text-xs text-gray-500">
+                    {missed.startTime} - {missed.endTime} • {missed.room}
+                  </p>
+                  <p className="text-xs text-red-500 mt-1">
+                    You missed this class attendance
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dismissNotification(missed.id, missed.date)}
+                  className="h-6 w-6 p-0 ml-2"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </DropdownMenuItem>
+          ))
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-}
+};
+
+export default NotifIcon;

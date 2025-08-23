@@ -39,7 +39,7 @@ interface CalendarCardProps {
   };
 }
 
-export default function CalendarCard({ 
+export default function CalendarCard({
   name,
   room,
   startTime,
@@ -48,8 +48,8 @@ export default function CalendarCard({
   meeting,
   bgColor,
   textColor,
-  onEdit, 
-  onDelete, 
+  onEdit,
+  onDelete,
   onReschedule,
   showActions = true,
   isReschedule,
@@ -191,4 +191,4 @@ export default function CalendarCard({
       </div>
     </div>
   );
-};
+}

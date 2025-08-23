@@ -76,7 +76,8 @@ const ScheduleClient = () => {
 
   // Reschedule modal states
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
-  const [subjectToReschedule, setSubjectToReschedule] = useState<Subject | null>(null);
+  const [subjectToReschedule, setSubjectToReschedule] =
+    useState<Subject | null>(null);
 
   // QR Scanner states
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
