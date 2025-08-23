@@ -1,7 +1,7 @@
 import React from "react";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
-import { Edit2, Trash2, MoreVertical } from "lucide-react";
+import { Edit2, Trash2, MoreVertical, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,7 @@ interface CalendarCardProps {
   bgRoomColor: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onReschedule?: () => void;
   showActions?: boolean;
   isReschedule?: boolean;
   rescheduleInfo?: {
@@ -38,21 +39,23 @@ interface CalendarCardProps {
   };
 }
 
-const CalendarCard = ({
+export default function CalendarCard({ 
   name,
   room,
   startTime,
   endTime,
   lecturer,
+  meeting,
   bgColor,
   textColor,
-  meeting,
-  onEdit,
-  onDelete,
-  showActions = false,
-  isReschedule = false,
+  onEdit, 
+  onDelete, 
+  onReschedule,
+  showActions = true,
+  isReschedule,
   rescheduleInfo,
-}: CalendarCardProps) => {
+  ...rest
+}: CalendarCardProps) {
   const proggressMeeting = (meeting / 14) * 100;
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -65,6 +68,12 @@ const CalendarCard = ({
     e.preventDefault();
     e.stopPropagation();
     onDelete?.();
+  };
+
+  const handleReschedule = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onReschedule?.();
   };
 
   return (
@@ -97,6 +106,10 @@ const CalendarCard = ({
                   <DropdownMenuItem onClick={handleEdit}>
                     <Edit2 className="mr-2 h-4 w-4" />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleReschedule}>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Reschedule
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleDelete}
@@ -179,5 +192,3 @@ const CalendarCard = ({
     </div>
   );
 };
-
-export default CalendarCard;

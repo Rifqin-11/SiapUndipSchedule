@@ -68,7 +68,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             hideHeader ? "-translate-y-full" : "translate-y-0"
           }`}
         >
-          <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="max-full mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <BackButton />

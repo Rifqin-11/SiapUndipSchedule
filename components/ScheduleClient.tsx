@@ -9,6 +9,7 @@ import {
 import HorizonalCalendar from "@/components/HorizonalCalendar";
 import CalendarCard from "@/components/CalendarCard";
 import SubjectModal from "@/components/SubjectModal";
+import RescheduleModal from "@/components/RescheduleModal";
 import Link from "next/link";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,10 @@ const ScheduleClient = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [subjectToDelete, setSubjectToDelete] =
     useState<SubjectToDelete | null>(null);
+
+  // Reschedule modal states
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [subjectToReschedule, setSubjectToReschedule] = useState<Subject | null>(null);
 
   // QR Scanner states
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
@@ -265,6 +270,11 @@ const ScheduleClient = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleRescheduleSubject = (subject: Subject) => {
+    setSubjectToReschedule(subject);
+    setIsRescheduleModalOpen(true);
+  };
+
   const confirmDeleteSubject = async () => {
     if (!subjectToDelete) return;
 
@@ -423,6 +433,7 @@ const ScheduleClient = () => {
                   showActions={true}
                   onEdit={() => handleEditSubject(subject)}
                   onDelete={() => handleDeleteSubject(subject)}
+                  onReschedule={() => handleRescheduleSubject(subject)}
                   isReschedule={subject.isReschedule}
                   rescheduleInfo={subject.rescheduleInfo}
                 />
@@ -486,6 +497,19 @@ const ScheduleClient = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        subjectId={subjectToReschedule?.id || ""}
+        subjectName={subjectToReschedule?.name || ""}
+        onRescheduleAdded={() => {
+          refetch();
+          setIsRescheduleModalOpen(false);
+          toast.success("Jadwal berhasil direscheduled");
+        }}
+      />
 
       {/* QR Scanner - Only render on client and if supported */}
       {isClient && (
