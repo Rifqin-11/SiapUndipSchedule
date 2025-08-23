@@ -14,10 +14,6 @@ export async function POST() {
       })
       .toArray();
 
-    console.log(
-      `Found ${subjectsWithoutAttendanceDates.length} subjects without attendanceDates field`
-    );
-
     // Update each subject to add empty attendanceDates array
     const updateResult = await db
       .collection("subjects")
@@ -25,10 +21,6 @@ export async function POST() {
         { attendanceDates: { $exists: false } },
         { $set: { attendanceDates: [] } }
       );
-
-    console.log(
-      `Updated ${updateResult.modifiedCount} subjects with empty attendanceDates array`
-    );
 
     return NextResponse.json({
       success: true,

@@ -66,9 +66,9 @@ const TodayCard: React.FC<TodayCardProps> = ({
 
   // Check localStorage for attendance status
   const getAttendanceKey = () => {
-    const today = rescheduleDate 
-      ? new Date(rescheduleDate).toISOString().split('T')[0]
-      : new Date().toISOString().split('T')[0];
+    const today = rescheduleDate
+      ? new Date(rescheduleDate).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
     return `attended_${id}_${today}`;
   };
 
@@ -83,13 +83,15 @@ const TodayCard: React.FC<TodayCardProps> = ({
   // Function to check attendance status from database and localStorage
   const checkAttendanceStatus = useCallback(async () => {
     try {
-      const today = rescheduleDate 
-        ? new Date(rescheduleDate).toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0];
-      
+      const today = rescheduleDate
+        ? new Date(rescheduleDate).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0];
+
       // First, check database for attendance status
-      const response = await fetch(`/api/attendance-status?date=${today}&subjectId=${id}`);
-      
+      const response = await fetch(
+        `/api/attendance-status?date=${today}&subjectId=${id}`
+      );
+
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.hasAttended) {
@@ -100,16 +102,19 @@ const TodayCard: React.FC<TodayCardProps> = ({
           return;
         }
       }
-      
+
       // Fallback to localStorage if database check fails or no record found
-      const attendanceKey = `attended_${id}_${rescheduleDate || new Date().toDateString()}`;
+      const attendanceKey = `attended_${id}_${
+        rescheduleDate || new Date().toDateString()
+      }`;
       const localStatus = localStorage.getItem(attendanceKey) === "true";
       setHasAttended(localStatus);
-      
     } catch (error) {
       console.warn("Error checking attendance status:", error);
       // Fallback to localStorage on error
-      const attendanceKey = `attended_${id}_${rescheduleDate || new Date().toDateString()}`;
+      const attendanceKey = `attended_${id}_${
+        rescheduleDate || new Date().toDateString()
+      }`;
       const localStatus = localStorage.getItem(attendanceKey) === "true";
       setHasAttended(localStatus);
     }

@@ -63,15 +63,18 @@ export async function GET(request: NextRequest) {
     }
 
     // If checking for all subjects on a date
-    const attendanceStatus = attendanceRecords.reduce((acc: Record<string, boolean>, record) => {
-      acc[record.subjectId] = true;
-      return acc;
-    }, {});
+    const attendanceStatus = attendanceRecords.reduce(
+      (acc: Record<string, boolean>, record) => {
+        acc[record.subjectId] = true;
+        return acc;
+      },
+      {}
+    );
 
     return NextResponse.json({
       success: true,
       attendanceStatus,
-      records: attendanceRecords.map(record => ({
+      records: attendanceRecords.map((record) => ({
         id: record._id.toString(),
         subjectId: record.subjectId,
         subjectName: record.subjectName,

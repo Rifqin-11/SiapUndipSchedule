@@ -59,10 +59,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(
-      `Attendance history saved: ${subjectName} on ${attendanceDate} for user ${decoded.userId}`
-    );
-
     return NextResponse.json({
       success: true,
       message: "Attendance history saved successfully",

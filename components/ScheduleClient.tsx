@@ -51,6 +51,7 @@ interface SubjectToDelete extends SubjectWithReschedule {
 const ScheduleClient = () => {
   const { currentDay } = getCurrentDayAndDate();
   const [selectedDay, setSelectedDay] = useState(currentDay);
+  const [selectedDate, setSelectedDate] = useState<string>(); // Add selected date state
   const {
     subjects,
     loading,
@@ -88,15 +89,47 @@ const ScheduleClient = () => {
     setIsClient(true);
   }, []);
 
+  // Initialize selectedDate to today when component mounts
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+  }, []);
+
+  // Handle week change from HorizonalCalendar
+  const handleWeekChange = (weekOffset: number) => {
+    console.log("Week changed to offset:", weekOffset);
+    // Clear selection when week changes to avoid confusion
+    // The user will need to select a day in the new week
+  };
+
+  // Handle day selection from HorizonalCalendar
+  const handleDaySelect = (day: string, date?: string) => {
+    setSelectedDay(day);
+    if (date) {
+      setSelectedDate(date);
+    } else {
+      // Fallback to calculate date if not provided (backward compatibility)
+      const today = new Date();
+      const currentDayIndex = today.getDay();
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      const selectedDayIndex = days.indexOf(day);
+      const dayDifference = selectedDayIndex - currentDayIndex;
+      const calculatedDate = new Date(today);
+      calculatedDate.setDate(today.getDate() + dayDifference);
+      setSelectedDate(calculatedDate.toISOString().split("T")[0]);
+    }
+  };
+
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
-
-  // Debug logging
-  console.log("ScheduleClient Debug:");
-  console.log("Selected day:", selectedDay);
-  console.log("Current day from utils:", currentDay);
-  console.log("All subjects:", subjectsArray);
-  console.log("Subjects count:", subjectsArray.length);
 
   // Check unique days in database
   const uniqueDays = [
@@ -156,6 +189,12 @@ const ScheduleClient = () => {
 
   // Get reschedule subjects for selected day
   const getSelectedDayDate = () => {
+    // Use selectedDate if available, otherwise calculate from selectedDay
+    if (selectedDate) {
+      return selectedDate;
+    }
+
+    // Fallback calculation (for backward compatibility)
     const days = [
       "Sunday",
       "Monday",
@@ -170,13 +209,15 @@ const ScheduleClient = () => {
     const selectedDayIndex = days.indexOf(selectedDay);
 
     const dayDifference = selectedDayIndex - currentDayIndex;
-    const selectedDate = new Date(today);
-    selectedDate.setDate(today.getDate() + dayDifference);
+    const selectedDateCalc = new Date(today);
+    selectedDateCalc.setDate(today.getDate() + dayDifference);
 
-    return selectedDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+    return selectedDateCalc.toISOString().split("T")[0]; // YYYY-MM-DD format
   };
 
   const selectedDayString = getSelectedDayDate();
+
+  console.log("Selected day string (calculated date):", selectedDayString);
 
   const rescheduleSubjects = subjectsArray
     .filter((subject) => {
@@ -229,14 +270,6 @@ const ScheduleClient = () => {
     const timeB = timeToMinutes(b.startTime || "");
     return timeA - timeB;
   });
-
-  console.log("Filtered subjects for selected day:", filteredSubjects);
-  console.log("Reschedule subjects for selected day:", rescheduleSubjects);
-  console.log("All subjects count:", allFilteredSubjects.length);
-  console.log(
-    "Sorted subjects by time:",
-    allFilteredSubjects.map((s) => ({ name: s.name, startTime: s.startTime }))
-  );
 
   const handleAddSubject = () => {
     setSelectedSubject(null);
@@ -380,7 +413,8 @@ const ScheduleClient = () => {
       <div className="mx-5">
         <HorizonalCalendar
           selectedDay={selectedDay}
-          onDaySelect={setSelectedDay}
+          onDaySelect={handleDaySelect}
+          onWeekChange={handleWeekChange}
         />
       </div>
 

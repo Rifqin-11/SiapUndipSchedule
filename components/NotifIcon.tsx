@@ -33,7 +33,7 @@ const NotifIcon = () => {
     setIsClient(true);
   }, []);
 
-    // Check for missed classes
+  // Check for missed classes
   useEffect(() => {
     if (!isClient || !subjects.length) return;
 
@@ -46,7 +46,7 @@ const NotifIcon = () => {
         // Get attendance status for today from database
         const response = await fetch(`/api/attendance-status?date=${today}`);
         let attendanceStatus: Record<string, boolean> = {};
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -84,7 +84,8 @@ const NotifIcon = () => {
             // Check attendance status from database first, fallback to localStorage
             const hasAttendedInDB = attendanceStatus[subject.id] === true;
             const attendanceKey = `attended_${subject.id}_${today}`;
-            const hasAttendedLocal = localStorage.getItem(attendanceKey) === "true";
+            const hasAttendedLocal =
+              localStorage.getItem(attendanceKey) === "true";
             const hasAttended = hasAttendedInDB || hasAttendedLocal;
 
             // If attended in DB but not in localStorage, sync it
