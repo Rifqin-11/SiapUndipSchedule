@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Mail, Lock, ArrowLeft, ArrowRight, User, Chrome, Eye, EyeOff } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  ArrowLeft,
+  ArrowRight,
+  User,
+  Chrome,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -119,7 +128,7 @@ export default function RegisterPage() {
       if (!/[^A-Za-z0-9]/.test(formData.password)) {
         passwordErrors.push("Password must contain special characters");
       }
-      
+
       if (passwordErrors.length > 0) {
         newErrors.password = passwordErrors;
       }
@@ -307,7 +316,7 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
-            
+
             {/* Password Strength Indicator */}
             {formData.password && (
               <div className="mt-2 space-y-2">
@@ -334,15 +343,19 @@ export default function RegisterPage() {
                     {passwordStrength.text}
                   </span>
                 </div>
-                
+
                 {/* Password Requirements */}
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-gray-700 mb-2">Password requirements:</p>
+                  <p className="text-xs font-medium text-gray-700 mb-2">
+                    Password requirements:
+                  </p>
                   <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-1.5 h-1.5 rounded-full ${
-                          formData.password.length >= 8 ? "bg-green-500" : "bg-gray-300"
+                          formData.password.length >= 8
+                            ? "bg-green-500"
+                            : "bg-gray-300"
                         }`}
                       ></div>
                       <span>8+ characters</span>
@@ -350,7 +363,9 @@ export default function RegisterPage() {
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-1.5 h-1.5 rounded-full ${
-                          /[a-z]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                          /[a-z]/.test(formData.password)
+                            ? "bg-green-500"
+                            : "bg-gray-300"
                         }`}
                       ></div>
                       <span>Lowercase</span>
@@ -358,7 +373,9 @@ export default function RegisterPage() {
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-1.5 h-1.5 rounded-full ${
-                          /[A-Z]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                          /[A-Z]/.test(formData.password)
+                            ? "bg-green-500"
+                            : "bg-gray-300"
                         }`}
                       ></div>
                       <span>Uppercase</span>
@@ -366,7 +383,9 @@ export default function RegisterPage() {
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-1.5 h-1.5 rounded-full ${
-                          /[0-9]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                          /[0-9]/.test(formData.password)
+                            ? "bg-green-500"
+                            : "bg-gray-300"
                         }`}
                       ></div>
                       <span>Numbers</span>
@@ -374,7 +393,9 @@ export default function RegisterPage() {
                     <div className="flex items-center space-x-1 col-span-2">
                       <div
                         className={`w-1.5 h-1.5 rounded-full ${
-                          /[^A-Za-z0-9]/.test(formData.password) ? "bg-green-500" : "bg-gray-300"
+                          /[^A-Za-z0-9]/.test(formData.password)
+                            ? "bg-green-500"
+                            : "bg-gray-300"
                         }`}
                       ></div>
                       <span>Special characters (!@#$%^&*)</span>

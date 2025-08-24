@@ -259,7 +259,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="day">
-                Day (Optional - Leave blank for subjects without schedule)
+                Day
               </Label>
             </div>
             <div className="flex flex-row items-center gap-4">
