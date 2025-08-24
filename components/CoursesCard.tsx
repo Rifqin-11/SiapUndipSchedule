@@ -10,7 +10,7 @@ const CoursesCard = ({ name, meeting }: Subject) => {
   const progressMeeting = (meeting / 14) * 100;
 
   return (
-    <div className="flex flex-col bg-white dark:bg-gray-900 border rounded-xl shadow-md p-3 max-h-[150px] gap-4">
+    <div className="flex flex-col bg-white dark:bg-card border rounded-xl shadow-md p-3 max-h-[150px] gap-4">
       <div className="bg-blue-100 text-blue-900 px-2 py-0.5 rounded-full text-xs font-semibold w-fit">
         {progressMeeting < 75 ? (
           "High"

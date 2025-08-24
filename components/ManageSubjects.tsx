@@ -199,10 +199,10 @@ const ManageSubjects = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-card rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-gray-50 dark:bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Subject
@@ -224,7 +224,7 @@ const ManageSubjects = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-700">
                 {safeSubjects.length > 0 ? (
                   safeSubjects.map((subject) => (
                     <tr
@@ -238,7 +238,7 @@ const ManageSubjects = () => {
                               {subject.name}
                             </div>
                             {!hasValidSchedule(subject) && (
-                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 dark:bg-secondary dark:text-gray-300">
                                 No Schedule
                               </span>
                             )}
@@ -300,7 +300,7 @@ const ManageSubjects = () => {
                         <div className="text-sm text-gray-900 dark:text-white">
                           {subject.meeting}/14
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                        <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-secondary">
                           <div
                             className="bg-blue-600 h-2 rounded-full"
                             style={{

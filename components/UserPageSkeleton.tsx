@@ -34,7 +34,7 @@ const UserPageSkeleton = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700"
             >
               <div className="h-8 w-12 bg-gray-300 rounded mx-auto mb-2"></div>
               <div className="h-3 w-16 bg-gray-200 rounded mx-auto"></div>
@@ -48,7 +48,7 @@ const UserPageSkeleton = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+              className="p-4 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-gray-300 rounded-xl"></div>

@@ -110,11 +110,39 @@ export const getWeekDates = () => {
 };
 
 export const colorPairs = [
-  { bg: "bg-blue-100", text: "text-blue-700", roomBg: "bg-blue-800" },
-  { bg: "bg-purple-100", text: "text-purple-700", roomBg: "bg-purple-800" },
-  { bg: "bg-green-100", text: "text-green-700", roomBg: "bg-green-800" },
-  { bg: "bg-red-100", text: "text-red-700", roomBg: "bg-red-800" },
-  { bg: "bg-pink-100", text: "text-pink-700", roomBg: "bg-pink-800" },
-  { bg: "bg-orange-100", text: "text-orange-700", roomBg: "bg-orange-800" },
-  { bg: "bg-yellow-100", text: "text-yellow-700", roomBg: "bg-yellow-800" },
+  {
+    bg: "bg-blue-100 dark:bg-blue-900/30",
+    text: "text-blue-700 dark:text-blue-300",
+    roomBg: "bg-blue-800 dark:bg-blue-700",
+  },
+  {
+    bg: "bg-purple-100 dark:bg-purple-900/30",
+    text: "text-purple-700 dark:text-purple-300",
+    roomBg: "bg-purple-800 dark:bg-purple-700",
+  },
+  {
+    bg: "bg-green-100 dark:bg-green-900/30",
+    text: "text-green-700 dark:text-green-300",
+    roomBg: "bg-green-800 dark:bg-green-700",
+  },
+  {
+    bg: "bg-red-100 dark:bg-red-900/30",
+    text: "text-red-700 dark:text-red-300",
+    roomBg: "bg-red-800 dark:bg-red-700",
+  },
+  {
+    bg: "bg-pink-100 dark:bg-pink-900/30",
+    text: "text-pink-700 dark:text-pink-300",
+    roomBg: "bg-pink-800 dark:bg-pink-700",
+  },
+  {
+    bg: "bg-orange-100 dark:bg-orange-900/30",
+    text: "text-orange-700 dark:text-orange-300",
+    roomBg: "bg-orange-800 dark:bg-orange-700",
+  },
+  {
+    bg: "bg-yellow-100 dark:bg-yellow-900/30",
+    text: "text-yellow-700 dark:text-yellow-300",
+    roomBg: "bg-yellow-800 dark:bg-yellow-700",
+  },
 ];

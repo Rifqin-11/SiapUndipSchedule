@@ -18,7 +18,7 @@ const SettingsPageSkeleton = () => {
 
       <div className="max-full mx-auto p-6 space-y-6">
         {/* Theme Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="h-6 w-32 bg-gray-300 rounded mb-4"></div>
           <div className="space-y-3">
             {[1, 2].map((i) => (
@@ -37,7 +37,7 @@ const SettingsPageSkeleton = () => {
         </div>
 
         {/* Notifications Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="h-6 w-28 bg-gray-300 rounded mb-4"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -53,7 +53,7 @@ const SettingsPageSkeleton = () => {
         </div>
 
         {/* Data & Privacy Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="h-6 w-36 bg-gray-300 rounded mb-4"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -75,7 +75,7 @@ const SettingsPageSkeleton = () => {
         </div>
 
         {/* Support Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="h-6 w-24 bg-gray-300 rounded mb-4"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (

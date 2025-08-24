@@ -236,7 +236,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-100 p-4">
-      <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/20 dark:border-gray-700/30">
+      <div className="bg-white/95 dark:bg-card/95 backdrop-blur-md rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/20 dark:border-gray-700/30">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">

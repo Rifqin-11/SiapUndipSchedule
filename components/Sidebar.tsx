@@ -54,7 +54,7 @@ const Sidebar = () => {
     <>
       {/* Sidebar */}
       <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:z-50 lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 px-4 pb-4">
+        <div className="flex grow flex-col bg-white dark:bg-background border-r border-gray-200 dark:border-gray-800 px-4 pb-4">
           {/* Header / Brand */}
           <div className="h-16 flex items-center mt-5">
             <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ const Sidebar = () => {
                       className={[
                         itemBase,
                         active
-                          ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
+                          ? "bg-gray-100 text-gray-900 dark:bg-secondary dark:text-white"
                           : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800/60",
                       ].join(" ")}
                     >
@@ -93,7 +93,7 @@ const Sidebar = () => {
                           "grid place-items-center rounded-full size-7",
                           active
                             ? "bg-blue-600 text-white"
-                            : "bg-gray-100 text-gray-500 dark:bg-gray-800",
+                            : "bg-gray-100 text-gray-500 dark:bg-secondary",
                         ].join(" ")}
                       >
                         <Icon className={iconBase} />
@@ -126,7 +126,7 @@ const Sidebar = () => {
                          text-gray-600 hover:text-gray-900 hover:bg-gray-50
                          dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800/60 transition-colors"
             >
-              <span className="grid place-items-center rounded-full size-7 bg-gray-100 text-gray-500 dark:bg-gray-800">
+              <span className="grid place-items-center rounded-full size-7 bg-gray-100 text-gray-500 dark:bg-secondary">
                 <Settings2 className="h-4 w-4" />
               </span>
               <span>Settings</span>

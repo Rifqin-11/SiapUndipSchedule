@@ -109,7 +109,7 @@ const UserPage = () => {
                 {getInitials(user?.name || "User")}
               </div>
             )}
-            <button className="absolute bottom-1 right-1 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <button className="absolute bottom-1 right-1 bg-white dark:bg-card p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-secondary transition-colors">
               <Camera className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
@@ -128,7 +128,7 @@ const UserPage = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {subjects?.length || 0}
             </div>
@@ -136,7 +136,7 @@ const UserPage = () => {
               Subjects
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               85%
             </div>
@@ -144,7 +144,7 @@ const UserPage = () => {
               Attendance
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
               {user?.angkatan || "-"}
             </div>
@@ -165,11 +165,11 @@ const UserPage = () => {
               <Link
                 key={index}
                 href={item.href}
-                className="block p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
+                className="block p-4 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
               >
                 <div className="flex items-center space-x-4">
                   <div
-                    className={`p-3 rounded-xl ${item.bgColor} dark:bg-gray-700`}
+                    className={`p-3 rounded-xl ${item.bgColor} dark:bg-secondary`}
                   >
                     <IconComponent
                       className={`w-5 h-5 ${item.color} dark:text-gray-300`}

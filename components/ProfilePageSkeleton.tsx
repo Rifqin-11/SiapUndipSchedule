@@ -26,7 +26,7 @@ const ProfilePageSkeleton = () => {
         </div>
 
         {/* Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center mb-6">
             <div className="h-6 w-40 bg-gray-300 rounded"></div>
             <div className="h-10 w-16 bg-gray-300 rounded"></div>
@@ -36,7 +36,7 @@ const ProfilePageSkeleton = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i}>
                 <div className="h-4 w-20 bg-gray-300 rounded mb-1"></div>
-                <div className="w-full h-10 bg-gray-100 dark:bg-gray-700 rounded-lg"></div>
+                <div className="w-full h-10 bg-gray-100 dark:bg-secondary rounded-lg"></div>
               </div>
             ))}
           </div>

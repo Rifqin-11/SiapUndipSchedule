@@ -78,11 +78,11 @@ const SettingsPage = () => {
               <Link
                 key={index}
                 href={item.href}
-                className="block p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
+                className="block p-4 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
               >
                 <div className="flex items-center space-x-4">
                   <div
-                    className={`p-3 rounded-xl ${item.bgColor} dark:bg-gray-700`}
+                    className={`p-3 rounded-xl ${item.bgColor} dark:bg-secondary`}
                   >
                     <IconComponent
                       className={`w-6 h-6 ${item.color} dark:text-gray-300`}

@@ -256,7 +256,7 @@ const TodayCard: React.FC<TodayCardProps> = ({
                 Meeting {currentMeeting}/14
               </span>
             </div>
-            <div className="w-20 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+            <div className="w-20 bg-gray-200 rounded-full h-1.5 dark:bg-secondary">
               <div
                 className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${(currentMeeting / 14) * 100}%` }}

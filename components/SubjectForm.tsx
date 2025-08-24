@@ -95,7 +95,7 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-card rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
         {subject ? "Edit Mata Kuliah" : "Tambah Mata Kuliah Baru"}
       </h2>

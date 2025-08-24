@@ -432,7 +432,11 @@ const ScheduleClient = () => {
         <div className="mx-5 flex justify-between items-center mb-4">
           <h1 className="font-bold">Academic Schedule</h1>
           <div className="flex gap-2">
-            <Button onClick={handleAddSubject} size="sm">
+            <Button
+              onClick={handleAddSubject}
+              size="sm"
+              className="dark:bg-card hover:bg-secondary border border-gray-200 dark:border-gray-700  dark:text-white shadow-sm"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add
             </Button>
