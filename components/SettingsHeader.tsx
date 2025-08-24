@@ -36,7 +36,7 @@ const SettingsHeader = ({ title, description, icon }: SettingsHeaderProps) => {
 
   return (
     <section
-      className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm transition-transform duration-300 ease-in-out ${
+      className={`bg-card border-b border-border sticky top-0 z-50 shadow-sm transition-transform duration-300 ease-in-out ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
@@ -44,19 +44,13 @@ const SettingsHeader = ({ title, description, icon }: SettingsHeaderProps) => {
         <div className="flex items-center gap-4">
           <BackButton />
           <div className="flex items-center gap-3">
-            {icon && (
-              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                {icon}
-              </div>
-            )}
+            {icon && <div className="p-2 bg-secondary rounded-lg">{icon}</div>}
             <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h1 className="text-lg font-semibold text-card-foreground">
                 {title}
               </h1>
               {description && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {description}
-                </p>
+                <p className="text-sm text-muted-foreground">{description}</p>
               )}
             </div>
           </div>

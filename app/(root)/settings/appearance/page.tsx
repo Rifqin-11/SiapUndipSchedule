@@ -54,8 +54,8 @@ const AppearancePage = () => {
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       {/* Theme Selection */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+        <h2 className="text-lg font-semibold text-card-foreground mb-4">
           Theme
         </h2>
         <div className="grid grid-cols-3 gap-3">
@@ -68,7 +68,7 @@ const AppearancePage = () => {
                 className={`p-4 rounded-xl border-2 transition-all ${
                   theme === themeOption.id
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    : "border-border hover:border-muted-foreground"
                 }`}
               >
                 <IconComponent
@@ -82,12 +82,12 @@ const AppearancePage = () => {
                   className={`font-medium ${
                     theme === themeOption.id
                       ? "text-blue-600"
-                      : "text-gray-900 dark:text-white"
+                      : "text-card-foreground"
                   }`}
                 >
                   {themeOption.name}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-muted-foreground">
                   {themeOption.desc}
                 </div>
               </button>
@@ -97,8 +97,8 @@ const AppearancePage = () => {
       </div>
 
       {/* Color Selection */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+        <h2 className="text-lg font-semibold text-card-foreground mb-4">
           Primary Color
         </h2>
         <div className="grid grid-cols-4 gap-3">
@@ -108,14 +108,14 @@ const AppearancePage = () => {
               onClick={() => updateSettings({ primaryColor: color.id })}
               className={`p-3 rounded-xl border-2 transition-all ${
                 settings.primaryColor === color.id
-                  ? "border-gray-400 dark:border-gray-500"
-                  : "border-gray-200 dark:border-gray-600 hover:border-gray-300"
+                  ? "border-muted-foreground"
+                  : "border-border hover:border-muted-foreground"
               }`}
             >
               <div
                 className={`w-8 h-8 rounded-full mx-auto mb-2 ${color.color}`}
               />
-              <div className="text-sm font-medium text-gray-900 dark:text-white">
+              <div className="text-sm font-medium text-card-foreground">
                 {color.name}
               </div>
             </button>
@@ -124,8 +124,8 @@ const AppearancePage = () => {
       </div>
 
       {/* Font Size */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+        <h2 className="text-lg font-semibold text-card-foreground mb-4">
           Font Size
         </h2>
         <div className="space-y-3">
@@ -136,14 +136,14 @@ const AppearancePage = () => {
               className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
                 settings.fontSize === size.id
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 dark:border-gray-600 hover:border-gray-300"
+                  : "border-border hover:border-muted-foreground"
               }`}
             >
               <div
                 className={`font-medium ${
                   settings.fontSize === size.id
                     ? "text-blue-600"
-                    : "text-gray-900 dark:text-white"
+                    : "text-card-foreground"
                 }`}
               >
                 {size.name}
@@ -154,13 +154,11 @@ const AppearancePage = () => {
       </div>
 
       {/* Compact Mode */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              Compact Mode
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h3 className="font-semibold text-card-foreground">Compact Mode</h3>
+            <p className="text-sm text-muted-foreground">
               Denser layout for small screens
             </p>
           </div>
@@ -169,9 +167,7 @@ const AppearancePage = () => {
               updateSettings({ compactMode: !settings.compactMode })
             }
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              settings.compactMode
-                ? "bg-blue-600"
-                : "bg-gray-300 dark:bg-gray-600"
+              settings.compactMode ? "bg-blue-600" : "bg-muted"
             }`}
           >
             <span

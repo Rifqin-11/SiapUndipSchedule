@@ -78,7 +78,7 @@ const SettingsPage = () => {
               <Link
                 key={index}
                 href={item.href}
-                className="block p-4 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
+                className="block p-4 bg-card rounded-xl shadow-sm border border-border hover:shadow-md hover:border-muted-foreground transition-all duration-200 group"
               >
                 <div className="flex items-center space-x-4">
                   <div
@@ -89,14 +89,14 @@ const SettingsPage = () => {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="font-semibold text-card-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {item.description}
                     </p>
                   </div>
-                  <div className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                  <div className="text-muted-foreground group-hover:text-muted-foreground transition-colors">
                     <svg
                       className="w-5 h-5"
                       fill="none"

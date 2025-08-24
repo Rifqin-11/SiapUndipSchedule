@@ -6,7 +6,7 @@ import React, { ReactNode } from "react";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <SettingsHeader
         title="Upload IRS"
         description="Import course schedule from KRS file"

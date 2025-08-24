@@ -32,7 +32,7 @@ const ScheduleSkeleton = () => {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+              className="bg-card rounded-xl border border-border p-4"
             >
               {/* Subject Header */}
               <div className="flex justify-between items-start mb-3">

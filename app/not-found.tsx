@@ -14,9 +14,9 @@ const notfound = () => {
 
       {/* Main content area */}
       <div className="flex-1 w-full lg:pl-64">
-        <div className="flex flex-col justify-center items-center h-screen bg-white text-white gap-3">
+        <div className="flex flex-col justify-center items-center h-screen bg-white dark:bg-background  text-white gap-3">
           <Image src="/notFound.svg" alt="not found" width={150} height={150} />
-          <div className="text-black text-center items-center justify-center">
+          <div className="text-black dark:text-white text-center items-center justify-center">
             <h1>Opss! Your page not found</h1>
             <div className="flex flex-row gap-1">
               <p>You can go back to home page</p>
