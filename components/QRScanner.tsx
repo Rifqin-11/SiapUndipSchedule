@@ -50,7 +50,8 @@ const QRScanner: React.FC<QRScannerProps> = ({
   onScanSuccess,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1302,14 +1303,35 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => imageInputRef.current?.click()}
+                    onClick={() => galleryInputRef.current?.click()}
                     title="Upload gambar QR code dari galeri"
                   >
                     <ImagePlus className="w-4 h-4 mr-1" />
                     Galeri
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => cameraInputRef.current?.click()}
+                    title="Ambil foto QR code dengan kamera"
+                    className="lg:hidden" // Only show on mobile
+                  >
+                    <Camera className="w-4 h-4 mr-1" />
+                    Foto
+                  </Button>
+
+                  {/* Input untuk galeri (tanpa capture) */}
                   <input
-                    ref={imageInputRef}
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+
+                  {/* Input untuk kamera (dengan capture) */}
+                  <input
+                    ref={cameraInputRef}
                     type="file"
                     accept="image/*"
                     capture="environment"
