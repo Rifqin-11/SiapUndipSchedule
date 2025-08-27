@@ -1319,20 +1319,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
                 </div>
               </div>
 
-              {/* Tips untuk upload gambar QR */}
-              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-                  💡 Tips untuk foto QR code yang baik:
-                </h4>
-                <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
-                  <li>• Pastikan QR code memenuhi seluruh frame</li>
-                  <li>• Ambil foto tegak lurus (tidak miring)</li>
-                  <li>• Gunakan pencahayaan yang cukup</li>
-                  <li>• Hindari refleksi atau bayangan pada QR code</li>
-                  <li>• Untuk QR di proyektor: foto dari jarak yang tepat</li>
-                </ul>
-              </div>
-
               {/* Manual Input Section */}
               {showManualInput && (
                 <div className="mb-4 p-4 border border-border rounded-lg bg-muted/20">
