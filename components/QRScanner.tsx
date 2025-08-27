@@ -1309,16 +1309,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
                     <ImagePlus className="w-4 h-4 mr-1" />
                     Galeri
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => cameraInputRef.current?.click()}
-                    title="Ambil foto QR code dengan kamera"
-                    className="lg:hidden" // Only show on mobile
-                  >
-                    <Camera className="w-4 h-4 mr-1" />
-                    Foto
-                  </Button>
 
                   {/* Input untuk galeri (tanpa capture) */}
                   <input
