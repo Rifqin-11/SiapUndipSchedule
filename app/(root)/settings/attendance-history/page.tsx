@@ -109,7 +109,7 @@ const AttendanceHistoryPage = () => {
 
       {/* Empty State */}
       {!error && attendanceHistory.length === 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
           <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
             No Attendance History Yet
@@ -145,7 +145,7 @@ const AttendanceHistoryPage = () => {
           {attendanceHistory.map((record) => (
             <div
               key={record.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">

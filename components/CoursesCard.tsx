@@ -11,7 +11,7 @@ const CoursesCard = ({ name, meeting }: Subject) => {
 
   return (
     <div className="flex flex-col bg-white dark:bg-card border rounded-xl shadow-md p-3 max-h-[150px] gap-4">
-      <div className="bg-blue-100 text-blue-900 px-2 py-0.5 rounded-full text-xs font-semibold w-fit">
+      <div className="bg-blue-100 dark:bg-blue-900 dark:text-blue-100 text-blue-900 px-2 py-0.5 rounded-full text-xs font-semibold w-fit">
         {progressMeeting < 75 ? (
           "High"
         ) : (
@@ -28,7 +28,7 @@ const CoursesCard = ({ name, meeting }: Subject) => {
           <span>Progress</span>
           <span className="text-blue-900 dark:text-blue-400">{meeting}/14</span>
         </div>
-        <Progress value={progressMeeting} className="bg-blue-100" />
+        <Progress value={progressMeeting} className="bg-blue-100 dark:bg-gray-800" />
       </div>
     </div>
   );

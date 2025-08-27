@@ -78,18 +78,18 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
           key={index}
           className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
         >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3 flex-1">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex-shrink-0">
                 <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-sm font-medium text-amber-900 dark:text-amber-200">
-                  <span>
+                  <span className="truncate">
                     {new Date(reschedule.originalDate).toLocaleDateString()}
                   </span>
-                  <ArrowRight className="w-3 h-3" />
-                  <span>
+                  <ArrowRight className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">
                     {new Date(reschedule.newDate).toLocaleDateString()}
                   </span>
                 </div>
@@ -101,8 +101,8 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
                   <div className="mt-2 space-y-1">
                     {(reschedule.startTime || reschedule.endTime) && (
                       <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
-                        <Clock className="w-3 h-3" />
-                        <span>
+                        <Clock className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">
                           {reschedule.startTime && reschedule.endTime
                             ? `${reschedule.startTime} - ${reschedule.endTime}`
                             : reschedule.startTime || reschedule.endTime}
@@ -110,7 +110,7 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
                       </div>
                     )}
                     {reschedule.room && (
-                      <div className="text-xs text-amber-700 dark:text-amber-300">
+                      <div className="text-xs text-amber-700 dark:text-amber-300 truncate">
                         📍 {reschedule.room}
                       </div>
                     )}
@@ -118,7 +118,7 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
                 )}
 
                 {reschedule.reason && (
-                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-2 truncate">
                     💬 {reschedule.reason}
                   </p>
                 )}
@@ -130,12 +130,13 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-2 ml-3">
+            <div className="flex gap-2 flex-shrink-0 justify-end sm:justify-start">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleEditReschedule(reschedule)}
-                className="h-8 w-8 p-0 border-amber-300 hover:bg-amber-100"
+                className="h-8 w-8 p-0 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                title="Edit reschedule"
               >
                 <Edit className="w-3 h-3" />
               </Button>
@@ -143,7 +144,8 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => handleDeleteReschedule(reschedule.newDate)}
-                className="h-8 w-8 p-0 border-red-300 hover:bg-red-100 text-red-600"
+                className="h-8 w-8 p-0 border-red-300 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+                title="Delete reschedule"
               >
                 <Trash2 className="w-3 h-3" />
               </Button>

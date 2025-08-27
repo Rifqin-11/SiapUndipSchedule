@@ -126,7 +126,7 @@ const NotificationsPage = () => {
       {/* Notification Permission & Test */}
       <div className="max-w-2xl mx-auto px-6 mb-6">
         {isClient && isSupported && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 {notificationsEnabled ? (
@@ -197,7 +197,7 @@ const NotificationsPage = () => {
 
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Class Reminders */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Pengingat Kelas
           </h2>
@@ -253,7 +253,7 @@ const NotificationsPage = () => {
         </div>
 
         {/* Sound & Vibration */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Suara & Getaran
           </h2>
@@ -320,7 +320,7 @@ const NotificationsPage = () => {
         </div>
 
         {/* Other Settings */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Pengaturan Lain
           </h2>

@@ -18,7 +18,7 @@ const ManageSubjectsSkeleton = () => {
 
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Search and Filter */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="h-4 w-16 bg-gray-300 rounded mb-2"></div>
@@ -36,7 +36,7 @@ const ManageSubjectsSkeleton = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-card rounded-xl p-6 text-center border border-gray-200 dark:border-gray-700"
             >
               <div className="h-8 w-12 bg-gray-300 rounded mx-auto mb-2"></div>
               <div className="h-4 w-20 bg-gray-200 rounded mx-auto"></div>
@@ -49,7 +49,7 @@ const ManageSubjectsSkeleton = () => {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700"
+              className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">

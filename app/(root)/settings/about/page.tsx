@@ -7,7 +7,7 @@ const AboutPage = () => {
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       {/* App Info */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center">
         <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
           SU
         </div>
@@ -24,7 +24,7 @@ const AboutPage = () => {
       </div>
 
       {/* Features */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Main Features
         </h3>
@@ -45,13 +45,13 @@ const AboutPage = () => {
       </div>
 
       {/* Tech Stack */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Code className="w-5 h-5" />
           Technology
         </h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="text-2xl mb-1">⚛️</div>
             <div className="font-medium text-gray-900 dark:text-white">
               Next.js
@@ -60,7 +60,7 @@ const AboutPage = () => {
               React Framework
             </div>
           </div>
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="text-2xl mb-1">🎨</div>
             <div className="font-medium text-gray-900 dark:text-white">
               Tailwind CSS
@@ -69,7 +69,7 @@ const AboutPage = () => {
               Styling
             </div>
           </div>
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="text-2xl mb-1">🍃</div>
             <div className="font-medium text-gray-900 dark:text-white">
               MongoDB
@@ -78,7 +78,7 @@ const AboutPage = () => {
               Database
             </div>
           </div>
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="text-2xl mb-1">📱</div>
             <div className="font-medium text-gray-900 dark:text-white">
               TypeScript
@@ -91,7 +91,7 @@ const AboutPage = () => {
       </div>
 
       {/* Developer */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Developer
         </h3>

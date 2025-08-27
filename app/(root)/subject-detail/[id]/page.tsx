@@ -61,14 +61,14 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     return (
       <div className="max-full mx-auto p-6 space-y-6">
         {/* Loading Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="animate-pulse">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+              <div className="w-10 h-10 bg-gray-200 dark:bg-muted rounded-lg"></div>
+              <div className="h-8 bg-gray-200 dark:bg-muted rounded w-1/3"></div>
             </div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+            <div className="h-4 bg-gray-200 dark:bg-muted rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-muted rounded w-2/3"></div>
           </div>
         </div>
 
@@ -77,14 +77,14 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+              className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6"
             >
               <div className="animate-pulse">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-muted rounded-lg"></div>
+                  <div className="h-5 bg-gray-200 dark:bg-muted rounded w-1/2"></div>
                 </div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-muted rounded w-3/4"></div>
               </div>
             </div>
           ))}
@@ -106,7 +106,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           <p className="text-red-700 dark:text-red-300 mb-6">{error}</p>
           <button
             onClick={() => window.history.back()}
-            className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
           >
             Kembali
           </button>
@@ -122,7 +122,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       {/* Header Card with Subject Info */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border overflow-hidden hover:shadow-md transition-shadow duration-200">
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -165,7 +165,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       {/* Quick Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Schedule Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg transition-colors duration-200">
               <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -183,7 +183,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
 
         {/* Time Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg transition-colors duration-200">
               <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -203,7 +203,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
 
         {/* Location Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg transition-colors duration-200">
               <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -222,7 +222,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
 
       {/* Lecturer Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
             <User className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -235,7 +235,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           {subject.lecturer.map((lect, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-black/20 rounded-lg"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 {lect
@@ -259,7 +259,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
 
       {/* Progress & Timeline Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
@@ -285,7 +285,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             <span>Progress Kehadiran</span>
             <span>{Math.round((subject.meeting / 14) * 100)}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+          <div className="w-full bg-gray-200 dark:bg-black/20 rounded-full h-3">
             <div
               className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-300"
               style={{ width: `${(subject.meeting / 14) * 100}%` }}
@@ -340,7 +340,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                 )}
           </div>
           {(subject.attendanceDates?.length || subject.meeting) > 7 && (
-            <button className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+            <button className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200">
               Lihat semua pertemuan (
               {(subject.attendanceDates?.length || subject.meeting) - 7}{" "}
               lainnya)
@@ -350,23 +350,24 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
 
       {/* Reschedule Management Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex-shrink-0">
               <CalendarX className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
               Class Reschedules
             </h3>
           </div>
           <Button
             onClick={() => setIsRescheduleModalOpen(true)}
-            className="bg-amber-600 hover:bg-amber-700 text-white"
+            className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-700 text-white transition-colors duration-200 flex-shrink-0"
             size="sm"
           >
-            <CalendarX className="w-4 h-4 mr-2" />
-            Add Reschedule
+            <CalendarX className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Add Reschedule</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
 

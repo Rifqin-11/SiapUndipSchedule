@@ -123,14 +123,14 @@ export default function CalendarCard({
             </div>
           )}
 
-          <div className="flex flex-row gap-2 justify-between items-center pr-4">
+          <div className="flex flex-row gap-2 justify-between items-center pr-5">
             <h1
-              className={`font-bold ${textColor} ${showActions ? "pr-8" : ""}`}
+              className={`font-bold ${textColor} ${showActions ? "pr-6" : ""}`}
             >
               {name}
             </h1>
             <div
-              className={`bg-white/60 rounded-lg p-1 px-2 text-xs ${textColor}`}
+              className={`bg-white/60 dark:bg-black/20 rounded-lg p-1 px-3 text-xs  ${textColor}`}
             >
               {room}
             </div>

@@ -15,7 +15,7 @@ const Timeline = ({
   isCompleted = true,
 }: TimelineProps) => {
   return (
-    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-secondary/30 rounded-lg border-l-4 border-blue-500">
+    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-black/20 rounded-lg border-l-4 border-blue-500">
       <div className="flex-shrink-0">
         {isCompleted ? (
           <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">

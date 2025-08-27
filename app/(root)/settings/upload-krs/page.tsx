@@ -294,14 +294,14 @@ const UploadKRSPage = () => {
     <div className="bg-background min-h-screen font-sans">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Header */}
-        <header className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <header className="bg-white dark:bg-card rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
             <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg w-fit">
               <Upload className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                Upload KRS
+                Upload IRS
               </h1>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                 Import course schedule from your KRS (Study Plan Form) file
@@ -344,7 +344,7 @@ const UploadKRSPage = () => {
 
         {!showPreview ? (
           /* Upload Section */
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <div className="bg-white dark:bg-card rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
             {isProcessing ? (
               <LoadingComponent />
             ) : (
@@ -454,7 +454,7 @@ const UploadKRSPage = () => {
           /* Preview Section */
           <div className="space-y-4 sm:space-y-6">
             {/* Preview Header */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -477,7 +477,7 @@ const UploadKRSPage = () => {
             </div>
 
             {/* Preview Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-card rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
               {/* Mobile Card Layout */}
               <div className="block lg:hidden space-y-4 p-4">
                 {parsedData.map((subject, index) => (
@@ -699,7 +699,7 @@ const UploadKRSPage = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-700">
                     {parsedData.map((subject, index) => (
                       <tr
                         key={index}
@@ -760,7 +760,7 @@ const UploadKRSPage = () => {
             </div>
 
             {/* Submit Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
               <div className="space-y-4">
                 <p className="text-gray-700 dark:text-gray-200 font-medium text-center sm:text-left">
                   Total {parsedData.length} subjects will be added to your

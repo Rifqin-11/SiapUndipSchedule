@@ -141,10 +141,10 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
                 }}
                 className={`text-center p-2 cursor-pointer transition-all ${
                   isSelected
-                    ? "bg-blue-100 text-blue-500 rounded-xl"
+                    ? "bg-blue-100 text-blue-500 rounded-xl dark:bg-blue-900 dark:text-blue-100"
                     : day.isToday
                     ? "text-blue-500 rounded-xl"
-                    : "hover:bg-blue-100 rounded-xl"
+                    : "hover:bg-blue-100 rounded-xl dark:hover:bg-blue-900 dark:hover:text-blue-100"
                 }`}
               >
                 <p className="text-sm">{day.day}</p>

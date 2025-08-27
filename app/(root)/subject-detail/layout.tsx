@@ -61,10 +61,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-background">
         {/* Header yang bisa disembunyikan */}
         <section
-          className={`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 transition-transform duration-300 ${
+          className={`bg-white dark:bg-card border-b border-gray-200 dark:border-border sticky top-0 z-10 transition-transform duration-300 ${
             hideHeader ? "-translate-y-full" : "translate-y-0"
           }`}
         >
@@ -84,10 +84,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
               <button
                 onClick={handleEdit}
-                className="flex items-center px-2 py-2 hover:bg-blue-200 text-white rounded-full transition-colors"
+                className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm"
                 title="Edit Subject"
               >
-                <Edit3 className="w-5 h-5 text-blue-400" />
+                <Edit3 className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">Edit</span>
               </button>
             </div>
           </div>
