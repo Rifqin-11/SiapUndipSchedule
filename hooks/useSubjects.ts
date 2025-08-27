@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface Subject {
   _id?: string;
@@ -25,15 +25,53 @@ export interface Subject {
   category?: string;
 }
 
+// Simple cache to prevent multiple API calls
+const subjectsCache = {
+  data: null as Subject[] | null,
+  timestamp: 0,
+  ttl: 5 * 60 * 1000, // 5 minutes cache
+};
+
 export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSubjects = async () => {
+  // Prevent multiple simultaneous requests
+  const isLoadingRef = useRef(false);
+
+  const fetchSubjects = useCallback(async () => {
+    // Check cache first
+    const now = Date.now();
+    if (
+      subjectsCache.data &&
+      now - subjectsCache.timestamp < subjectsCache.ttl
+    ) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("Using cached subjects data");
+      }
+      setSubjects(subjectsCache.data);
+      setLoading(false);
+      return;
+    }
+
+    // Prevent multiple concurrent requests
+    if (isLoadingRef.current) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("Request already in progress, skipping...");
+      }
+      return;
+    }
+
+    isLoadingRef.current = true;
+
     try {
       setLoading(true);
       setError(null);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("Fetching subjects from API...");
+      }
 
       const response = await fetch("/api/subjects", {
         credentials: "include", // Include cookies for authentication
@@ -59,6 +97,11 @@ export const useSubjects = () => {
             id: subject._id || subject.id, // Use _id as primary, fallback to id
           })
         );
+
+        // Update cache
+        subjectsCache.data = mappedSubjects;
+        subjectsCache.timestamp = now;
+
         setSubjects(mappedSubjects);
         setError(null);
       } else {
@@ -71,8 +114,9 @@ export const useSubjects = () => {
       setSubjects([]);
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, []);
 
   const createSubject = async (subjectData: Omit<Subject, "_id">) => {
     try {
@@ -191,13 +235,21 @@ export const useSubjects = () => {
     }
   };
 
+  // Provide refresh function for manual updates
+  const refresh = useCallback(() => {
+    subjectsCache.data = null; // Clear cache
+    fetchSubjects();
+  }, [fetchSubjects]);
+
   useEffect(() => {
     fetchSubjects();
 
     // Listen for custom refresh events
     const handleSubjectsUpdated = () => {
-      console.log("Subjects updated event received, refetching...");
-      fetchSubjects();
+      if (process.env.NODE_ENV === "development") {
+        console.log("Subjects updated event received, refetching...");
+      }
+      refresh();
     };
 
     if (typeof window !== "undefined") {
@@ -206,8 +258,10 @@ export const useSubjects = () => {
       // Also listen for storage changes
       const handleStorageChange = (e: StorageEvent) => {
         if (e.key === "lastUpdateTime") {
-          console.log("Storage update detected, refetching...");
-          fetchSubjects();
+          if (process.env.NODE_ENV === "development") {
+            console.log("Storage update detected, refetching...");
+          }
+          refresh();
         }
       };
 
@@ -218,13 +272,13 @@ export const useSubjects = () => {
         window.removeEventListener("storage", handleStorageChange);
       };
     }
-  }, []);
+  }, [fetchSubjects, refresh]);
 
   return {
     subjects,
     loading,
     error,
-    refetch: fetchSubjects,
+    refetch: refresh, // Use refresh instead of fetchSubjects
     createSubject,
     updateSubject,
     deleteSubject,

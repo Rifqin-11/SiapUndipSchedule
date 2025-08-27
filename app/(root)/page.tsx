@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import CoursesCard from "@/components/CoursesCard";
 import TodaySubject from "@/components/TodaySubject";
 import CurrentDayDate from "@/components/CurrentDayDate";
@@ -15,7 +15,6 @@ import Link from "next/link";
 import Image from "next/image";
 import NotifIcon from "@/components/NotifIcon";
 
-
 const Page = () => {
   const { subjects, loading, createSubject, refetch } = useSubjects();
   const { user } = useUserProfile();
@@ -26,35 +25,79 @@ const Page = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddSubject = () => {
+  const handleAddSubject = useCallback(() => {
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleSaveSubject = async (subjectData: Omit<Subject, "_id">) => {
-    try {
-      if (!user?.id) {
-        return { success: false, error: "User not authenticated" };
-      }
+  const handleSaveSubject = useCallback(
+    async (subjectData: Omit<Subject, "_id">) => {
+      try {
+        if (!user?.id) {
+          return { success: false, error: "User not authenticated" };
+        }
 
-      const subjectWithUserId = {
-        ...subjectData,
-        userId: user.id,
-      };
-      const result = await createSubject(subjectWithUserId);
-      if (result.success) {
-        refetch();
-        return { success: true };
-      } else {
-        return { success: false, error: result.error };
+        const subjectWithUserId = {
+          ...subjectData,
+          userId: user.id,
+        };
+        const result = await createSubject(subjectWithUserId);
+        if (result.success) {
+          refetch();
+          return { success: true };
+        } else {
+          return { success: false, error: result.error };
+        }
+      } catch {
+        return { success: false, error: "Terjadi kesalahan tak terduga" };
       }
-    } catch {
-      return { success: false, error: "Terjadi kesalahan tak terduga" };
+    },
+    [user?.id, createSubject, refetch]
+  );
+
+  // Memoize computed values
+  const firstName = useMemo(() => {
+    const userName = user?.name || "User";
+    return userName.split(" ")[0];
+  }, [user?.name]);
+
+  const userName = useMemo(() => {
+    return user?.name || "User";
+  }, [user?.name]);
+
+  const coursesContent = useMemo(() => {
+    if (subjects.length === 0) {
+      return (
+        <div className="w-full max-w-xs mx-auto">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-2 border border-blue-200 dark:border-blue-800 shadow-sm">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-800/50 rounded-full flex items-center justify-center mb-3">
+                <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-base font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                No Courses Yet
+              </h3>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
+                Add your first course to get started
+              </p>
+              <button
+                onClick={handleAddSubject}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors duration-200 shadow-sm"
+              >
+                <Plus className="w-3 h-3 inline mr-1" />
+                Add Course
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
-  };
 
-  // Get user name for greeting
-  const userName = user?.name || "User";
-  const firstName = userName.split(" ")[0];
+    return subjects.slice(0, 6).map((subject) => (
+      <div key={subject.id} className="flex-shrink-0 w-64">
+        <CoursesCard name={subject.name} meeting={subject.meeting} />
+      </div>
+    ));
+  }, [subjects, handleAddSubject]);
 
   // Loading state: cukup balikin skeleton di sini saja
   if (loading) {
@@ -118,38 +161,7 @@ const Page = () => {
 
         {/* This div maintains overflow-x auto for horizontal scrolling */}
         <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-          <div className="flex gap-4">
-            {subjects.length === 0 ? (
-              <div className="w-full max-w-xs mx-auto">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-2 border border-blue-200 dark:border-blue-800 shadow-sm">
-                  <div className="text-center">
-                    <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-800/50 rounded-full flex items-center justify-center mb-3">
-                      <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h3 className="text-base font-semibold text-blue-900 dark:text-blue-200 mb-1">
-                      No Courses Yet
-                    </h3>
-                    <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
-                      Start building your schedule
-                    </p>
-                    <div className="flex items-center justify-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-                      <Plus className="w-3 h-3" />
-                      <span>Add course</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              subjects.map((subject) => (
-                <div
-                  key={subject._id}
-                  className="w-[280px] shrink-0 transition-transform duration-200 hover:scale-105"
-                >
-                  <CoursesCard {...subject} />
-                </div>
-              ))
-            )}
-          </div>
+          <div className="flex gap-4">{coursesContent}</div>
         </div>
       </section>
 

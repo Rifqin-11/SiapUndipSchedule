@@ -1,58 +1,77 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import useClassNotifications from "@/hooks/useClassNotifications";
 import { useSubjects } from "@/hooks/useSubjects";
 
 const useAutoNotifications = () => {
   const { subjects, loading } = useSubjects();
   const { initializeNotifications } = useClassNotifications();
-  const [isClient, setIsClient] = useState(false);
 
-  // Set client-side flag
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // Prevent multiple initializations
+  const isInitialized = useRef(false);
+  const lastSubjectsCount = useRef(0);
 
-  useEffect(() => {
-    // Only run on client-side
-    if (!isClient) return;
+  const permission =
+    typeof window !== "undefined" && "Notification" in window
+      ? Notification.permission
+      : "denied";
 
-    // Check if browser supports notifications (iOS Safari has limited support)
-    const supportsNotifications =
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      typeof Notification.requestPermission === "function";
+  const isClient = typeof window !== "undefined";
 
-    if (!supportsNotifications) {
-      console.log("Notifications not supported on this device/browser");
-      return;
-    }
+  const checkState = {
+    loading,
+    subjectsCount: subjects.length,
+    permission,
+    isClient,
+  };
 
-    console.log("Auto notifications check:", {
-      loading,
-      subjectsCount: subjects.length,
-      permission: Notification.permission,
-      isClient,
-    });
+  const initializeOnce = useCallback(async () => {
+    // Only initialize if conditions are met and not already initialized
+    if (
+      !loading &&
+      subjects.length > 0 &&
+      permission === "granted" &&
+      isClient &&
+      (!isInitialized.current || lastSubjectsCount.current !== subjects.length)
+    ) {
+      // Only log once per state change
+      if (process.env.NODE_ENV === "development") {
+        console.log("Initializing notifications...");
+      }
 
-    // Only initialize when subjects are loaded and notifications are permitted
-    if (!loading && subjects.length > 0) {
-      if (Notification.permission === "granted") {
-        try {
-          console.log("Initializing notifications...");
-          initializeNotifications();
-        } catch (error) {
-          console.warn("Failed to initialize notifications:", error);
-        }
-      } else {
-        console.log(
-          "Notification permission not granted yet. Current permission:",
-          Notification.permission
-        );
+      try {
+        await initializeNotifications();
+        isInitialized.current = true;
+        lastSubjectsCount.current = subjects.length;
+      } catch (error) {
+        console.error("Failed to initialize notifications:", error);
       }
     }
-  }, [subjects, loading, initializeNotifications, isClient]);
+  }, [loading, subjects.length, permission, isClient, initializeNotifications]);
+
+  useEffect(() => {
+    // Only log once per state change in development
+    if (process.env.NODE_ENV === "development") {
+      console.log("Auto notifications check:", {
+        loading,
+        subjectsCount: subjects.length,
+        permission,
+        isClient,
+      });
+    }
+
+    initializeOnce();
+  }, [initializeOnce, loading, subjects.length, permission, isClient]);
+
+  // Reset on permission change
+  useEffect(() => {
+    if (permission !== "granted") {
+      isInitialized.current = false;
+    }
+  }, [permission]);
+
+  return checkState;
 };
 
 export default useAutoNotifications;

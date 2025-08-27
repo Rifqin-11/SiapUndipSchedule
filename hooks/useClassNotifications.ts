@@ -1,9 +1,14 @@
 "use client";
 
+import { useRef, useCallback } from "react";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 
 const useClassNotifications = () => {
   const { subjects } = useSubjects();
+
+  // Prevent duplicate scheduling
+  const scheduledNotifications = useRef(new Set<string>());
+  const lastScheduledCount = useRef(0);
 
   // Check if notifications are supported (better iOS compatibility)
   const isNotificationSupported = () => {
@@ -28,7 +33,7 @@ const useClassNotifications = () => {
   };
 
   // Request notification permission
-  const requestNotificationPermission = async () => {
+  const requestNotificationPermission = useCallback(async () => {
     if (!isNotificationSupported()) {
       console.log("Notifications not supported on this device");
       return false;
@@ -41,61 +46,62 @@ const useClassNotifications = () => {
       console.warn("Error requesting notification permission:", error);
       return false;
     }
-  };
+  }, []);
 
   // Create notification
-  const createNotification = (
-    title: string,
-    body: string,
-    options?: NotificationOptions
-  ) => {
-    if (!isNotificationSupported()) {
-      console.log(
-        "Notifications not supported, skipping notification creation"
-      );
-      return null;
-    }
+  const createNotification = useCallback(
+    (title: string, body: string, options?: NotificationOptions) => {
+      if (!isNotificationSupported()) {
+        console.log(
+          "Notifications not supported, skipping notification creation"
+        );
+        return null;
+      }
 
-    if (Notification.permission !== "granted") {
-      console.log("Notification permission not granted");
-      return null;
-    }
+      if (Notification.permission !== "granted") {
+        console.log("Notification permission not granted");
+        return null;
+      }
 
-    try {
-      const notification = new Notification(title, {
-        body,
-        icon: "/favicon.ico",
-        badge: "/favicon.ico",
-        tag: "class-reminder",
-        requireInteraction: false, // Changed to false for better iOS compatibility
-        ...options,
-      });
+      try {
+        const notification = new Notification(title, {
+          body,
+          icon: "/favicon.ico",
+          badge: "/favicon.ico",
+          tag: "class-reminder",
+          requireInteraction: false, // Changed to false for better iOS compatibility
+          ...options,
+        });
 
-      // Auto close after 10 seconds
-      setTimeout(() => {
-        try {
-          notification.close();
-        } catch (error) {
-          console.warn("Error closing notification:", error);
-        }
-      }, 10000);
+        // Auto close after 10 seconds
+        setTimeout(() => {
+          try {
+            notification.close();
+          } catch (error) {
+            console.warn("Error closing notification:", error);
+          }
+        }, 10000);
 
-      return notification;
-    } catch (error) {
-      console.warn("Error creating notification:", error);
-      return null;
-    }
-  };
+        return notification;
+      } catch (error) {
+        console.warn("Error creating notification:", error);
+        return null;
+      }
+    },
+    []
+  );
 
   // Calculate time until class starts (supports both recurring and date-specific subjects)
-  const getTimeUntilClass = (subject: Subject): number => {
+  const getTimeUntilClass = useCallback((subject: Subject): number => {
     const now = new Date();
 
     // For date-specific subjects
     if (subject.specificDate) {
-      console.log(
-        `Processing date-specific subject: ${subject.name} on ${subject.specificDate}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Processing date-specific subject: ${subject.name} on ${subject.specificDate}`
+        );
+      }
 
       // Parse the specific date (YYYY-MM-DD format)
       const [year, month, day] = subject.specificDate.split("-").map(Number);
@@ -115,13 +121,15 @@ const useClassNotifications = () => {
       const classDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
       const timeUntil = classDate.getTime() - now.getTime();
 
-      console.log(
-        `Date-specific subject ${
-          subject.name
-        }: classDate=${classDate.toISOString()}, timeUntil=${
-          timeUntil / 1000 / 60
-        } minutes`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Date-specific subject ${
+            subject.name
+          }: classDate=${classDate.toISOString()}, timeUntil=${
+            timeUntil / 1000 / 60
+          } minutes`
+        );
+      }
       return timeUntil;
     }
 
@@ -170,86 +178,110 @@ const useClassNotifications = () => {
     }
 
     const timeUntil = classDate.getTime() - now.getTime();
-    console.log(
-      `Recurring subject ${
-        subject.name
-      }: classDate=${classDate.toISOString()}, timeUntil=${
-        timeUntil / 1000 / 60
-      } minutes`
-    );
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `Recurring subject ${
+          subject.name
+        }: classDate=${classDate.toISOString()}, timeUntil=${
+          timeUntil / 1000 / 60
+        } minutes`
+      );
+    }
     return timeUntil;
-  };
+  }, []);
 
   // Schedule notification
-  const scheduleNotification = (subject: Subject) => {
-    console.log(`Attempting to schedule notification for: ${subject.name}`);
+  const scheduleNotification = useCallback(
+    (subject: Subject) => {
+      console.log(`Attempting to schedule notification for: ${subject.name}`);
 
-    const timeUntilClass = getTimeUntilClass(subject);
+      const timeUntilClass = getTimeUntilClass(subject);
 
-    if (timeUntilClass <= 0) {
-      console.log(
-        `Subject ${subject.name} is in the past, skipping notification`
-      );
+      if (timeUntilClass <= 0) {
+        console.log(
+          `Subject ${subject.name} is in the past, skipping notification`
+        );
+        return;
+      }
+
+      // Schedule notification 15 minutes before class
+      const notificationTime = timeUntilClass - 15 * 60 * 1000; // 15 minutes in milliseconds
+
+      if (notificationTime > 0) {
+        console.log(
+          `Scheduling 15-min notification for ${subject.name} in ${
+            notificationTime / 1000 / 60
+          } minutes`
+        );
+
+        setTimeout(() => {
+          console.log(`Triggering 15-min notification for ${subject.name}`);
+          createNotification(
+            "Class Reminder 📚",
+            `${subject.name} will start in 15 minutes at ${subject.room}`,
+            {
+              data: {
+                subjectId: subject.id,
+                type: "class-reminder",
+              },
+            }
+          );
+        }, notificationTime);
+      } else {
+        console.log(`15-min notification time has passed for ${subject.name}`);
+      }
+
+      // Schedule notification 5 minutes before class
+      const urgentNotificationTime = timeUntilClass - 5 * 60 * 1000; // 5 minutes in milliseconds
+
+      if (urgentNotificationTime > 0) {
+        console.log(
+          `Scheduling 5-min notification for ${subject.name} in ${
+            urgentNotificationTime / 1000 / 60
+          } minutes`
+        );
+
+        setTimeout(() => {
+          console.log(`Triggering 5-min notification for ${subject.name}`);
+          createNotification(
+            "Class Starting Soon! 🚨",
+            `${subject.name} starts in 5 minutes at ${subject.room}. Get ready!`,
+            {
+              data: {
+                subjectId: subject.id,
+                type: "urgent-reminder",
+              },
+            }
+          );
+        }, urgentNotificationTime);
+      } else {
+        console.log(`5-min notification time has passed for ${subject.name}`);
+      }
+    },
+    [getTimeUntilClass, createNotification]
+  );
+
+  // Initialize notifications for all subjects
+  const initializeNotifications = useCallback(async () => {
+    // Skip if already scheduled for current subjects
+    if (
+      lastScheduledCount.current === subjects.length &&
+      scheduledNotifications.current.size > 0
+    ) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("Notifications already scheduled for current subjects");
+      }
       return;
     }
 
-    // Schedule notification 15 minutes before class
-    const notificationTime = timeUntilClass - 15 * 60 * 1000; // 15 minutes in milliseconds
-
-    if (notificationTime > 0) {
-      console.log(
-        `Scheduling 15-min notification for ${subject.name} in ${
-          notificationTime / 1000 / 60
-        } minutes`
-      );
-
-      setTimeout(() => {
-        console.log(`Triggering 15-min notification for ${subject.name}`);
-        createNotification(
-          "Class Reminder 📚",
-          `${subject.name} will start in 15 minutes at ${subject.room}`,
-          {
-            data: {
-              subjectId: subject.id,
-              type: "class-reminder",
-            },
-          }
-        );
-      }, notificationTime);
-    } else {
-      console.log(`15-min notification time has passed for ${subject.name}`);
+    // Clear previous notifications if subjects changed
+    if (lastScheduledCount.current !== subjects.length) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("Subjects changed, clearing previous notifications");
+      }
+      scheduledNotifications.current.clear();
     }
 
-    // Schedule notification 5 minutes before class
-    const urgentNotificationTime = timeUntilClass - 5 * 60 * 1000; // 5 minutes in milliseconds
-
-    if (urgentNotificationTime > 0) {
-      console.log(
-        `Scheduling 5-min notification for ${subject.name} in ${
-          urgentNotificationTime / 1000 / 60
-        } minutes`
-      );
-
-      setTimeout(() => {
-        console.log(`Triggering 5-min notification for ${subject.name}`);
-        createNotification(
-          "Class Starting Soon! 🚨",
-          `${subject.name} starts in 5 minutes at ${subject.room}. Get ready!`,
-          {
-            data: {
-              subjectId: subject.id,
-              type: "urgent-reminder",
-            },
-          }
-        );
-      }, urgentNotificationTime);
-    } else {
-      console.log(`5-min notification time has passed for ${subject.name}`);
-    }
-  };
-
-  // Initialize notifications for all subjects
-  const initializeNotifications = async () => {
     const hasPermission = await requestNotificationPermission();
 
     if (!hasPermission) {
@@ -257,9 +289,14 @@ const useClassNotifications = () => {
       return;
     }
 
-    // Clear existing timeouts (in a real app, you'd want to track these)
     // Schedule notifications for all subjects that have a valid schedule
-    const scheduledSubjects = subjects.filter((subject) => {
+    const validSubjects = subjects.filter((subject) => {
+      const subjectKey = `${subject.name}-${subject.day}-${subject.startTime}`;
+
+      if (scheduledNotifications.current.has(subjectKey)) {
+        return false; // Already scheduled
+      }
+
       // For date-specific subjects
       if (subject.specificDate) {
         const hasValidSchedule =
@@ -269,15 +306,19 @@ const useClassNotifications = () => {
           subject.startTime.trim() !== "";
 
         if (!hasValidSchedule) {
-          console.log(
-            `Skipping notification for date-specific subject ${subject.name} - no valid schedule`
-          );
+          if (process.env.NODE_ENV === "development") {
+            console.log(
+              `Skipping notification for date-specific subject ${subject.name} - no valid schedule`
+            );
+          }
           return false;
         }
 
-        console.log(
-          `Valid date-specific subject found: ${subject.name} on ${subject.specificDate}`
-        );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `Valid date-specific subject found: ${subject.name} on ${subject.specificDate}`
+          );
+        }
         return true;
       }
 
@@ -291,25 +332,43 @@ const useClassNotifications = () => {
         subject.startTime.trim() !== "";
 
       if (!hasValidSchedule) {
-        console.log(
-          `Skipping notification for recurring subject ${subject.name} - no valid schedule`
-        );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `Skipping notification for recurring subject ${subject.name} - no valid schedule`
+          );
+        }
         return false;
       }
 
-      console.log(
-        `Valid recurring subject found: ${subject.name} on ${subject.day}`
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Valid recurring subject found: ${subject.name} on ${subject.day}`
+        );
+      }
       return true;
     });
 
     console.log(
-      `Setting up notifications for ${scheduledSubjects.length} scheduled subjects`
+      `Setting up notifications for ${validSubjects.length} scheduled subjects`
     );
-    scheduledSubjects.forEach((subject) => {
-      scheduleNotification(subject);
-    });
-  };
+
+    // Schedule notifications and track them
+    for (const subject of validSubjects) {
+      const subjectKey = `${subject.name}-${subject.day}-${subject.startTime}`;
+
+      try {
+        scheduleNotification(subject);
+        scheduledNotifications.current.add(subjectKey);
+      } catch (error) {
+        console.error(
+          `Failed to schedule notification for ${subject.name}:`,
+          error
+        );
+      }
+    }
+
+    lastScheduledCount.current = subjects.length;
+  }, [subjects, requestNotificationPermission, scheduleNotification]);
 
   // Test notification (for development)
   const testNotification = () => {

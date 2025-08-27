@@ -4,22 +4,33 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, X, RotateCcw, Loader2, ImagePlus, Flashlight, FlashlightOff, Type } from "lucide-react";
+import {
+  Camera,
+  X,
+  RotateCcw,
+  Loader2,
+  ImagePlus,
+  Flashlight,
+  FlashlightOff,
+  Type,
+} from "lucide-react";
 import { toast } from "sonner";
 
 // BarcodeDetector type declaration
 declare global {
   interface BarcodeDetector {
-    detect(source: HTMLVideoElement | HTMLCanvasElement | HTMLImageElement): Promise<DetectedBarcode[]>;
+    detect(
+      source: HTMLVideoElement | HTMLCanvasElement | HTMLImageElement
+    ): Promise<DetectedBarcode[]>;
   }
-  
+
   interface DetectedBarcode {
     boundingBox: DOMRectReadOnly;
     cornerPoints: { x: number; y: number }[];
     format: string;
     rawValue: string;
   }
-  
+
   const BarcodeDetector: {
     prototype: BarcodeDetector;
     new (options?: { formats: string[] }): BarcodeDetector;
@@ -46,7 +57,9 @@ const QRScanner: React.FC<QRScannerProps> = ({
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [lastScannedUrl, setLastScannedUrl] = useState<string | null>(null);
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment"
+  );
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [brightness, setBrightness] = useState(50);
   const [scanAttempts, setScanAttempts] = useState(0);
@@ -61,10 +74,16 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
   // Enhanced browser compatibility check
   const checkBrowserSupport = useCallback(() => {
-    const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-    const hasCamera = 'ImageCapture' in window;
-    const hasWebRTC = !!(window.RTCPeerConnection || (window as Window & { webkitRTCPeerConnection?: unknown }).webkitRTCPeerConnection);
-    const hasBarcodeDetector = 'BarcodeDetector' in window;
+    const hasGetUserMedia = !!(
+      navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+    );
+    const hasCamera = "ImageCapture" in window;
+    const hasWebRTC = !!(
+      window.RTCPeerConnection ||
+      (window as Window & { webkitRTCPeerConnection?: unknown })
+        .webkitRTCPeerConnection
+    );
+    const hasBarcodeDetector = "BarcodeDetector" in window;
 
     return {
       isSupported: hasGetUserMedia && hasWebRTC,
@@ -72,19 +91,21 @@ const QRScanner: React.FC<QRScannerProps> = ({
         getUserMedia: hasGetUserMedia,
         camera: hasCamera,
         webRTC: hasWebRTC,
-        barcodeDetector: hasBarcodeDetector
-      }
+        barcodeDetector: hasBarcodeDetector,
+      },
     };
   }, []);
 
   // Enhanced camera permission check
   const checkCameraPermission = useCallback(async () => {
     try {
-      const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      const permission = await navigator.permissions.query({
+        name: "camera" as PermissionName,
+      });
       return permission.state;
     } catch (_error) {
-      console.error('Permission check failed:', _error);
-      return 'unknown';
+      console.error("Permission check failed:", _error);
+      return "unknown";
     }
   }, []);
 
@@ -98,7 +119,9 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
       // Check if it's a UNDIP attendance URL
       if (decodedText.includes("siap.undip.ac.id/a/")) {
-        const match = decodedText.match(/siap\.undip\.ac\.id\/a\/([a-f0-9]{12})/i);
+        const match = decodedText.match(
+          /siap\.undip\.ac\.id\/a\/([a-f0-9]{12})/i
+        );
         if (match) {
           return { isValid: true, data: { code: match[1].toLowerCase() } };
         }
@@ -112,53 +135,61 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
       // Try to parse as JSON for other formats
       const data = JSON.parse(decodedText);
-      if (data.type === 'attendance' && data.code) {
+      if (data.type === "attendance" && data.code) {
         return { isValid: true, data };
       }
 
-      return { isValid: false, error: 'Invalid QR code format' };
+      return { isValid: false, error: "Invalid QR code format" };
     } catch {
       // If not JSON, treat as plain text and try to extract code
       const match = decodedText.match(/([a-f0-9]{12})/i);
       if (match) {
         return { isValid: true, data: { code: match[1].toLowerCase() } };
       }
-      return { isValid: false, error: 'QR code format not recognized' };
+      return { isValid: false, error: "QR code format not recognized" };
     }
   }, []);
 
   // BarcodeDetector scanning function
-  const scanWithBarcodeDetector = useCallback(async (video: HTMLVideoElement) => {
-    if (!barcodeDetectorRef.current || !video.videoWidth || !video.videoHeight) return;
+  const scanWithBarcodeDetector = useCallback(
+    async (video: HTMLVideoElement) => {
+      if (
+        !barcodeDetectorRef.current ||
+        !video.videoWidth ||
+        !video.videoHeight
+      )
+        return;
 
-    try {
-      const barcodes = await barcodeDetectorRef.current.detect(video);
-      
-      for (const barcode of barcodes) {
-        if (barcode.format === 'qr_code' && barcode.rawValue) {
-          console.log("BarcodeDetector QR detected:", barcode.rawValue);
-          
-          const validation = validateQRCode(barcode.rawValue);
-          if (validation.isValid) {
-            // Stop detection and handle result
-            if (detectionIntervalRef.current) {
-              clearInterval(detectionIntervalRef.current);
-              detectionIntervalRef.current = null;
+      try {
+        const barcodes = await barcodeDetectorRef.current.detect(video);
+
+        for (const barcode of barcodes) {
+          if (barcode.format === "qr_code" && barcode.rawValue) {
+            console.log("BarcodeDetector QR detected:", barcode.rawValue);
+
+            const validation = validateQRCode(barcode.rawValue);
+            if (validation.isValid) {
+              // Stop detection and handle result
+              if (detectionIntervalRef.current) {
+                clearInterval(detectionIntervalRef.current);
+                detectionIntervalRef.current = null;
+              }
+              return barcode.rawValue;
             }
-            return barcode.rawValue;
           }
         }
+      } catch (error) {
+        console.warn("BarcodeDetector scan failed:", error);
+        // Switch to fallback if BarcodeDetector fails consistently
+        if (!useFallback) {
+          console.log("Switching to ZXing fallback...");
+          setUseFallback(true);
+        }
       }
-    } catch (error) {
-      console.warn('BarcodeDetector scan failed:', error);
-      // Switch to fallback if BarcodeDetector fails consistently
-      if (!useFallback) {
-        console.log('Switching to ZXing fallback...');
-        setUseFallback(true);
-      }
-    }
-    return null;
-  }, [validateQRCode, useFallback, setUseFallback]);
+      return null;
+    },
+    [validateQRCode, useFallback, setUseFallback]
+  );
 
   // Check if camera device is available and not in use
   const checkDeviceAvailability = useCallback(async (deviceId: string) => {
@@ -168,12 +199,12 @@ const QRScanner: React.FC<QRScannerProps> = ({
         video: {
           deviceId: { exact: deviceId },
           width: { ideal: 320 },
-          height: { ideal: 240 }
-        }
+          height: { ideal: 240 },
+        },
       });
 
       // Immediately stop the test stream
-      testStream.getTracks().forEach(track => track.stop());
+      testStream.getTracks().forEach((track) => track.stop());
 
       return true;
     } catch (error) {
@@ -183,127 +214,156 @@ const QRScanner: React.FC<QRScannerProps> = ({
   }, []);
 
   // Enhanced video stream configuration
-  const enhanceVideoStream = useCallback((stream: MediaStream) => {
-    try {
-      console.log('Enhancing video stream...');
+  const enhanceVideoStream = useCallback(
+    (stream: MediaStream) => {
+      try {
+        console.log("Enhancing video stream...");
 
-      // Cleanup previous stream first
-      if (streamRef.current && streamRef.current !== stream) {
-        console.log('Cleaning up previous stream...');
-        streamRef.current.getTracks().forEach(track => {
-          if (track.readyState === 'live') {
-            track.stop();
-          }
-        });
-      }
-
-      if (!stream || !stream.active) {
-        throw new Error('Invalid stream provided');
-      }
-
-      streamRef.current = stream;
-      const track = stream.getVideoTracks()[0];
-
-      if (!track || track.readyState !== 'live') {
-        throw new Error('No active video track available');
-      }
-
-      // Set video element source
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        console.log('Video element source set');
-      }
-
-      if ('getCapabilities' in track) {
-        try {
-          const capabilities = track.getCapabilities() as Record<string, unknown>;
-          console.log('Camera capabilities:', capabilities);
-
-          const constraints: Record<string, unknown> = {};
-
-          if (capabilities.focusMode && Array.isArray(capabilities.focusMode) && (capabilities.focusMode as string[]).includes('continuous')) {
-            constraints.focusMode = 'continuous';
-          }
-
-          if (capabilities.exposureMode && Array.isArray(capabilities.exposureMode) && (capabilities.exposureMode as string[]).includes('continuous')) {
-            constraints.exposureMode = 'continuous';
-          }
-
-          if (capabilities.whiteBalanceMode && Array.isArray(capabilities.whiteBalanceMode) && (capabilities.whiteBalanceMode as string[]).includes('continuous')) {
-            constraints.whiteBalanceMode = 'continuous';
-          }
-
-          if (capabilities.torch) {
-            constraints.torch = torchEnabled;
-          }
-
-          // Only apply constraints if track is still live
-          if (track.readyState === 'live' && Object.keys(constraints).length > 0) {
-            console.log('Applying constraints:', constraints);
-            track.applyConstraints(constraints).catch(error => {
-              console.warn('Failed to apply video constraints:', error);
-            });
-          }
-        } catch (constraintError) {
-          console.warn('Failed to apply camera constraints:', constraintError);
+        // Cleanup previous stream first
+        if (streamRef.current && streamRef.current !== stream) {
+          console.log("Cleaning up previous stream...");
+          streamRef.current.getTracks().forEach((track) => {
+            if (track.readyState === "live") {
+              track.stop();
+            }
+          });
         }
-      }
 
-      console.log('Video stream enhanced successfully');
-    } catch (error) {
-      console.error('Failed to enhance video stream:', error);
-      throw error;
-    }
-  }, [torchEnabled]);
+        if (!stream || !stream.active) {
+          throw new Error("Invalid stream provided");
+        }
+
+        streamRef.current = stream;
+        const track = stream.getVideoTracks()[0];
+
+        if (!track || track.readyState !== "live") {
+          throw new Error("No active video track available");
+        }
+
+        // Set video element source
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          console.log("Video element source set");
+        }
+
+        if ("getCapabilities" in track) {
+          try {
+            const capabilities = track.getCapabilities() as Record<
+              string,
+              unknown
+            >;
+            console.log("Camera capabilities:", capabilities);
+
+            const constraints: Record<string, unknown> = {};
+
+            if (
+              capabilities.focusMode &&
+              Array.isArray(capabilities.focusMode) &&
+              (capabilities.focusMode as string[]).includes("continuous")
+            ) {
+              constraints.focusMode = "continuous";
+            }
+
+            if (
+              capabilities.exposureMode &&
+              Array.isArray(capabilities.exposureMode) &&
+              (capabilities.exposureMode as string[]).includes("continuous")
+            ) {
+              constraints.exposureMode = "continuous";
+            }
+
+            if (
+              capabilities.whiteBalanceMode &&
+              Array.isArray(capabilities.whiteBalanceMode) &&
+              (capabilities.whiteBalanceMode as string[]).includes("continuous")
+            ) {
+              constraints.whiteBalanceMode = "continuous";
+            }
+
+            if (capabilities.torch) {
+              constraints.torch = torchEnabled;
+            }
+
+            // Only apply constraints if track is still live
+            if (
+              track.readyState === "live" &&
+              Object.keys(constraints).length > 0
+            ) {
+              console.log("Applying constraints:", constraints);
+              track.applyConstraints(constraints).catch((error) => {
+                console.warn("Failed to apply video constraints:", error);
+              });
+            }
+          } catch (constraintError) {
+            console.warn(
+              "Failed to apply camera constraints:",
+              constraintError
+            );
+          }
+        }
+
+        console.log("Video stream enhanced successfully");
+      } catch (error) {
+        console.error("Failed to enhance video stream:", error);
+        throw error;
+      }
+    },
+    [torchEnabled]
+  );
 
   // Brightness detection for auto-adjustment
-  const detectLighting = useCallback((video: HTMLVideoElement) => {
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+  const detectLighting = useCallback(
+    (video: HTMLVideoElement) => {
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-      if (!ctx || !video.videoWidth || !video.videoHeight) return 50;
+        if (!ctx || !video.videoWidth || !video.videoHeight) return 50;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
 
-      let brightness = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        brightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+        let brightness = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          brightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+        }
+
+        const avgBrightness = brightness / (data.length / 4);
+        setBrightness(avgBrightness);
+        return avgBrightness;
+      } catch (error) {
+        console.warn("Brightness detection failed:", error);
+        return 50;
       }
-
-      const avgBrightness = brightness / (data.length / 4);
-      setBrightness(avgBrightness);
-      return avgBrightness;
-    } catch (error) {
-      console.warn('Brightness detection failed:', error);
-      return 50;
-    }
-  }, [setBrightness]);
+    },
+    [setBrightness]
+  );
 
   // Toggle torch/flashlight
   const toggleTorch = useCallback(async () => {
     if (streamRef.current) {
       const track = streamRef.current.getVideoTracks()[0];
-      if (track && 'getCapabilities' in track) {
+      if (track && "getCapabilities" in track) {
         const capabilities = track.getCapabilities() as Record<string, unknown>;
         if (capabilities.torch) {
           try {
             await track.applyConstraints({
-              advanced: [{ torch: !torchEnabled } as Record<string, unknown>]
+              advanced: [{ torch: !torchEnabled } as Record<string, unknown>],
             });
             setTorchEnabled(!torchEnabled);
-            toast.success(torchEnabled ? 'Flash dimatikan' : 'Flash dinyalakan');
+            toast.success(
+              torchEnabled ? "Flash dimatikan" : "Flash dinyalakan"
+            );
           } catch (error) {
-            console.warn('Failed to toggle torch:', error);
-            toast.error('Flash tidak tersedia pada perangkat ini');
+            console.warn("Failed to toggle torch:", error);
+            toast.error("Flash tidak tersedia pada perangkat ini");
           }
         } else {
-          toast.error('Flash tidak tersedia pada kamera ini');
+          toast.error("Flash tidak tersedia pada kamera ini");
         }
       }
     }
@@ -338,36 +398,43 @@ const QRScanner: React.FC<QRScannerProps> = ({
       // Check browser support first
       const browserSupport = checkBrowserSupport();
       if (!browserSupport.isSupported) {
-        throw new Error("Browser tidak mendukung kamera. Gunakan browser yang lebih baru.");
+        throw new Error(
+          "Browser tidak mendukung kamera. Gunakan browser yang lebih baru."
+        );
       }
 
       // Check permissions
       const permissionState = await checkCameraPermission();
-      if (permissionState === 'denied') {
-        throw new Error("Izin kamera ditolak. Silakan aktifkan izin kamera di pengaturan browser.");
+      if (permissionState === "denied") {
+        throw new Error(
+          "Izin kamera ditolak. Silakan aktifkan izin kamera di pengaturan browser."
+        );
       }
 
       // Enhanced constraints for better QR reading
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isMobile =
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
 
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: facingMode,
           width: {
             ideal: isMobile ? 1280 : 1920,
-            min: 640
+            min: 640,
           },
           height: {
             ideal: isMobile ? 720 : 1080,
-            min: 480
+            min: 480,
           },
           frameRate: { ideal: 30, min: 15 },
           ...(isIOS && {
             aspectRatio: 1.777777778,
-            resizeMode: "crop-and-scale"
-          })
-        }
+            resizeMode: "crop-and-scale",
+          }),
+        },
       };
 
       // Request camera stream
@@ -376,16 +443,20 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
       // Get available devices first
       const allDevices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = allDevices.filter(device => device.kind === "videoinput");
+      const videoDevices = allDevices.filter(
+        (device) => device.kind === "videoinput"
+      );
       setDevices(videoDevices);
 
       if (videoDevices.length > 0) {
         // Prefer back camera for better QR scanning
-        const backCamera = videoDevices.find(device =>
-          device.label.toLowerCase().includes("back") ||
-          device.label.toLowerCase().includes("rear") ||
-          device.label.toLowerCase().includes("environment")
-        ) || videoDevices[videoDevices.length - 1]; // Last camera is usually back camera
+        const backCamera =
+          videoDevices.find(
+            (device) =>
+              device.label.toLowerCase().includes("back") ||
+              device.label.toLowerCase().includes("rear") ||
+              device.label.toLowerCase().includes("environment")
+          ) || videoDevices[videoDevices.length - 1]; // Last camera is usually back camera
 
         // Check if preferred camera is available
         const isAvailable = await checkDeviceAvailability(backCamera.deviceId);
@@ -394,7 +465,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
           setSelectedDeviceId(backCamera.deviceId);
 
           // Stop initial stream and start with selected device
-          stream.getTracks().forEach(track => track.stop());
+          stream.getTracks().forEach((track) => track.stop());
 
           // Wait a bit before starting scanner to ensure cleanup
           setTimeout(() => {
@@ -408,7 +479,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
           for (const device of videoDevices) {
             if (await checkDeviceAvailability(device.deviceId)) {
               setSelectedDeviceId(device.deviceId);
-              stream.getTracks().forEach(track => track.stop());
+              stream.getTracks().forEach((track) => track.stop());
               setTimeout(() => startScanning(device.deviceId), 500);
               foundAvailableCamera = true;
               break;
@@ -416,7 +487,9 @@ const QRScanner: React.FC<QRScannerProps> = ({
           }
 
           if (!foundAvailableCamera) {
-            throw new Error("Semua kamera sedang digunakan oleh aplikasi lain.");
+            throw new Error(
+              "Semua kamera sedang digunakan oleh aplikasi lain."
+            );
           }
         }
       } else {
@@ -433,32 +506,39 @@ const QRScanner: React.FC<QRScannerProps> = ({
       setIsScanning(false);
 
       // Increment retry count and suggest alternatives
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
       if (retryCount >= 2) {
         setShowManualInput(true);
         toast.info("Kesulitan mengakses kamera? Coba input manual di bawah.");
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facingMode, checkBrowserSupport, checkCameraPermission, checkDeviceAvailability, enhanceVideoStream, retryCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    facingMode,
+    checkBrowserSupport,
+    checkCameraPermission,
+    checkDeviceAvailability,
+    enhanceVideoStream,
+    retryCount,
+  ]);
 
   const stopScanning = useCallback(() => {
-    console.log('Stopping scanner...');
+    console.log("Stopping scanner...");
 
     // Stop BarcodeDetector interval
     if (detectionIntervalRef.current) {
       clearInterval(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
-      console.log('BarcodeDetector interval stopped');
+      console.log("BarcodeDetector interval stopped");
     }
 
     // Stop code reader first
     if (codeReaderRef.current) {
       try {
         codeReaderRef.current.reset();
-        console.log('Code reader stopped');
+        console.log("Code reader stopped");
       } catch (error) {
-        console.warn('Error stopping code reader:', error);
+        console.warn("Error stopping code reader:", error);
       } finally {
         codeReaderRef.current = null;
       }
@@ -467,16 +547,18 @@ const QRScanner: React.FC<QRScannerProps> = ({
     // Stop video stream with more robust cleanup
     if (streamRef.current) {
       try {
-        console.log('Stopping video stream...');
-        streamRef.current.getTracks().forEach(track => {
-          console.log(`Stopping track: ${track.kind}, state: ${track.readyState}`);
-          if (track.readyState === 'live') {
+        console.log("Stopping video stream...");
+        streamRef.current.getTracks().forEach((track) => {
+          console.log(
+            `Stopping track: ${track.kind}, state: ${track.readyState}`
+          );
+          if (track.readyState === "live") {
             track.stop();
           }
         });
-        console.log('All tracks stopped');
+        console.log("All tracks stopped");
       } catch (error) {
-        console.warn('Error stopping video tracks:', error);
+        console.warn("Error stopping video tracks:", error);
       } finally {
         streamRef.current = null;
       }
@@ -486,14 +568,14 @@ const QRScanner: React.FC<QRScannerProps> = ({
     if (videoRef.current) {
       try {
         videoRef.current.srcObject = null;
-        console.log('Video element cleared');
+        console.log("Video element cleared");
       } catch (error) {
-        console.warn('Error clearing video element:', error);
+        console.warn("Error clearing video element:", error);
       }
     }
 
     setIsScanning(false);
-    console.log('Scanner stopped successfully');
+    console.log("Scanner stopped successfully");
   }, []);
 
   // useEffect for handling scanner lifecycle
@@ -513,183 +595,218 @@ const QRScanner: React.FC<QRScannerProps> = ({
     };
   }, [isOpen, initScanner, stopScanning]);
 
-  const startScanning = useCallback(async (deviceId: string) => {
-    try {
-      if (!videoRef.current) return;
+  const startScanning = useCallback(
+    async (deviceId: string) => {
+      try {
+        if (!videoRef.current) return;
 
-      console.log(`Starting scanner with device: ${deviceId}`);
+        console.log(`Starting scanner with device: ${deviceId}`);
 
-      // Ensure any existing streams are completely stopped first
-      stopScanning();
+        // Ensure any existing streams are completely stopped first
+        stopScanning();
 
-      // Wait longer for cleanup to complete and camera to be released
-      await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait longer for cleanup to complete and camera to be released
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Check if video element is still available after cleanup
-      if (!videoRef.current) {
-        console.log('Video element not available after cleanup');
-        return;
-      }
-
-      // Try multiple constraint strategies
-      const constraintStrategies = [
-        // Strategy 1: High quality with exact device
-        {
-          video: {
-            deviceId: { exact: deviceId },
-            width: { ideal: 1920, min: 640 },
-            height: { ideal: 1080, min: 480 },
-            frameRate: { ideal: 30, min: 15 }
-          }
-        },
-        // Strategy 2: Medium quality with ideal device
-        {
-          video: {
-            deviceId: { ideal: deviceId },
-            width: { ideal: 1280, min: 640 },
-            height: { ideal: 720, min: 480 },
-            frameRate: { ideal: 25, min: 10 }
-          }
-        },
-        // Strategy 3: Basic quality with any device
-        {
-          video: {
-            width: { ideal: 1280, min: 640 },
-            height: { ideal: 720, min: 480 }
-          }
-        },
-        // Strategy 4: Minimal constraints
-        {
-          video: true
+        // Check if video element is still available after cleanup
+        if (!videoRef.current) {
+          console.log("Video element not available after cleanup");
+          return;
         }
-      ];
 
-      let stream: MediaStream | null = null;
-      let lastError: Error | null = null;
+        // Try multiple constraint strategies
+        const constraintStrategies = [
+          // Strategy 1: High quality with exact device
+          {
+            video: {
+              deviceId: { exact: deviceId },
+              width: { ideal: 1920, min: 640 },
+              height: { ideal: 1080, min: 480 },
+              frameRate: { ideal: 30, min: 15 },
+            },
+          },
+          // Strategy 2: Medium quality with ideal device
+          {
+            video: {
+              deviceId: { ideal: deviceId },
+              width: { ideal: 1280, min: 640 },
+              height: { ideal: 720, min: 480 },
+              frameRate: { ideal: 25, min: 10 },
+            },
+          },
+          // Strategy 3: Basic quality with any device
+          {
+            video: {
+              width: { ideal: 1280, min: 640 },
+              height: { ideal: 720, min: 480 },
+            },
+          },
+          // Strategy 4: Minimal constraints
+          {
+            video: true,
+          },
+        ];
 
-      for (let i = 0; i < constraintStrategies.length; i++) {
-        try {
-          console.log(`Trying constraint strategy ${i + 1}...`);
-          stream = await navigator.mediaDevices.getUserMedia(constraintStrategies[i]);
+        let stream: MediaStream | null = null;
+        let lastError: Error | null = null;
 
-          // Verify stream is active before proceeding
-          if (stream && stream.active && stream.getVideoTracks().length > 0) {
-            console.log(`Strategy ${i + 1} successful`);
-            break;
-          } else {
-            stream?.getTracks().forEach(track => track.stop());
-            stream = null;
+        for (let i = 0; i < constraintStrategies.length; i++) {
+          try {
+            console.log(`Trying constraint strategy ${i + 1}...`);
+            stream = await navigator.mediaDevices.getUserMedia(
+              constraintStrategies[i]
+            );
+
+            // Verify stream is active before proceeding
+            if (stream && stream.active && stream.getVideoTracks().length > 0) {
+              console.log(`Strategy ${i + 1} successful`);
+              break;
+            } else {
+              stream?.getTracks().forEach((track) => track.stop());
+              stream = null;
+            }
+          } catch (error) {
+            console.log(`Strategy ${i + 1} failed:`, error);
+            lastError = error as Error;
+            // Wait a bit before trying next strategy
+            await new Promise((resolve) => setTimeout(resolve, 200));
           }
-        } catch (error) {
-          console.log(`Strategy ${i + 1} failed:`, error);
-          lastError = error as Error;
-          // Wait a bit before trying next strategy
-          await new Promise(resolve => setTimeout(resolve, 200));
         }
-      }
 
-      if (!stream) {
-        throw lastError || new Error("Unable to access camera with any constraints");
-      }
+        if (!stream) {
+          throw (
+            lastError ||
+            new Error("Unable to access camera with any constraints")
+          );
+        }
 
-      enhanceVideoStream(stream);
+        enhanceVideoStream(stream);
 
-      // Check for BarcodeDetector support and initialize
-      const browserSupport = checkBrowserSupport();
-      
-      if (browserSupport.features.barcodeDetector && !useFallback) {
-        try {
-          console.log('Initializing BarcodeDetector...');
-          barcodeDetectorRef.current = new BarcodeDetector({ formats: ['qr_code'] });
-          
-          // Start BarcodeDetector scanning
-          detectionIntervalRef.current = setInterval(async () => {
-            if (videoRef.current && videoRef.current.videoWidth > 0) {
-              const result = await scanWithBarcodeDetector(videoRef.current);
+        // Check for BarcodeDetector support and initialize
+        const browserSupport = checkBrowserSupport();
+
+        if (browserSupport.features.barcodeDetector && !useFallback) {
+          try {
+            console.log("Initializing BarcodeDetector...");
+            barcodeDetectorRef.current = new BarcodeDetector({
+              formats: ["qr_code"],
+            });
+
+            // Start BarcodeDetector scanning
+            detectionIntervalRef.current = setInterval(async () => {
+              if (videoRef.current && videoRef.current.videoWidth > 0) {
+                const result = await scanWithBarcodeDetector(videoRef.current);
+                if (result) {
+                  // Use ref to avoid circular dependency
+                  setTimeout(() => {
+                    if (handleScanResultRef.current) {
+                      handleScanResultRef.current(result);
+                    }
+                  }, 0);
+                  return;
+                }
+              }
+            }, 100); // Scan every 100ms
+
+            console.log("BarcodeDetector scanning started");
+          } catch (barcodeError) {
+            console.warn(
+              "BarcodeDetector initialization failed, using ZXing:",
+              barcodeError
+            );
+            setUseFallback(true);
+          }
+        }
+
+        // Use ZXing as fallback or primary if BarcodeDetector not available
+        if (!browserSupport.features.barcodeDetector || useFallback) {
+          console.log("Using ZXing fallback...");
+
+          // Initialize enhanced code reader
+          codeReaderRef.current = new BrowserMultiFormatReader();
+
+          // Configure reader with enhanced hints
+          const hints = new Map();
+          hints.set("TRY_HARDER", true);
+          hints.set("POSSIBLE_FORMATS", ["QR_CODE", "DATA_MATRIX"]);
+          hints.set("CHARACTER_SET", "UTF-8");
+
+          await codeReaderRef.current.decodeFromVideoDevice(
+            deviceId,
+            videoRef.current,
+            (result, error) => {
               if (result) {
-                setTimeout(() => handleScanResult(result), 0);
-                return;
+                const scannedText = result.getText();
+                console.log("ZXing QR detected:", scannedText);
+
+                // Use enhanced validation and multi-attempt scanning
+                const validation = validateQRCode(scannedText);
+                if (validation.isValid) {
+                  // Call handleScanResult via ref to avoid circular dependency
+                  setTimeout(() => {
+                    if (handleScanResultRef.current) {
+                      handleScanResultRef.current(scannedText);
+                    }
+                  }, 0);
+                } else {
+                  // Try multi-attempt scan for better accuracy
+                  setTimeout(() => {
+                    const currentAttempts = scanAttempts;
+                    if (currentAttempts < 3) {
+                      setScanAttempts(currentAttempts + 1);
+                      console.log(
+                        `Scan validation failed, attempt ${currentAttempts + 1}`
+                      );
+                    } else {
+                      setError(
+                        "QR code tidak dapat dikenali. Silakan coba input manual."
+                      );
+                      setShowManualInput(true);
+                    }
+                  }, 500);
+                }
+              }
+              if (error && !(error instanceof NotFoundException)) {
+                console.warn("ZXing scan error:", error);
+                // Don't show error for common "not found" errors
               }
             }
-          }, 100); // Scan every 100ms
-          
-          console.log('BarcodeDetector scanning started');
-        } catch (barcodeError) {
-          console.warn('BarcodeDetector initialization failed, using ZXing:', barcodeError);
-          setUseFallback(true);
+          );
         }
-      }
-      
-      // Use ZXing as fallback or primary if BarcodeDetector not available
-      if (!browserSupport.features.barcodeDetector || useFallback) {
-        console.log('Using ZXing fallback...');
-        
-        // Initialize enhanced code reader
-        codeReaderRef.current = new BrowserMultiFormatReader();
 
-        // Configure reader with enhanced hints
-        const hints = new Map();
-        hints.set('TRY_HARDER', true);
-        hints.set('POSSIBLE_FORMATS', ['QR_CODE', 'DATA_MATRIX']);
-        hints.set('CHARACTER_SET', 'UTF-8');
+        setIsScanning(true);
+        setError(null);
 
-        await codeReaderRef.current.decodeFromVideoDevice(
-          deviceId,
-          videoRef.current,
-          (result, error) => {
-            if (result) {
-              const scannedText = result.getText();
-              console.log("ZXing QR detected:", scannedText);
-
-              // Use enhanced validation and multi-attempt scanning
-              const validation = validateQRCode(scannedText);
-              if (validation.isValid) {
-                // Call handleScanResult directly without dependency
-                setTimeout(() => handleScanResult(scannedText), 0);
-              } else {
-                // Try multi-attempt scan for better accuracy
-                setTimeout(() => {
-                  const currentAttempts = scanAttempts;
-                  if (currentAttempts < 3) {
-                    setScanAttempts(currentAttempts + 1);
-                    console.log(`Scan validation failed, attempt ${currentAttempts + 1}`);
-                  } else {
-                    setError("QR code tidak dapat dikenali. Silakan coba input manual.");
-                    setShowManualInput(true);
-                  }
-                }, 500);
-              }
-            }
-            if (error && !(error instanceof NotFoundException)) {
-              console.warn("ZXing scan error:", error);
-              // Don't show error for common "not found" errors
+        // Monitor lighting conditions
+        setTimeout(() => {
+          if (videoRef.current) {
+            const lightLevel = detectLighting(videoRef.current);
+            if (lightLevel < 30) {
+              toast.info(
+                "Cahaya kurang terang. Cobalah menyalakan flash atau pindah ke tempat yang lebih terang."
+              );
             }
           }
-        );
+        }, 2000);
+      } catch (err: unknown) {
+        console.error("Start scanning error:", err);
+        setError("Gagal memulai scanning. Silakan coba lagi.");
+        setIsScanning(false);
+        setRetryCount((prev) => prev + 1);
       }
-
-      setIsScanning(true);
-      setError(null);
-
-      // Monitor lighting conditions
-      setTimeout(() => {
-        if (videoRef.current) {
-          const lightLevel = detectLighting(videoRef.current);
-          if (lightLevel < 30) {
-            toast.info("Cahaya kurang terang. Cobalah menyalakan flash atau pindah ke tempat yang lebih terang.");
-          }
-        }
-      }, 2000);
-
-    } catch (err: unknown) {
-      console.error("Start scanning error:", err);
-      setError("Gagal memulai scanning. Silakan coba lagi.");
-      setIsScanning(false);
-      setRetryCount(prev => prev + 1);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enhanceVideoStream, validateQRCode, scanAttempts, detectLighting, checkBrowserSupport, scanWithBarcodeDetector, useFallback, setUseFallback]);
-
+    },
+    [
+      enhanceVideoStream,
+      validateQRCode,
+      scanAttempts,
+      detectLighting,
+      checkBrowserSupport,
+      scanWithBarcodeDetector,
+      useFallback,
+      setUseFallback,
+      stopScanning,
+    ]
+  );
   const switchCamera = useCallback(() => {
     if (devices.length > 1) {
       const currentIndex = devices.findIndex(
@@ -702,92 +819,125 @@ const QRScanner: React.FC<QRScannerProps> = ({
       setSelectedDeviceId(nextDevice.deviceId);
 
       // Also toggle facing mode for better camera selection
-      setFacingMode(prev => prev === "user" ? "environment" : "user");
+      setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
 
       setTimeout(() => {
         startScanning(nextDevice.deviceId);
       }, 500);
 
-      toast.info(`Beralih ke kamera: ${nextDevice.label || 'Kamera ' + (nextIndex + 1)}`);
+      toast.info(
+        `Beralih ke kamera: ${nextDevice.label || "Kamera " + (nextIndex + 1)}`
+      );
     } else {
       toast.info("Hanya ada satu kamera yang tersedia");
     }
   }, [devices, selectedDeviceId, startScanning, stopScanning]);
 
-  const handleScanResult = useCallback(async (scannedText: string) => {
-    try {
-      const validation = validateQRCode(scannedText);
+  const handleScanResult = useCallback(
+    async (scannedText: string) => {
+      try {
+        const validation = validateQRCode(scannedText);
 
-      if (!validation.isValid) {
-        toast.error("QR Code tidak valid. Pastikan ini adalah QR code absen UNDIP.");
-        return;
-      }
-
-      let extractedCode = "";
-
-      // Enhanced extraction logic
-      if (validation.data.code) {
-        extractedCode = validation.data.code;
-      } else if (/^[a-f0-9]{12}$/i.test(scannedText)) {
-        extractedCode = scannedText.toLowerCase();
-      } else if (scannedText.includes("siap.undip.ac.id/a/")) {
-        const match = scannedText.match(/siap\.undip\.ac\.id\/a\/([a-f0-9]{12})/i);
-        if (match) extractedCode = match[1].toLowerCase();
-      } else {
-        const match = scannedText.match(/([a-f0-9]{12})/i);
-        if (match) extractedCode = match[1].toLowerCase();
-      }
-
-      if (extractedCode) {
-        // Stop scanning immediately to prevent multiple scans
-        stopScanning();
-
-        toast.success("QR Code berhasil dipindai!");
-        await saveAttendanceHistory(extractedCode);
-        onScanSuccess?.(extractedCode);
-
-        // Open UNDIP attendance page
-        const absenUrl = `https://siap.undip.ac.id/a/${extractedCode}`;
-        setLastScannedUrl(absenUrl);
-
-        // Try to open in new window
-        const newWindow = window.open(absenUrl, "_blank", "noopener,noreferrer");
-
-        // Fallback if popup blocked
-        if (!newWindow || newWindow.closed) {
-          toast.info(
-            "Popup diblokir! Klik tombol 'Buka Halaman Absen' di bawah untuk melanjutkan."
+        if (!validation.isValid) {
+          toast.error(
+            "QR Code tidak valid. Pastikan ini adalah QR code absen UNDIP."
           );
-        } else {
-          toast.success("Halaman absen telah dibuka di tab baru!");
-          // Auto close modal after successful scan
-          setTimeout(() => {
-            onClose();
-          }, 2000);
+          return;
         }
-      } else {
-        toast.error("Format QR code tidak dikenali. Pastikan ini adalah QR code absen UNDIP yang valid.");
-        setShowManualInput(true);
+
+        let extractedCode = "";
+
+        // Enhanced extraction logic
+        if (validation.data.code) {
+          extractedCode = validation.data.code;
+        } else if (/^[a-f0-9]{12}$/i.test(scannedText)) {
+          extractedCode = scannedText.toLowerCase();
+        } else if (scannedText.includes("siap.undip.ac.id/a/")) {
+          const match = scannedText.match(
+            /siap\.undip\.ac\.id\/a\/([a-f0-9]{12})/i
+          );
+          if (match) extractedCode = match[1].toLowerCase();
+        } else {
+          const match = scannedText.match(/([a-f0-9]{12})/i);
+          if (match) extractedCode = match[1].toLowerCase();
+        }
+
+        if (extractedCode) {
+          // Stop scanning immediately to prevent multiple scans
+          stopScanning();
+
+          toast.success("QR Code berhasil dipindai!");
+          await saveAttendanceHistory(extractedCode);
+          onScanSuccess?.(extractedCode);
+
+          // Open UNDIP attendance page
+          const absenUrl = `https://siap.undip.ac.id/a/${extractedCode}`;
+          setLastScannedUrl(absenUrl);
+
+          // Try to open in new window
+          const newWindow = window.open(
+            absenUrl,
+            "_blank",
+            "noopener,noreferrer"
+          );
+
+          // Fallback if popup blocked
+          if (!newWindow || newWindow.closed) {
+            toast.info(
+              "Popup diblokir! Klik tombol 'Buka Halaman Absen' di bawah untuk melanjutkan."
+            );
+          } else {
+            toast.success("Halaman absen telah dibuka di tab baru!");
+            // Auto close modal after successful scan
+            setTimeout(() => {
+              onClose();
+            }, 2000);
+          }
+        } else {
+          toast.error(
+            "Format QR code tidak dikenali. Pastikan ini adalah QR code absen UNDIP yang valid."
+          );
+          setShowManualInput(true);
+        }
+      } catch (error) {
+        console.error("Handle scan result error:", error);
+        toast.error("Terjadi kesalahan saat memproses QR code.");
       }
-    } catch (error) {
-      console.error("Handle scan result error:", error);
-      toast.error("Terjadi kesalahan saat memproses QR code.");
-    }
-  }, [validateQRCode, onScanSuccess, onClose, saveAttendanceHistory, stopScanning]);
+    },
+    [
+      validateQRCode,
+      onScanSuccess,
+      onClose,
+      saveAttendanceHistory,
+      stopScanning,
+    ]
+  );
+
+  // Use ref to avoid circular dependencies with handleScanResult
+  const handleScanResultRef =
+    useRef<(scannedText: string) => Promise<void> | null>(null);
+
+  // Assign the current handleScanResult to the ref
+  handleScanResultRef.current = handleScanResult;
 
   // Manual QR code input handler
   const handleManualSubmit = useCallback(() => {
     if (manualCode.trim()) {
       const validation = validateQRCode(manualCode.trim());
       if (validation.isValid && validation.data.code) {
-        handleScanResult(validation.data.code);
+        // Use ref to avoid dependency issue
+        if (handleScanResultRef.current) {
+          handleScanResultRef.current(validation.data.code);
+        }
         setManualCode("");
         setShowManualInput(false);
       } else {
-        toast.error('Format kode tidak valid. Masukkan kode 12 karakter huruf dan angka.');
+        toast.error(
+          "Format kode tidak valid. Masukkan kode 12 karakter huruf dan angka."
+        );
       }
     }
-  }, [manualCode, validateQRCode, handleScanResult]);
+  }, [manualCode, validateQRCode]);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -795,23 +945,197 @@ const QRScanner: React.FC<QRScannerProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    toast.info("Memproses gambar...");
+
     const reader = new FileReader();
     reader.onload = async () => {
       const image = new Image();
       image.src = reader.result as string;
       image.onload = async () => {
         try {
-          const codeReader = new BrowserMultiFormatReader();
-          const result = await codeReader.decodeFromImage(image);
-          const scannedText = result.getText();
-          handleScanResult(scannedText);
+          // Enhanced image preprocessing for better QR detection
+          const processedCanvases = await preprocessImageForQR(image);
+
+          let qrDetected = false;
+
+          // Try BarcodeDetector first if available
+          if ("BarcodeDetector" in window && !useFallback) {
+            try {
+              const detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+              for (const canvas of processedCanvases) {
+                try {
+                  const barcodes = await detector.detect(canvas);
+                  for (const barcode of barcodes) {
+                    if (barcode.format === "qr_code" && barcode.rawValue) {
+                      console.log(
+                        "BarcodeDetector detected from image:",
+                        barcode.rawValue
+                      );
+                      if (handleScanResultRef.current) {
+                        handleScanResultRef.current(barcode.rawValue);
+                      }
+                      qrDetected = true;
+                      break;
+                    }
+                  }
+                  if (qrDetected) break;
+                } catch (e) {
+                  console.warn("BarcodeDetector failed for canvas:", e);
+                }
+              }
+            } catch (e) {
+              console.warn("BarcodeDetector not available for image:", e);
+            }
+          }
+
+          // Fallback to ZXing if BarcodeDetector failed
+          if (!qrDetected) {
+            console.log("Trying ZXing for image processing...");
+            const codeReader = new BrowserMultiFormatReader();
+
+            // Try multiple processed versions
+            for (const canvas of processedCanvases) {
+              try {
+                // Convert canvas to image for ZXing
+                const canvasDataUrl = canvas.toDataURL();
+                const canvasImage = new Image();
+                canvasImage.src = canvasDataUrl;
+
+                await new Promise((resolve) => {
+                  canvasImage.onload = resolve;
+                });
+
+                const result = await codeReader.decodeFromImage(canvasImage);
+                const scannedText = result.getText();
+                console.log("ZXing detected from image:", scannedText);
+                if (handleScanResultRef.current) {
+                  handleScanResultRef.current(scannedText);
+                }
+                qrDetected = true;
+                break;
+              } catch (e) {
+                console.warn("ZXing failed for canvas:", e);
+              }
+            }
+          }
+
+          if (!qrDetected) {
+            toast.error(
+              "QR code tidak ditemukan dalam gambar. Pastikan QR code terlihat jelas dan coba foto yang lebih baik."
+            );
+          }
         } catch (error) {
           console.error("Gagal memindai gambar:", error);
-          toast.error("QR code tidak dikenali dari gambar.");
+          toast.error("Terjadi kesalahan saat memproses gambar.");
         }
       };
     };
     reader.readAsDataURL(file);
+  };
+
+  // Enhanced image preprocessing function
+  const preprocessImageForQR = async (
+    image: HTMLImageElement
+  ): Promise<HTMLCanvasElement[]> => {
+    const canvases: HTMLCanvasElement[] = [];
+
+    // Original image
+    const originalCanvas = document.createElement("canvas");
+    const originalCtx = originalCanvas.getContext("2d")!;
+    originalCanvas.width = image.width;
+    originalCanvas.height = image.height;
+    originalCtx.drawImage(image, 0, 0);
+    canvases.push(originalCanvas);
+
+    // Enhanced contrast version
+    const contrastCanvas = document.createElement("canvas");
+    const contrastCtx = contrastCanvas.getContext("2d")!;
+    contrastCanvas.width = image.width;
+    contrastCanvas.height = image.height;
+    contrastCtx.drawImage(image, 0, 0);
+
+    // Apply contrast enhancement
+    const imageData = contrastCtx.getImageData(
+      0,
+      0,
+      contrastCanvas.width,
+      contrastCanvas.height
+    );
+    const data = imageData.data;
+
+    // Increase contrast and convert to grayscale
+    for (let i = 0; i < data.length; i += 4) {
+      // Convert to grayscale
+      const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+
+      // Apply contrast enhancement
+      const contrast = 2.5; // Increase contrast more for projector images
+      const enhanced = ((gray / 255 - 0.5) * contrast + 0.5) * 255;
+
+      // Apply threshold to pure black/white
+      const threshold = enhanced > 120 ? 255 : 0; // Lower threshold for dark QR codes
+
+      data[i] = threshold; // Red
+      data[i + 1] = threshold; // Green
+      data[i + 2] = threshold; // Blue
+      // Alpha stays the same
+    }
+
+    contrastCtx.putImageData(imageData, 0, 0);
+    canvases.push(contrastCanvas);
+
+    // Scaled up version for better detection
+    if (image.width < 800 || image.height < 800) {
+      const scaledCanvas = document.createElement("canvas");
+      const scaledCtx = scaledCanvas.getContext("2d")!;
+      const scale = Math.max(800 / image.width, 800 / image.height);
+      scaledCanvas.width = image.width * scale;
+      scaledCanvas.height = image.height * scale;
+
+      // Use image smoothing for better quality
+      scaledCtx.imageSmoothingEnabled = false;
+      scaledCtx.drawImage(image, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      canvases.push(scaledCanvas);
+
+      // Also create a high contrast scaled version
+      const scaledContrastCanvas = document.createElement("canvas");
+      const scaledContrastCtx = scaledContrastCanvas.getContext("2d")!;
+      scaledContrastCanvas.width = image.width * scale;
+      scaledContrastCanvas.height = image.height * scale;
+      scaledContrastCtx.imageSmoothingEnabled = false;
+      scaledContrastCtx.drawImage(
+        contrastCanvas,
+        0,
+        0,
+        scaledContrastCanvas.width,
+        scaledContrastCanvas.height
+      );
+      canvases.push(scaledContrastCanvas);
+    }
+
+    // Rotated versions (untuk handle foto yang dirotasi)
+    const rotations = [90, 180, 270];
+    for (const rotation of rotations) {
+      const rotatedCanvas = document.createElement("canvas");
+      const rotatedCtx = rotatedCanvas.getContext("2d")!;
+
+      if (rotation === 90 || rotation === 270) {
+        rotatedCanvas.width = image.height;
+        rotatedCanvas.height = image.width;
+      } else {
+        rotatedCanvas.width = image.width;
+        rotatedCanvas.height = image.height;
+      }
+
+      rotatedCtx.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2);
+      rotatedCtx.rotate((rotation * Math.PI) / 180);
+      rotatedCtx.drawImage(image, -image.width / 2, -image.height / 2);
+
+      canvases.push(rotatedCanvas);
+    }
+
+    return canvases;
   };
 
   if (!isOpen) return null;
@@ -852,7 +1176,6 @@ const QRScanner: React.FC<QRScannerProps> = ({
               </Button>
             </div>
           )}
-
           {hasPermission === false && (
             <div className="text-center py-8">
               <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -868,8 +1191,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
               </Button>
             </div>
           )}
-
-            {hasPermission === true && (
+          {hasPermission === true && (
             <div>
               <div className="relative bg-gray-900/90 backdrop-blur-sm rounded-lg overflow-hidden mb-4 border border-gray-600/30">
                 <video
@@ -925,25 +1247,42 @@ const QRScanner: React.FC<QRScannerProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">
-                    {isScanning ? (
-                      scanAttempts > 0 ?
-                        `Mencoba scan ulang... (${scanAttempts}/3)` :
-                        `Memindai QR code... ${!useFallback && checkBrowserSupport().features.barcodeDetector ? '⚡ Fast Mode' : '🔄 ZXing Mode'}`
-                    ) : "Menyiapkan kamera..."}
+                    {isScanning
+                      ? scanAttempts > 0
+                        ? `Mencoba scan ulang... (${scanAttempts}/3)`
+                        : `Memindai QR code... ${
+                            !useFallback &&
+                            checkBrowserSupport().features.barcodeDetector
+                              ? "⚡ Fast Mode"
+                              : "🔄 ZXing Mode"
+                          }`
+                      : "Menyiapkan kamera..."}
                   </p>
                   {brightness > 0 && (
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-20 bg-muted rounded-full h-1.5">
                         <div
                           className={`h-1.5 rounded-full transition-all ${
-                            brightness < 30 ? 'bg-red-500' :
-                            brightness < 60 ? 'bg-yellow-500' : 'bg-green-500'
+                            brightness < 30
+                              ? "bg-red-500"
+                              : brightness < 60
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
                           }`}
-                          style={{ width: `${Math.min(brightness / 100 * 100, 100)}%` }}
+                          style={{
+                            width: `${Math.min(
+                              (brightness / 100) * 100,
+                              100
+                            )}%`,
+                          }}
                         />
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {brightness < 30 ? 'Gelap' : brightness < 60 ? 'Cukup' : 'Terang'}
+                        {brightness < 30
+                          ? "Gelap"
+                          : brightness < 60
+                          ? "Cukup"
+                          : "Terang"}
                       </span>
                     </div>
                   )}
@@ -964,6 +1303,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => imageInputRef.current?.click()}
+                    title="Upload gambar QR code dari galeri"
                   >
                     <ImagePlus className="w-4 h-4 mr-1" />
                     Galeri
@@ -972,10 +1312,25 @@ const QRScanner: React.FC<QRScannerProps> = ({
                     ref={imageInputRef}
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     className="hidden"
                     onChange={handleImageUpload}
                   />
                 </div>
+              </div>
+
+              {/* Tips untuk upload gambar QR */}
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                  💡 Tips untuk foto QR code yang baik:
+                </h4>
+                <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                  <li>• Pastikan QR code memenuhi seluruh frame</li>
+                  <li>• Ambil foto tegak lurus (tidak miring)</li>
+                  <li>• Gunakan pencahayaan yang cukup</li>
+                  <li>• Hindari refleksi atau bayangan pada QR code</li>
+                  <li>• Untuk QR di proyektor: foto dari jarak yang tepat</li>
+                </ul>
               </div>
 
               {/* Manual Input Section */}
@@ -983,10 +1338,13 @@ const QRScanner: React.FC<QRScannerProps> = ({
                 <div className="mb-4 p-4 border border-border rounded-lg bg-muted/20">
                   <div className="flex items-center gap-2 mb-3">
                     <Type className="w-4 h-4 text-muted-foreground" />
-                    <h3 className="font-medium text-card-foreground">Input Manual</h3>
+                    <h3 className="font-medium text-card-foreground">
+                      Input Manual
+                    </h3>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Jika scanner tidak berfungsi, masukkan kode QR (12 karakter) secara manual:
+                    Jika scanner tidak berfungsi, masukkan kode QR (12 karakter)
+                    secara manual:
                   </p>
                   <div className="flex gap-2">
                     <Input
@@ -1019,11 +1377,14 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   className="w-full"
                 >
                   <Type className="w-4 h-4 mr-1" />
-                  {showManualInput ? 'Sembunyikan Input Manual' : 'Input Manual'}
+                  {showManualInput
+                    ? "Sembunyikan Input Manual"
+                    : "Input Manual"}
                 </Button>
               </div>
             </div>
-          )}          {/* Tombol manual untuk membuka halaman absen jika popup diblokir */}
+          )}{" "}
+          {/* Tombol manual untuk membuka halaman absen jika popup diblokir */}
           {lastScannedUrl && (
             <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-green-700 dark:text-green-300 text-sm mb-3">
