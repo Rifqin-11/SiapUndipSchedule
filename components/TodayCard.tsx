@@ -213,7 +213,9 @@ const TodayCard: React.FC<TodayCardProps> = ({
             {name}
           </h1>
           {rescheduleDate && (
-            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded-full mt-1 w-fit">
+            <span
+              className={`text-xs font-medium text-white px-2 py-1 rounded-full mt-1 w-fit ${bgRoomColor}`}
+            >
               Reschedule Class
             </span>
           )}

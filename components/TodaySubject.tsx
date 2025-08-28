@@ -125,10 +125,62 @@ const TodaySubject = () => {
       });
 
     // Combine regular subjects and reschedule subjects
-    const allTodaySubjects: SubjectWithReschedule[] = [
+    const combinedSubjects: SubjectWithReschedule[] = [
       ...todaySubject.map((s) => ({ ...s })),
       ...rescheduleSubjects,
     ];
+
+    const timeToMinutes = (timeString: string): number => {
+      if (!timeString) return 0;
+
+      try {
+        // Handle various time formats: "HH:MM", "H:MM", "HH.MM", etc.
+        const cleanTime = timeString.trim().replace(/[^\d:]/g, "");
+        const [hours, minutes] = cleanTime.split(":").map(Number);
+
+        if (isNaN(hours) || isNaN(minutes)) {
+          console.warn(`Invalid time format: ${timeString}`);
+          return 0;
+        }
+
+        return hours * 60 + minutes;
+      } catch (error) {
+        console.warn(`Error parsing time: ${timeString}`, error);
+        return 0;
+      }
+    };
+
+    // Sort subjects by start time
+    const allTodaySubjects = combinedSubjects.sort((a, b) => {
+      // Get start time - prioritize reschedule info if available
+      const aStartTime = a.rescheduleInfo?.startTime || a.startTime || "";
+      const bStartTime = b.rescheduleInfo?.startTime || b.startTime || "";
+
+      const aMinutes = timeToMinutes(aStartTime);
+      const bMinutes = timeToMinutes(bStartTime);
+
+      // Sort by time (earliest first)
+      if (aMinutes !== bMinutes) {
+        return aMinutes - bMinutes;
+      }
+
+      // If times are equal, sort by subject name as secondary sort
+      const aName = a.name || "";
+      const bName = b.name || "";
+      return aName.localeCompare(bName);
+    });
+
+    // Add debug logging for sorted results
+    if (process.env.NODE_ENV === "development" && allTodaySubjects.length > 0) {
+      console.log(
+        "Today subjects sorted by time:",
+        allTodaySubjects.map((s) => ({
+          name: s.name,
+          startTime: s.rescheduleInfo?.startTime || s.startTime,
+          isReschedule: !!s.rescheduleDate,
+        }))
+      );
+    }
 
     return {
       uniqueDays,

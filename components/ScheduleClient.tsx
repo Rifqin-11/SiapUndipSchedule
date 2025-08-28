@@ -457,9 +457,9 @@ const ScheduleClient = () => {
             // Use amber color for reschedule subjects
             const finalColor = subject.isReschedule
               ? {
-                  bg: "bg-amber-100",
-                  text: "text-amber-800",
-                  roomBg: "bg-amber-200",
+                  bg: "bg-amber-100 dark:bg-amber-500/10",
+                  text: "text-amber-800 dark:text-amber-200",
+                  roomBg: "bg-amber-200 dark:bg-amber-800",
                 }
               : assignedColor;
 

@@ -148,7 +148,7 @@ export default function CalendarCard({
 
           {/* Reschedule Info */}
           {isReschedule && rescheduleInfo && (
-            <div className="mt-2 p-2 bg-white/20 rounded-lg">
+            <div className="mt-2 p-2 bg-white/20 dark:bg-white/10 rounded-lg">
               <div className="flex items-center gap-1 text-xs">
                 <span className="text-amber-200">📅</span>
                 <span className={`${textColor} font-medium`}>Reschedule</span>
