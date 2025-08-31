@@ -15,9 +15,118 @@ import Link from "next/link";
 import Image from "next/image";
 import NotifIcon from "@/components/homepage/NotifIcon";
 
+/** ⬇️ Tambahan: tasks & TaskCard */
+import { useTasks } from "@/hooks/useTasks";
+import { TaskCard } from "@/components/tasks/TaskCard";
+import { getDaysUntilDue } from "@/components/tasks/utils";
+import type { Task } from "@/components/tasks/types";
+import { DeleteConfirmDialog, TaskDetailDrawer, TaskFormDrawer } from "@/components/tasks";
+import { toast } from "sonner";
+import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
+
 const Page = () => {
   const { subjects, loading, createSubject, refetch } = useSubjects();
   const { user } = useUserProfile();
+  const { loading: subjectsLoading } = useSubjectsForTasks();
+
+  const {
+    tasks,
+    loading: tasksLoading,
+    createTask,
+    updateTask,
+    deleteTask,
+  } = useTasks();
+
+  // Drawer detail task
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  // Form task (edit)
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Delete confirm
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+
+  // BUKA drawer detail saat TaskCard di-klik
+  const openDetail = useCallback((task: Task) => {
+    setSelectedTask(task);
+    setDetailOpen(true);
+  }, []);
+
+  // BUKA form edit dari drawer
+  const openEdit = useCallback((task: Task) => {
+    setEditingTask(task);
+    setFormOpen(true);
+  }, []);
+
+  // TOGGLE status: hanya "in-progress" ⇄ "done"
+  const toggleStatus = useCallback(
+    async (task: Task) => {
+      const newStatus = task.status === "completed" ? "in-progress" : "completed";
+      try {
+        await updateTask(task._id || task.id, { status: newStatus });
+        toast.success("Task status updated");
+        // sinkronkan jika drawer sedang menampilkan task ini
+        setSelectedTask((prev) =>
+          prev?.id === task.id ? { ...prev, status: newStatus } : prev
+        );
+      } catch {
+        toast.error("Failed to update status");
+      }
+    },
+    [updateTask]
+  );
+
+  // SUBMIT form create/edit task dari drawer
+  const submitForm = useCallback(
+    async (
+      data: Parameters<
+        NonNullable<React.ComponentProps<typeof TaskFormDrawer>["onSubmit"]>
+      >[0]
+    ) => {
+      setSubmitting(true);
+      try {
+        if (editingTask) {
+          await updateTask(editingTask._id || editingTask.id, data);
+          toast.success("Task updated");
+        } else {
+          await createTask(data);
+          toast.success("Task created");
+        }
+        setFormOpen(false);
+      } catch {
+        toast.error(
+          editingTask ? "Failed to update task" : "Failed to create task"
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [editingTask, updateTask, createTask]
+  );
+
+  // DELETE dari drawer (munculkan dialog konfirmasi)
+  const requestDelete = useCallback((task: Task) => {
+    setTaskToDelete(task);
+    setConfirmOpen(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!taskToDelete) return;
+    try {
+      await deleteTask(taskToDelete._id || taskToDelete.id);
+      toast.success("Task deleted");
+      setConfirmOpen(false);
+      if (selectedTask?.id === taskToDelete.id) setDetailOpen(false);
+    } catch {
+      toast.error("Failed to delete task");
+    } finally {
+      setTaskToDelete(null);
+    }
+  }, [deleteTask, taskToDelete, selectedTask]);
 
   // Initialize auto notifications
   useAutoNotifications();
@@ -64,6 +173,7 @@ const Page = () => {
     return user?.name || "User";
   }, [user?.name]);
 
+  // Courses carousel content
   const coursesContent = useMemo(() => {
     if (subjects.length === 0) {
       return (
@@ -99,7 +209,43 @@ const Page = () => {
     ));
   }, [subjects, handleAddSubject]);
 
-  // Loading state: cukup balikin skeleton di sini saja
+  // ⬇️ Helper: cek “hari ini” (tanpa mempedulikan jam/zonanya)
+  const isSameDate = (isoDate: string, ref: Date) => {
+    const d = new Date(isoDate);
+    return (
+      d.getFullYear() === ref.getFullYear() &&
+      d.getMonth() === ref.getMonth() &&
+      d.getDate() === ref.getDate()
+    );
+  };
+
+  // ⬇️ Gabungkan dueDate + dueTime → Date untuk sorting per jam
+  const dueTimestamp = (t: Task) => {
+    const base = new Date(t.dueDate);
+    if (t.dueTime) {
+      const [hh, mm] = t.dueTime.split(":").map((n) => parseInt(n, 10) || 0);
+      base.setHours(hh ?? 0, mm ?? 0, 0, 0);
+    } else {
+      // jika tidak ada dueTime, taruh di akhir hari agar tidak mendahului yang ada jam
+      base.setHours(23, 59, 59, 999);
+    }
+    return base.getTime();
+  };
+
+  // ⬇️ Ambil task “in-progress” yang due hari ini, lalu urutkan
+  const todaysInProgressTasks = useMemo(() => {
+    const today = new Date();
+    return tasks
+      .filter(
+        (t) =>
+          t.status === "in-progress" &&
+          t.dueDate &&
+          isSameDate(t.dueDate, today)
+      )
+      .sort((a, b) => dueTimestamp(a) - dueTimestamp(b));
+  }, [tasks]);
+
+  // Loading state
   if (loading) {
     return <HomeSkeleton />;
   }
@@ -172,6 +318,68 @@ const Page = () => {
 
         <TodaySubject />
       </section>
+
+      {todaysInProgressTasks.length > 0 && (
+        <section className="mt-4 mx-6 dark:text-white">
+          <div className="flex flex-row justify-between items-center mb-2">
+            <h2 className="font-bold text-xl">Today&apos;s Tasks</h2>
+            <Link
+              href="/tasks"
+              className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+            >
+              View all
+            </Link>
+          </div>
+
+          {tasksLoading ? (
+            <div className="bg-white dark:bg-card rounded-xl p-6 border border-gray-200 dark:border-border text-sm text-gray-600 dark:text-gray-400">
+              Loading tasks…
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {todaysInProgressTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  subjects={subjects}
+                  onOpenDetail={() => openDetail(task)} // ⬅️ buka drawer
+                  onToggleDone={() => toggleStatus(task)} // ⬅️ toggle in-progress/done
+                  getDaysUntilDue={getDaysUntilDue}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* form drawer (create/edit) */}
+      <TaskFormDrawer
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        loadingSubjects={subjectsLoading}
+        subjects={subjects}
+        initialTask={editingTask}
+        submitting={submitting}
+        onSubmit={submitForm}
+      />
+
+      {/* delete dialog */}
+      <DeleteConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        task={taskToDelete}
+        onConfirm={confirmDelete}
+      />
+
+      {/* detail drawer */}
+      <TaskDetailDrawer
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        task={selectedTask}
+        onEdit={openEdit}
+        onDelete={requestDelete}
+        onToggleStatus={() => selectedTask && toggleStatus(selectedTask)}
+      />
 
       {/* Floating Action Button */}
       <FloatingActionButton onClick={handleAddSubject} />
