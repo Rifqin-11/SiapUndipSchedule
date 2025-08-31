@@ -30,7 +30,9 @@ function useMediaQuery(query: string) {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia(query);
     const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
-      setMatches((e as MediaQueryListEvent).matches ?? (e as MediaQueryList).matches);
+      setMatches(
+        (e as MediaQueryListEvent).matches ?? (e as MediaQueryList).matches
+      );
     setMatches(mql.matches);
     if (mql.addEventListener) {
       mql.addEventListener(
@@ -58,8 +60,12 @@ type FormValues = {
   dueDate: string;
   dueTime: string;
   submissionLink: string;
+  /** REQUIRED now */
+  category: string;
   subjectId: string;
 };
+
+type CategoryOption = { value: string; label?: string };
 
 type Props = {
   open: boolean;
@@ -68,6 +74,8 @@ type Props = {
   subjects?: Subject[];
   loadingSubjects?: boolean;
   submitting?: boolean;
+  /** Optional: override daftar kategori */
+  categoryOptions?: CategoryOption[];
   onSubmit: (
     data: Omit<
       Task,
@@ -79,9 +87,23 @@ type Props = {
       dueTime?: string;
       submissionLink?: string;
       subjectId?: string;
+      /** REQUIRED now */
+      category: string;
     }
   ) => Promise<void> | void;
 };
+
+const DEFAULT_CATEGORIES: CategoryOption[] = [
+  { value: "Homework" },
+  { value: "Assignment" },
+  { value: "Quiz" },
+  { value: "Exam" },
+  { value: "Project" },
+  { value: "Lab" },
+  { value: "Presentation" },
+  { value: "Research" },
+  { value: "Reading" },
+];
 
 export const TaskFormDrawer: React.FC<Props> = ({
   open,
@@ -91,6 +113,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
   loadingSubjects = false,
   submitting = false,
   onSubmit,
+  categoryOptions = DEFAULT_CATEGORIES,
 }) => {
   const isXL = useMediaQuery("(min-width: 1280px)");
   const side: "right" | "bottom" = isXL ? "right" : "bottom";
@@ -103,8 +126,11 @@ export const TaskFormDrawer: React.FC<Props> = ({
     dueDate: "",
     dueTime: "",
     submissionLink: "",
+    category: "",
     subjectId: "",
   });
+
+  const [errors, setErrors] = React.useState<{ category?: string }>({});
 
   React.useEffect(() => {
     if (!initialTask) {
@@ -116,8 +142,10 @@ export const TaskFormDrawer: React.FC<Props> = ({
         dueDate: "",
         dueTime: "",
         submissionLink: "",
+        category: "",
         subjectId: "",
       });
+      setErrors({});
       return;
     }
     const [date, time] = initialTask.dueDate.includes("T")
@@ -130,16 +158,23 @@ export const TaskFormDrawer: React.FC<Props> = ({
       status: initialTask.status,
       dueDate: date,
       dueTime: time.replace("Z", "").substring(0, 5) || "",
+      category: (initialTask as { category?: string })?.category || "",
       submissionLink: initialTask.submissionLink || "",
       subjectId: initialTask.subjectId || "",
     });
+    setErrors({});
   }, [initialTask]);
 
   const formRef = React.useRef<HTMLFormElement | null>(null);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!values.title.trim() || !values.dueDate) return;
+
+    // Validasi: title, dueDate, category wajib
+    const nextErrors: typeof errors = {};
+    if (!values.category) nextErrors.category = "Category is required";
+    setErrors(nextErrors);
+    if (!values.title.trim() || !values.dueDate || nextErrors.category) return;
 
     const payload = {
       title: values.title.trim(),
@@ -149,6 +184,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
       dueDate: values.dueTime
         ? `${values.dueDate}T${values.dueTime}:00`
         : values.dueDate,
+      category: values.category, // REQUIRED
       dueTime: values.dueTime || undefined,
       submissionLink: values.submissionLink.trim() || undefined,
       subjectId: values.subjectId || undefined,
@@ -169,7 +205,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
         side={side}
         className={`${wrapperClasses} ${variantClasses}`}
       >
-        {/* Header sama gaya dengan detail drawer */}
+        {/* Header */}
         <SheetHeader className="shrink-0">
           <SheetTitle className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {initialTask ? "Edit Task" : "Add New Task"}
@@ -181,13 +217,13 @@ export const TaskFormDrawer: React.FC<Props> = ({
           </SheetDescription>
         </SheetHeader>
 
-        {/* Body scrollable */}
+        {/* Body */}
         <form
           ref={formRef}
           onSubmit={submit}
           className="mt-4 space-y-6 overflow-y-auto pr-1 flex-1"
         >
-          {/* Section: Basic information */}
+          {/* Basic information */}
           <section className="rounded-3xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 p-4">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
               Basic information
@@ -204,6 +240,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Input
@@ -214,10 +251,47 @@ export const TaskFormDrawer: React.FC<Props> = ({
                   }
                 />
               </div>
+
+              {/* Category REQUIRED as Select */}
+              <div className="space-y-2 w-full">
+                <Label>Category *</Label>
+                <Select
+                  value={values.category}
+                  onValueChange={(v) => {
+                    setValues((s) => ({ ...s, category: v }));
+                    if (errors.category)
+                      setErrors((e) => ({ ...e, category: undefined }));
+                  }}
+                >
+                  <SelectTrigger
+                    className={
+                      errors.category ? "border-red-500 focus:ring-red-500" : ""
+                    }
+                    aria-invalid={!!errors.category}
+                    aria-errormessage={
+                      errors.category ? "category-error" : undefined
+                    }
+                  >
+                    <SelectValue placeholder="Choose category" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[70]">
+                    {categoryOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label ?? opt.value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.category && (
+                  <p id="category-error" className="text-xs text-red-600 mt-1">
+                    {errors.category}
+                  </p>
+                )}
+              </div>
             </div>
           </section>
 
-          {/* Section: Details & schedule */}
+          {/* Details & schedule */}
           <section className="rounded-3xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 p-4">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
               Details & schedule
@@ -323,7 +397,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
             </div>
           </section>
 
-          {/* Optional preview chips – supaya vibe-nya konsisten dengan detail */}
+          {/* Preview chips */}
           <section className="rounded-3xl bg-white/60 dark:bg-neutral-800/60 border border-dashed border-gray-200 dark:border-neutral-700 p-4">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
               Preview chips
@@ -346,6 +420,11 @@ export const TaskFormDrawer: React.FC<Props> = ({
                 {values.dueTime &&
                   ` • ${values.dueTime.split(":").slice(0, 2).join(":")}`}
               </span>
+              {values.category && (
+                <span className="px-3 py-1 rounded-full font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
+                  {values.category}
+                </span>
+              )}
               {values.subjectId && (
                 <span className="px-3 py-1 rounded-full font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
                   Subject selected
@@ -355,7 +434,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
           </section>
         </form>
 
-        {/* Footer sticky – sama seperti detail drawer */}
+        {/* Footer */}
         <SheetFooter className="pt-4 mt-2 border-t border-gray-200 dark:border-neutral-800 shrink-0">
           <div className="flex w-full gap-3">
             <Button

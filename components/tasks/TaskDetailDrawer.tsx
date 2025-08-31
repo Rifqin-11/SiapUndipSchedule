@@ -26,8 +26,7 @@ function useMediaQuery(query: string) {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia(query);
-    const onChange = (e: MediaQueryListEvent) =>
-      setMatches(e.matches);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
     setMatches(mql.matches);
     // Safari fallback addListener/removeListener
     if (mql.addEventListener) {
@@ -74,10 +73,11 @@ export const TaskDetailDrawer: React.FC<Props> = ({
   const wrapperClasses =
     "w-full bg-gray-50 dark:bg-neutral-900 overflow-hidden flex flex-col px-6 py-5";
   const variantClasses = isXL
-    ? // RIGHT sheet (desktop/xl)
-      "sm:max-w-md md:max-w-lg h-dvh rounded-l-3xl border-l border-gray-200 dark:border-neutral-800"
-    : // BOTTOM sheet (mobile)
-      "max-w-full h-[86vh] rounded-t-3xl border-t border-gray-200 dark:border-neutral-800";
+    ? "sm:max-w-md md:max-w-lg h-dvh rounded-l-3xl border-l border-gray-200 dark:border-neutral-800"
+    : "max-w-full h-[86vh] rounded-t-3xl border-t border-gray-200 dark:border-neutral-800";
+
+  // ambil category (optional di tipe Task)
+  const category = (task as { category?: string })?.category?.trim();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -110,6 +110,7 @@ export const TaskDetailDrawer: React.FC<Props> = ({
           </SheetTitle>
 
           <div className="flex flex-wrap items-center gap-2">
+            {/* status */}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 task.status === "completed"
@@ -121,6 +122,8 @@ export const TaskDetailDrawer: React.FC<Props> = ({
             >
               {task.status.replace("-", " ")}
             </span>
+
+            {/* priority */}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 task.priority === "high"
@@ -132,6 +135,15 @@ export const TaskDetailDrawer: React.FC<Props> = ({
             >
               {task.priority}
             </span>
+
+            {/* category badge (baru) */}
+            {category && (
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
+                {category}
+              </span>
+            )}
+
+            {/* due date */}
             <span className="px-3 py-1 rounded-full text-sm font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
               {new Date(task.dueDate).toLocaleDateString(undefined, {
                 weekday: "short",
@@ -141,6 +153,8 @@ export const TaskDetailDrawer: React.FC<Props> = ({
               {task.dueTime &&
                 ` • ${task.dueTime.split(":").slice(0, 2).join(":")}`}
             </span>
+
+            {/* subject (opsional) */}
             {task.subject?.name && (
               <span className="px-3 py-1 rounded-full text-sm font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
                 {task.subject.name}

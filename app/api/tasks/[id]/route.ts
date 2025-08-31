@@ -40,6 +40,7 @@ export async function PUT(
       dueTime,
       submissionLink,
       subjectId,
+      category,
     } = body;
 
     // Validate required fields only if they are provided
@@ -109,6 +110,7 @@ export async function PUT(
     if (dueTime !== undefined) updateData.dueTime = dueTime;
     if (submissionLink !== undefined)
       updateData.submissionLink = submissionLink?.trim() || "";
+    if (category !== undefined) updateData.category = category?.trim() || null;
     if (subjectId !== undefined)
       updateData.subjectId =
         subjectId && subjectId.trim() !== "" ? subjectId : null;

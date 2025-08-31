@@ -100,11 +100,12 @@ export async function POST(request: NextRequest) {
       title,
       description,
       priority = "medium",
-      status = "pending",
+      status = "in-progress",
       dueDate,
       dueTime,
       submissionLink,
       subjectId,
+      category,
     } = body;
 
     // Validate required fields
@@ -172,6 +173,7 @@ export async function POST(request: NextRequest) {
       description: description?.trim() || "",
       priority,
       status,
+      category: category?.trim() || null,
       dueDate,
       dueTime: dueTime?.trim() || null,
       submissionLink: submissionLink?.trim() || null,

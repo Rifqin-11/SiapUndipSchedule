@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, CheckCircle, CircleArrowOutUpRight, Clock } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle,
+  CircleArrowOutUpRight,
+  Clock,
+} from "lucide-react";
 import type { Task, Subject } from "./types";
 
 /** Tema vibrant ala mockup */
@@ -66,7 +71,7 @@ export type TaskCardProps = {
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
-  subjects,
+  subjects, // masih diterima untuk kompatibilitas, tapi tidak dipakai di header
   getDaysUntilDue,
   onOpenDetail,
   onToggleDone,
@@ -86,6 +91,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
     return undefined;
   };
+
+  // pakai category saja di header
+  const category = (task as { category?: string })?.category?.trim();
 
   const getStatusVisual = (status: Task["status"]) => {
     switch (status) {
@@ -129,7 +137,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       `}
       aria-labelledby={`task-title-${task.id}`}
     >
-
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={`${theme.icon} p-2 rounded-full`}>
@@ -139,7 +146,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
         <div className="min-w-0 flex-1">
           <h3 className="text-sm sm:text-[15px] font-semibold leading-tight truncate">
-            {getSubjectName() && <span>{getSubjectName()}</span>}
+            {(getSubjectName() ?? category) && (
+              <span>{getSubjectName() ?? category}</span>
+            )}
           </h3>
           <div
             className={`mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${theme.muted}`}
@@ -161,7 +170,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className={`rounded-full bg-white`}
+          className={`rounded-full bg-white text-gray-800`}
           aria-label="Open task detail"
           title="Open task detail"
           onClick={onOpenDetail}
