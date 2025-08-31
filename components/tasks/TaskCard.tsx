@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, CircleArrowOutUpRight } from "lucide-react";
+import { CalendarDays, CheckCircle, CircleArrowOutUpRight, Clock } from "lucide-react";
 import type { Task, Subject } from "./types";
 
 /** Tema vibrant ala mockup */
@@ -87,6 +87,31 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     return undefined;
   };
 
+  const getStatusVisual = (status: Task["status"]) => {
+    switch (status) {
+      case "in-progress":
+        return {
+          Icon: Clock,
+          wrapperExtra: "ring-2 ring-blue-400/70 animate-pulse",
+          aria: "In progress",
+        };
+      case "completed":
+        return {
+          Icon: CheckCircle,
+          wrapperExtra: "ring-2 ring-emerald-400/70",
+          aria: "Completed",
+        };
+      default: // "pending"
+        return {
+          Icon: CalendarDays,
+          wrapperExtra: "ring-2 ring-white/20",
+          aria: "Pending",
+        };
+    }
+  };
+
+  const { Icon, aria } = getStatusVisual(task.status);
+
   return (
     <article
       className={`
@@ -104,7 +129,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={`${theme.icon} p-2 rounded-full`}>
-          <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+          <span className="sr-only">{aria}</span>
         </div>
 
         <div className="min-w-0 flex-1">
@@ -131,7 +157,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className={`rounded-full ${theme.action}`}
+          className={`rounded-full bg-white`}
           aria-label="Open task detail"
           title="Open task detail"
           onClick={onOpenDetail}
