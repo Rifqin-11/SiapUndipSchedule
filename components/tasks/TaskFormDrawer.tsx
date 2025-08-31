@@ -99,7 +99,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
     title: "",
     description: "",
     priority: "medium",
-    status: "pending",
+    status: "in-progress",
     dueDate: "",
     dueTime: "",
     submissionLink: "",
