@@ -287,11 +287,16 @@ const Page = () => {
         </div>
       </section>
 
-      <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">
-        <h1 className="text-xl font-extrabold tracking-tight">
-          Hi {firstName}, here&apos;s your schedule
-        </h1>
-        <CurrentDayDate />
+      <section className="flex flex-row justify-between items-center mt-6 mx-6">
+        <div className="flex flex-col text-lg dark:text-white space-y-1">
+          <h1 className="text-xl font-extrabold tracking-tight">
+            Hi {firstName}, here&apos;s your schedule
+          </h1>
+          <CurrentDayDate />
+        </div>
+        <div className="size-10 hidden xl:block">
+          <NotifIcon />
+        </div>
       </section>
 
       <section className="mt-6 dark:text-white">
