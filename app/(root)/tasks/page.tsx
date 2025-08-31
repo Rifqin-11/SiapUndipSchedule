@@ -6,7 +6,6 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
-  AlertCircle,
   Plus,
   Search,
   Filter,
@@ -48,7 +47,7 @@ export default function TasksPage() {
 
   // filter/search
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("in-progress");
   const [filterPriority, setFilterPriority] = useState<string>("all");
 
   // detail
@@ -65,16 +64,20 @@ export default function TasksPage() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const stats = useMemo(() => {
-    const total = tasks.length;
-    const completed = tasks.filter((t) => t.status === "completed").length;
     const inProgress = tasks.filter((t) => t.status === "in-progress").length;
-    const pending = tasks.filter((t) => t.status === "pending").length;
-    return { total, completed, inProgress, pending };
+    const complete = tasks.filter((t) => t.status === "completed").length;
+    const total = inProgress + complete;
+    return { total, inProgress, complete };
   }, [tasks]);
 
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((t) => {
-      const q = searchTerm.toLowerCase();
+const filteredTasks = useMemo(() => {
+  const q = searchTerm.toLowerCase();
+  const prioRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const getDueTime = (t: Task) => {
+    return t.dueDate ? new Date(t.dueDate).getTime() : Number.POSITIVE_INFINITY;
+  };
+  return tasks
+    .filter((t) => {
       const matchesSearch =
         t.title.toLowerCase().includes(q) ||
         t.description?.toLowerCase().includes(q);
@@ -82,8 +85,18 @@ export default function TasksPage() {
       const matchesPriority =
         filterPriority === "all" || t.priority === filterPriority;
       return matchesSearch && matchesStatus && matchesPriority;
+    })
+    .sort((a, b) => {
+      const at = getDueTime(a);
+      const bt = getDueTime(b);
+      if (at !== bt) return at - bt;
+      const ap = prioRank[a.priority ?? ""] ?? 99;
+      const bp = prioRank[b.priority ?? ""] ?? 99;
+      if (ap !== bp) return ap - bp;
+      return a.title.localeCompare(b.title);
     });
-  }, [tasks, searchTerm, filterStatus, filterPriority]);
+}, [tasks, searchTerm, filterStatus, filterPriority]);
+
 
   const openCreate = () => {
     setEditingTask(null);
@@ -119,21 +132,22 @@ export default function TasksPage() {
     }
   }, [deleteTask, taskToDelete, selectedTask]);
 
-  const toggleStatus = useCallback(
-    async (task: Task) => {
-      const newStatus = task.status === "completed" ? "pending" : "completed";
-      try {
-        await updateTask(task._id || task.id, { status: newStatus });
-        toast.success("Task status updated");
-        setSelectedTask((prev) =>
-          prev?.id === task.id ? { ...prev, status: newStatus } : prev
-        );
-      } catch {
-        toast.error("Failed to update status");
-      }
-    },
-    [updateTask]
-  );
+const toggleStatus = useCallback(
+  async (task: Task) => {
+    const newStatus = task.status === "completed" ? "in-progress" : "completed";
+    try {
+      await updateTask(task._id || task.id, { status: newStatus });
+      toast.success("Task status updated");
+      setSelectedTask((prev) =>
+        prev?.id === task.id ? { ...prev, status: newStatus } : prev
+      );
+    } catch {
+      toast.error("Failed to update status");
+    }
+  },
+  [updateTask]
+);
+
 
   const submitForm = useCallback(
     async (
@@ -180,20 +194,13 @@ export default function TasksPage() {
       />
       <div className="mx-auto p-6 space-y-6">
         {/* stats */}
-        <div className=" grid-cols-1 md:grid-cols-4 gap-4 hidden xl:grid">
+        <div className=" grid-cols-1 md:grid-cols-3 gap-4 hidden xl:grid">
           <StatCard
             icon={
               <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             }
             label="Total Tasks"
             value={stats.total}
-          />
-          <StatCard
-            icon={
-              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-            }
-            label="Completed"
-            value={stats.completed}
           />
           <StatCard
             icon={
@@ -204,10 +211,10 @@ export default function TasksPage() {
           />
           <StatCard
             icon={
-              <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             }
-            label="Pending"
-            value={stats.pending}
+            label="Completed"
+            value={stats.complete}
           />
         </div>
 
@@ -233,7 +240,6 @@ export default function TasksPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="in-progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>

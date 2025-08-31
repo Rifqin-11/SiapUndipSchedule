@@ -77,11 +77,33 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onToggleDone,
   className = "",
 }) => {
-  const daysUntilDue = getDaysUntilDue(task.dueDate);
-  const isOverdue = daysUntilDue < 0;
-  const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0;
-
   const theme = pickVibrantTheme((task._id as string) ?? task.id ?? task.title);
+
+  const getDueDateTime = () => {
+    const base = new Date(task.dueDate);
+    if (task.dueTime) {
+      const [hh, mm] = task.dueTime.split(":").map((n) => parseInt(n, 10) || 0);
+      base.setHours(hh ?? 0, mm ?? 0, 0, 0);
+    }
+    return base;
+  };
+
+  const now = new Date();
+  const dueAt = getDueDateTime();
+  const diffMs = dueAt.getTime() - now.getTime();
+
+  const isOverdueByTime = diffMs < 0;
+
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const isLessThanOneDay = diffMs >= 0 && diffMs < ONE_DAY_MS;
+
+  const hoursLeft = isLessThanOneDay
+    ? Math.ceil(diffMs / (60 * 60 * 1000))
+    : null;
+
+  const daysUntilDue = getDaysUntilDue(task.dueDate);
+  const isOverdue = isOverdueByTime;
+  const isDueSoon = !isOverdue && daysUntilDue <= 3 && daysUntilDue >= 0;
 
   const getSubjectName = () => {
     if (task.subject?.name) return task.subject.name;
@@ -159,7 +181,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 : "No time"}
             </span>
             {isOverdue && <span className="font-medium">(Overdue)</span>}
-            {isDueSoon && !isOverdue && (
+
+            {!isOverdue && isLessThanOneDay && (
+              <span className="font-medium">
+                ({hoursLeft} hour{hoursLeft !== 1 ? "s" : ""} left)
+              </span>
+            )}
+
+            {!isOverdue && !isLessThanOneDay && isDueSoon && (
               <span className="font-medium">
                 ({daysUntilDue} day{daysUntilDue !== 1 ? "s" : ""} left)
               </span>
