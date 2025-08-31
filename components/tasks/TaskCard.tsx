@@ -111,10 +111,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   const { Icon, aria } = getStatusVisual(task.status);
+  const isDone = task.status === "completed";
 
   return (
     <article
       className={`
+        relative
         ${theme.bg} ${theme.text}
         rounded-2xl sm:rounded-[24px] md:rounded-[28px]
         p-4 sm:p-5 md:p-6
@@ -122,10 +124,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         shadow-[0_4px_14px_rgba(0,0,0,.08)]
         hover:shadow-[0_8px_24px_rgba(0,0,0,.12)]
         transition-shadow duration-200
+        ${isDone ? "ring-1 ring-emerald-300/60" : ""}
         ${className}
       `}
       aria-labelledby={`task-title-${task.id}`}
     >
+
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={`${theme.icon} p-2 rounded-full`}>
@@ -179,11 +183,27 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <Button
           type="button"
           variant="secondary"
-          className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl ${theme.chip} border-0 text-xs sm:text-sm`}
+          className={`
+            px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm
+            ${
+              isDone
+                ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                : theme.chip
+            }
+            border-0
+          `}
           onClick={onToggleDone}
-          aria-pressed={task.status === "completed"}
+          aria-pressed={isDone}
+          title={isDone ? "Mark as pending" : "Mark as completed"}
         >
-          {task.status === "completed" ? "Done" : "Mark Done"}
+          {isDone ? (
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle className="w-4 h-4" />
+              Done
+            </span>
+          ) : (
+            "Mark Done"
+          )}
         </Button>
 
         <div
