@@ -171,7 +171,7 @@ export default function TasksPage() {
         rightSlot={
           <Button
             onClick={openCreate}
-            className="bg-black hover:bg-gray-700 rounded-full sm:rounded-md"
+            className="bg-black dark:bg-secondary hover:bg-gray-700 rounded-full sm:rounded-md"
           >
             <Plus className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Add Task</span>
