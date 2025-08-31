@@ -1,6 +1,6 @@
 import React from "react";
-import { Progress } from "./ui/progress";
-import { Button } from "./ui/button";
+import { Progress } from "../ui/progress";
+import { Button } from "../ui/button";
 import { Edit2, Trash2, MoreVertical, Calendar } from "lucide-react";
 import {
   DropdownMenu,

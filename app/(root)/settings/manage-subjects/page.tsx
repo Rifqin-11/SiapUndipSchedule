@@ -1,4 +1,4 @@
-import ManageSubjects from "@/components/ManageSubjects";
+import ManageSubjects from "@/components/settings/ManageSubjects";
 
 export default function ManageSubjectsPage() {
   return <ManageSubjects />;

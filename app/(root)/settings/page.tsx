@@ -3,7 +3,7 @@
 import React from "react";
 import { BookOpen, Info, Palette, History } from "lucide-react";
 import Link from "next/link";
-import SettingsPageSkeleton from "@/components/SettingsPageSkeleton";
+import SettingsPageSkeleton from "@/components/settings/SettingsPageSkeleton";
 import { useSimulatedLoading } from "@/hooks/useLoadingState";
 
 const SettingsPage = () => {

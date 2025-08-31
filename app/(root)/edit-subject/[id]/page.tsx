@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSubject } from "@/hooks/useSubjects";
-import SubjectForm from "@/components/SubjectForm";
+import SubjectForm from "@/components/subject-detail/SubjectForm";
 import { Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
 

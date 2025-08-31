@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
-import SubjectModal from "@/components/SubjectModal";
+import SubjectModal from "@/components/subject-detail/SubjectModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2,  Upload } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 

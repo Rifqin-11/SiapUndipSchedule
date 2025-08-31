@@ -11,9 +11,9 @@ import {
   CalendarX,
 } from "lucide-react";
 import React, { use, useState } from "react";
-import Timeline from "@/components/Timeline";
-import RescheduleModal from "@/components/RescheduleModal";
-import RescheduleHistory from "@/components/RescheduleHistory";
+import Timeline from "@/components/subject-detail/Timeline";
+import RescheduleModal from "@/components/reschedule/RescheduleModal";
+import RescheduleHistory from "@/components/reschedule/RescheduleHistory";
 import { Button } from "@/components/ui/button";
 import { useSubject } from "@/hooks/useSubjects";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Progress } from "./ui/progress";
+import { Progress } from "../ui/progress";
 
 type Subject = {
   name: string;
@@ -28,7 +28,10 @@ const CoursesCard = ({ name, meeting }: Subject) => {
           <span>Progress</span>
           <span className="text-blue-900 dark:text-blue-400">{meeting}/14</span>
         </div>
-        <Progress value={progressMeeting} className="bg-blue-100 dark:bg-gray-800" />
+        <Progress
+          value={progressMeeting}
+          className="bg-blue-100 dark:bg-gray-800"
+        />
       </div>
     </div>
   );

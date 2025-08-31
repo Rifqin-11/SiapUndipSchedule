@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import CoursesCard from "@/components/CoursesCard";
-import TodaySubject from "@/components/TodaySubject";
-import CurrentDayDate from "@/components/CurrentDayDate";
-import FloatingActionButton from "@/components/FloatingActionButton";
-import SubjectModal from "@/components/SubjectModal";
+import CoursesCard from "@/components/homepage/CoursesCard";
+import TodaySubject from "@/components/homepage/TodaySubject";
+import CurrentDayDate from "@/components/homepage/CurrentDayDate";
+import FloatingActionButton from "@/components/homepage/FloatingActionButton";
+import SubjectModal from "@/components/subject-detail/SubjectModal";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
-import HomeSkeleton from "@/components/HomeSkeleton";
+import HomeSkeleton from "@/components/homepage/HomeSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import Link from "next/link";
 import Image from "next/image";
-import NotifIcon from "@/components/NotifIcon";
+import NotifIcon from "@/components/homepage/NotifIcon";
 
 const Page = () => {
   const { subjects, loading, createSubject, refetch } = useSubjects();

@@ -6,7 +6,7 @@ import {
   getCurrentDayAndDate,
   normalizeDayName,
 } from "@/utils/date";
-import TodayCard from "./TodayCard";
+import TodayCard from "@/components/homepage/TodayCard"
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 
 interface SubjectWithReschedule extends Subject {
@@ -287,13 +287,7 @@ const TodaySubject = () => {
         )}
       </div>
     );
-  }, [
-    loading,
-    error,
-    allTodaySubjects,
-    currentDay,
-    handleAttendance,
-  ]);
+  }, [loading, error, allTodaySubjects, currentDay, handleAttendance]);
 
   return renderedContent;
 };

@@ -1,4 +1,4 @@
-import SettingsHeader from "@/components/SettingsHeader";
+import SettingsHeader from "@/components/settings/SettingsHeader";
 import { BookOpen } from "lucide-react";
 import React, { ReactNode } from "react";
 

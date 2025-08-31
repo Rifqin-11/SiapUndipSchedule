@@ -1,6 +1,6 @@
 "use client";
 
-import SettingsHeader from "@/components/SettingsHeader";
+import SettingsHeader from "@/components/settings/SettingsHeader";
 import { Upload } from "lucide-react";
 import React, { ReactNode } from "react";
 

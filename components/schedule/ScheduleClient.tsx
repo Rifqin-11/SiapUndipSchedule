@@ -6,10 +6,10 @@ import {
   colorPairs,
   normalizeDayName,
 } from "@/utils/date";
-import HorizonalCalendar from "@/components/HorizonalCalendar";
-import CalendarCard from "@/components/CalendarCard";
-import SubjectModal from "@/components/SubjectModal";
-import RescheduleModal from "@/components/RescheduleModal";
+import HorizonalCalendar from "@/components/schedule/HorizonalCalendar";
+import CalendarCard from "@/components/schedule/CalendarCard";
+import SubjectModal from "@/components/subject-detail/SubjectModal";
+import RescheduleModal from "@/components/reschedule/RescheduleModal";
 import Link from "next/link";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import QRScanner from "./QRScanner";
+import QRScanner from "../QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
-import PageHeader from "./PageHeader";
+import PageHeader from "../PageHeader";
 
 interface SubjectWithReschedule extends Subject {
   isReschedule?: boolean;
@@ -418,10 +418,7 @@ const ScheduleClient = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader
-        variant="calendar"
-        selectedDay={selectedDay}
-      />
+      <PageHeader variant="calendar" selectedDay={selectedDay} />
 
       <div className="mx-5">
         <HorizonalCalendar

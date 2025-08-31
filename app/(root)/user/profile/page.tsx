@@ -5,7 +5,7 @@ import { User, Camera, Save, Shield, ArrowLeft } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { toast } from "sonner";
 import Image from "next/image";
-import ProfilePageSkeleton from "@/components/ProfilePageSkeleton";
+import ProfilePageSkeleton from "@/components/profile/ProfilePageSkeleton";
 import Link from "next/link";
 
 const ProfilePage = () => {

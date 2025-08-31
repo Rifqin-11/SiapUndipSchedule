@@ -1,5 +1,5 @@
 import React from "react";
-import ScheduleClient from "@/components/ScheduleClient";
+import ScheduleClient from "@/components/schedule/ScheduleClient";
 
 const Page = () => {
   return (

@@ -1,5 +1,5 @@
 import React from "react";
-import CurrentDayDate from "@/components/CurrentDayDate";
+import CurrentDayDate from "@/components/homepage/CurrentDayDate";
 
 const HomeSkeleton = () => {
   return (

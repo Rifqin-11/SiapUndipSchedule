@@ -7,7 +7,7 @@ import { useSubjects } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
-import UserPageSkeleton from "@/components/UserPageSkeleton";
+import UserPageSkeleton from "@/components/profile/UserPageSkeleton";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 

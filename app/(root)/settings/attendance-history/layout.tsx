@@ -1,4 +1,4 @@
-import SettingsHeader from "@/components/SettingsHeader";
+import SettingsHeader from "@/components/settings/SettingsHeader";
 import { History } from "lucide-react";
 import React from "react";
 
