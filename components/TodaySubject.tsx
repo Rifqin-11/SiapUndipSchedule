@@ -28,7 +28,7 @@ const TodaySubject = () => {
   const { subjects, loading, error, refetch } = useSubjects();
 
   // Memoize calculations to prevent re-computation
-  const { uniqueDays, allTodaySubjects } = useMemo(() => {
+  const { allTodaySubjects } = useMemo(() => {
     // Ensure subjects is always an array
     const subjectsArray = Array.isArray(subjects) ? subjects : [];
 
@@ -283,12 +283,6 @@ const TodaySubject = () => {
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Enjoy your free day!
             </p>
-            {uniqueDays.length > 0 &&
-              process.env.NODE_ENV === "development" && (
-                <p className="text-sm mt-2">
-                  Hari dengan jadwal: {uniqueDays.join(", ")}
-                </p>
-              )}
           </div>
         )}
       </div>
@@ -299,7 +293,6 @@ const TodaySubject = () => {
     allTodaySubjects,
     currentDay,
     handleAttendance,
-    uniqueDays,
   ]);
 
   return renderedContent;

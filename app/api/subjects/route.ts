@@ -73,16 +73,9 @@ export async function POST(request: NextRequest) {
     const db = client.db("schedule_undip");
 
     const body = await request.json();
-    console.log("Received request body:", body);
 
     // Check if this is a batch insert (array of subjects)
     if (body.subjects && Array.isArray(body.subjects)) {
-      console.log(
-        "Processing batch insert for",
-        body.subjects.length,
-        "subjects"
-      );
-
       const subjectsToInsert = body.subjects.map(
         (subject: Record<string, unknown>) => ({
           ...subject,
@@ -95,7 +88,6 @@ export async function POST(request: NextRequest) {
       const result = await db
         .collection("subjects")
         .insertMany(subjectsToInsert);
-      console.log("Batch insert result:", result);
 
       // Return success with inserted count
       return NextResponse.json({

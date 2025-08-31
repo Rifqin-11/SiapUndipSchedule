@@ -214,4 +214,18 @@
   .dark-input {
     @apply bg-white dark:bg-[#343434];
   }
+
+  /* Popover z-index fix for modal dialogs */
+  [data-radix-popper-content-wrapper] {
+    z-index: 60 !important;
+  }
+
+  [data-slot="popover-content"] {
+    z-index: 60 !important;
+  }
+
+  /* Custom dropdown z-index for subject combobox */
+  .subject-dropdown {
+    z-index: 100 !important;
+  }
 }

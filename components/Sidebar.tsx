@@ -30,7 +30,7 @@ const Sidebar = () => {
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
-    { href: "/task", icon: ClipboardCheck, label: "Task" }, // optional: sesuaikan dengan rute kamu
+    { href: "/tasks", icon: ClipboardCheck, label: "Task" }, // optional: sesuaikan dengan rute kamu
     {
       href: "/settings/manage-subjects",
       icon: Album,
