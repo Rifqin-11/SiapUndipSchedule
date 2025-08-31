@@ -20,6 +20,34 @@ import {
 import { Switch } from "@/components/ui/switch";
 import type { Task } from "./types";
 
+/** Simple media query hook */
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) =>
+      setMatches(e.matches);
+    setMatches(mql.matches);
+    // Safari fallback addListener/removeListener
+    if (mql.addEventListener) {
+      mql.addEventListener(
+        "change",
+        onChange as (e: MediaQueryListEvent) => void
+      );
+      return () =>
+        mql.removeEventListener(
+          "change",
+          onChange as (e: MediaQueryListEvent) => void
+        );
+    } else {
+      mql.addListener(onChange);
+      return () => mql.removeListener(onChange);
+    }
+  }, [query]);
+  return matches;
+}
+
 type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -38,25 +66,40 @@ export const TaskDetailDrawer: React.FC<Props> = ({
   onToggleStatus,
 }) => {
   const [reminderOn, setReminderOn] = React.useState(true);
+  const isXL = useMediaQuery("(min-width: 1280px)");
+  const side: "right" | "bottom" = isXL ? "right" : "bottom";
+
   if (!task) return null;
+
+  const wrapperClasses =
+    "w-full bg-gray-50 dark:bg-neutral-900 overflow-hidden flex flex-col px-6 py-5";
+  const variantClasses = isXL
+    ? // RIGHT sheet (desktop/xl)
+      "sm:max-w-md md:max-w-lg h-dvh rounded-l-3xl border-l border-gray-200 dark:border-neutral-800"
+    : // BOTTOM sheet (mobile)
+      "max-w-full h-[86vh] rounded-t-3xl border-t border-gray-200 dark:border-neutral-800";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="right"
-        className="w-full sm:max-w-md md:max-w-lg h-dvh px-6 py-5 rounded-l-3xl bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col"
+        side={side}
+        className={`${wrapperClasses} ${variantClasses}`}
       >
         <SheetHeader className="space-y-2 shrink-0">
           <div className="flex items-center justify-end gap-2">
             <button
               className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 grid place-items-center"
               onClick={() => onEdit(task)}
+              aria-label="Edit task"
+              title="Edit"
             >
               <Pencil className="w-4 h-4" />
             </button>
             <button
               className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 grid place-items-center"
               onClick={() => onDelete(task)}
+              aria-label="Delete task"
+              title="Delete"
             >
               <Trash2 className="w-4 h-4" />
             </button>

@@ -23,6 +23,36 @@ import { Loader2 } from "lucide-react";
 import { SubjectCombobox } from "@/components/ui/subject-combobox";
 import type { Task, Subject } from "./types";
 
+/** Simple media query hook: true kalau >= 1280px (xl) */
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
+      setMatches("matches" in e ? e.matches : e.matches);
+    setMatches(mql.matches);
+    if (mql.addEventListener) {
+      mql.addEventListener(
+        "change",
+        onChange as (e: MediaQueryListEvent) => void
+      );
+      return () =>
+        mql.removeEventListener(
+          "change",
+          onChange as (e: MediaQueryListEvent) => void
+        );
+    } else {
+      // Safari lama
+      // @ts-ignore
+      mql.addListener(onChange);
+      // @ts-ignore
+      return () => mql.removeListener(onChange);
+    }
+  }, [query]);
+  return matches;
+}
+
 type FormValues = {
   title: string;
   description: string;
@@ -65,6 +95,9 @@ export const TaskFormDrawer: React.FC<Props> = ({
   submitting = false,
   onSubmit,
 }) => {
+  const isXL = useMediaQuery("(min-width: 1280px)");
+  const side: "right" | "bottom" = isXL ? "right" : "bottom";
+
   const [values, setValues] = React.useState<FormValues>({
     title: "",
     description: "",
@@ -126,12 +159,20 @@ export const TaskFormDrawer: React.FC<Props> = ({
     onSubmit?.(payload);
   };
 
+  // Kelas dasar & varian agar match dengan TaskDetailDrawer
+  const wrapperClasses =
+    "w-full bg-gray-50 dark:bg-neutral-900 overflow-hidden flex flex-col px-6 py-5";
+  const variantClasses = isXL
+    ? "sm:max-w-md md:max-w-lg h-dvh rounded-l-3xl border-l border-gray-200 dark:border-neutral-800"
+    : "max-w-full h-[86vh] rounded-t-3xl border-t border-gray-200 dark:border-neutral-800";
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="right"
-        className="w-full sm:max-w-md md:max-w-lg h-dvh px-6 py-5 rounded-l-3xl bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col"
+        side={side}
+        className={`${wrapperClasses} ${variantClasses}`}
       >
+        {/* Header sama gaya dengan detail drawer */}
         <SheetHeader className="shrink-0">
           <SheetTitle className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {initialTask ? "Edit Task" : "Add New Task"}
@@ -143,12 +184,13 @@ export const TaskFormDrawer: React.FC<Props> = ({
           </SheetDescription>
         </SheetHeader>
 
+        {/* Body scrollable */}
         <form
           ref={formRef}
           onSubmit={submit}
           className="mt-4 space-y-6 overflow-y-auto pr-1 flex-1"
         >
-          {/* basic */}
+          {/* Section: Basic information */}
           <section className="rounded-3xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 p-4">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
               Basic information
@@ -178,11 +220,12 @@ export const TaskFormDrawer: React.FC<Props> = ({
             </div>
           </section>
 
-          {/* meta */}
+          {/* Section: Details & schedule */}
           <section className="rounded-3xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 p-4">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
               Details & schedule
             </h4>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Priority</Label>
@@ -198,7 +241,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
                   <SelectTrigger>
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[70]">
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>
@@ -220,7 +263,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[70]">
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -282,8 +325,40 @@ export const TaskFormDrawer: React.FC<Props> = ({
               )}
             </div>
           </section>
+
+          {/* Optional preview chips – supaya vibe-nya konsisten dengan detail */}
+          <section className="rounded-3xl bg-white/60 dark:bg-neutral-800/60 border border-dashed border-gray-200 dark:border-neutral-700 p-4">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Preview chips
+            </h4>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="px-3 py-1 rounded-full font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                {values.status.replace("-", " ")}
+              </span>
+              <span className="px-3 py-1 rounded-full font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
+                {values.priority}
+              </span>
+              <span className="px-3 py-1 rounded-full font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
+                {values.dueDate
+                  ? new Date(values.dueDate).toLocaleDateString(undefined, {
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "short",
+                    })
+                  : "No date"}
+                {values.dueTime &&
+                  ` • ${values.dueTime.split(":").slice(0, 2).join(":")}`}
+              </span>
+              {values.subjectId && (
+                <span className="px-3 py-1 rounded-full font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
+                  Subject selected
+                </span>
+              )}
+            </div>
+          </section>
         </form>
 
+        {/* Footer sticky – sama seperti detail drawer */}
         <SheetFooter className="pt-4 mt-2 border-t border-gray-200 dark:border-neutral-800 shrink-0">
           <div className="flex w-full gap-3">
             <Button
