@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit, Bell, LogOut, Camera, User, BookOpen, InfoIcon } from "lucide-react";
+import { Edit, Bell, LogOut, Camera, User, BookOpen, InfoIcon, Palette } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -61,6 +61,14 @@ const UserPage = () => {
       href: "/settings/manage-subjects",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+    },
+    {
+      icon: Palette,
+      title: "Appearance",
+      description: "Theme, colors, and personalization",
+      href: "/settings/appearance",
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
     },
   ];
 
