@@ -54,7 +54,6 @@ export default function CalendarCard({
   showActions = true,
   isReschedule,
   rescheduleInfo,
-  ...rest
 }: CalendarCardProps) {
   const proggressMeeting = (meeting / 14) * 100;
 

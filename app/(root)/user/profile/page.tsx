@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, Camera, Save } from "lucide-react";
-import BackButton from "@/components/Back-Button";
+import { User, Camera, Save, Shield, ArrowLeft } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { toast } from "sonner";
 import Image from "next/image";
 import ProfilePageSkeleton from "@/components/ProfilePageSkeleton";
+import Link from "next/link";
 
 const ProfilePage = () => {
   const { user, loading, updateUserProfile, getInitials } = useUserProfile();
@@ -110,7 +110,12 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-background">
       <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
-        <BackButton />
+        <Link
+          href="/user"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-secondary rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+        </Link>
         <div className="flex flex-row justify-center items-center w-full">
           <div className="flex flex-col gap-0.5 justify-center text-center">
             <div className="flex items-center justify-center gap-2">
@@ -313,6 +318,42 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+        {/* Single menu entry — rendered inline to avoid array mapping */}
+        <Link
+          href="/user/security"
+          className="block p-4 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
+        >
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl bg-purple-50 dark:bg-secondary`}>
+              <Shield
+                className={`w-5 h-5 text-purple-600 dark:text-gray-300`}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Security
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Password and account security
+              </p>
+            </div>
+            <div className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
+          </div>
+        </Link>
       </div>
     </div>
   );

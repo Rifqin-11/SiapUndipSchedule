@@ -162,7 +162,7 @@ const SecurityPage = () => {
         <div className="max-w-2xl mx-auto px-6 py-4">
           <div className="flex items-center space-x-4">
             <Link
-              href="/user"
+              href="/user/profile"
               className="p-2 hover:bg-gray-100 dark:hover:bg-secondary rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />

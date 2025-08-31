@@ -1,10 +1,10 @@
 import React from "react";
-import ScheduleHeader from "./ScheduleHeader";
+import PageHeader from "./PageHeader";
 
 const ScheduleSkeleton = () => {
   return (
     <div className="animate-pulse">
-      <ScheduleHeader />
+      <PageHeader variant="calendar"/>
       {/* Horizontal Calendar Skeleton */}
       <div className="mx-5 mb-6">
         <div className="flex gap-2 overflow-x-auto pb-2">

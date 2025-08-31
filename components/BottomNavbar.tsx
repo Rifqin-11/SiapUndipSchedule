@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Home, Settings2, UserRound, QrCode } from "lucide-react";
+import { Calendar, Home, CheckCircle, UserRound, QrCode } from "lucide-react";
 import { useState } from "react";
 import QRScanner from "./QRScanner";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +20,7 @@ const BottomNavbar = () => {
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
-    { href: "/settings", icon: Settings2, label: "Settings" },
+    { href: "/tasks", icon: CheckCircle, label: "Tasks" },
     { href: "/user", icon: UserRound, label: "Profile" },
   ];
 
@@ -44,7 +44,9 @@ const BottomNavbar = () => {
               >
                 <Icon
                   className={`h-6 w-6 transition-colors ${
-                    isActive(href) ? "text-white fill-white" : "text-white/70"
+                    isActive(href)
+                      ? "text-gray-300 fill-white"
+                      : "text-white/70"
                   }`}
                 />
                 <span
@@ -78,7 +80,9 @@ const BottomNavbar = () => {
               >
                 <Icon
                   className={`h-6 w-6 transition-colors ${
-                    isActive(href) ? "text-white fill-white" : "text-white/70"
+                    isActive(href)
+                      ? "text-gray-300 fill-white"
+                      : "text-white/70"
                   }`}
                 />
                 <span

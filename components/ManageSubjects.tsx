@@ -13,8 +13,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2,  Upload } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const ManageSubjects = () => {
   const {
@@ -171,7 +172,42 @@ const ManageSubjects = () => {
   return (
     <>
       <div className="max-full mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
+        <Link
+          href="/settings/upload-krs"
+          className="block p-4 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 group"
+        >
+          <div className="flex items-center space-x-4">
+            <div className={`p-3 rounded-xl bg-indigo-50 dark:bg-secondary`}>
+              <Upload
+                className={`w-5 h-5 text-indigo-600 dark:text-gray-300`}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Upload IRS
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Upload your IRS document securely
+              </p>
+            </div>
+            <div className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
+          </div>
+        </Link>
+        <div className="flex justify-between items-center mb-6 mt-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Kelola Mata Kuliah
           </h1>

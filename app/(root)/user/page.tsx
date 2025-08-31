@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit, Shield, Bell, LogOut, Camera, User } from "lucide-react";
+import { Edit, Bell, LogOut, Camera, User, BookOpen, InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -47,20 +47,20 @@ const UserPage = () => {
       bgColor: "bg-green-50",
     },
     {
-      icon: Shield,
-      title: "Security",
-      description: "Password and account security",
-      href: "/user/security",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
       icon: Bell,
       title: "Notifications",
       description: "Notification settings",
       href: "/user/notifications",
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
+    },
+    {
+      icon: BookOpen,
+      title: "Manage Subjects",
+      description: "Add, edit, and delete subjects",
+      href: "/settings/manage-subjects",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
     },
   ];
 
@@ -81,7 +81,7 @@ const UserPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
+      <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5 justify-between">
         <div className="flex flex-row justify-center items-center w-full">
           <div className="flex flex-col gap-0.5 justify-center text-center">
             <div className="flex items-center justify-center gap-2">
@@ -91,6 +91,11 @@ const UserPage = () => {
               </h1>
             </div>
           </div>
+        </div>
+        <div>
+          <Link href="/settings/about" className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full hover:text-gray-900">
+            <InfoIcon className="w-6 h-6 text-gray-400" />
+          </Link>
         </div>
       </section>
       <div className="max-w-2xl mx-auto p-6 space-y-6">

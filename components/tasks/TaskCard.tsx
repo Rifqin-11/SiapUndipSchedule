@@ -1,0 +1,177 @@
+"use client";
+
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { CalendarDays, CircleArrowOutUpRight } from "lucide-react";
+import type { Task, Subject } from "./types";
+
+/** Tema vibrant ala mockup */
+const vibrantThemes = [
+  {
+    bg: "bg-[#694cf1]",
+    text: "text-white",
+    muted: "text-white/80",
+    icon: "bg-black/20 text-white",
+    chip: "bg-white/20 text-white",
+    pill: "bg-transparent text-white",
+    action: "bg-white/20 hover:bg-white/30 text-white",
+    border: "border-white/40",
+  },
+  {
+    bg: "bg-[#fdc743]",
+    text: "text-gray-900",
+    muted: "text-gray-800/80",
+    icon: "bg-black/20 text-white",
+    chip: "bg-black/10 text-gray-900",
+    pill: "bg-transparent text-gray-900",
+    action: "bg-black/10 hover:bg-black/15 text-gray-900",
+    border: "border-black/40",
+  },
+  {
+    bg: "bg-[#cbd87d]",
+    text: "text-gray-900",
+    muted: "text-gray-800/80",
+    icon: "bg-black/20 text-white",
+    chip: "bg-black/10 text-gray-900",
+    pill: "bg-transparent text-gray-900",
+    action: "bg-black/10 hover:bg-black/15 text-gray-900",
+    border: "border-black/40",
+  },
+  {
+    bg: "bg-[#1e1e1e]",
+    text: "text-white",
+    muted: "text-white/70",
+    icon: "bg-white/10 text-white",
+    chip: "bg-white/10 text-white",
+    pill: "bg-transparent text-white",
+    action: "bg-white/10 hover:bg-white/20 text-white",
+    border: "border-white/30",
+  },
+] as const;
+
+const pickVibrantTheme = (key: string) => {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return vibrantThemes[h % vibrantThemes.length];
+};
+
+export type TaskCardProps = {
+  task: Task;
+  subjects?: Subject[];
+  getDaysUntilDue: (dueDate: string) => number;
+  onOpenDetail: () => void;
+  onToggleDone: () => void;
+  className?: string;
+};
+
+export const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  subjects,
+  getDaysUntilDue,
+  onOpenDetail,
+  onToggleDone,
+  className = "",
+}) => {
+  const daysUntilDue = getDaysUntilDue(task.dueDate);
+  const isOverdue = daysUntilDue < 0;
+  const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0;
+
+  const theme = pickVibrantTheme((task._id as string) ?? task.id ?? task.title);
+
+  const getSubjectName = () => {
+    if (task.subject?.name) return task.subject.name;
+    if (task.subjectId && subjects?.length) {
+      const found = subjects.find((s) => s.id === task.subjectId);
+      return found?.name;
+    }
+    return undefined;
+  };
+
+  return (
+    <article
+      className={`
+        ${theme.bg} ${theme.text}
+        rounded-2xl sm:rounded-[24px] md:rounded-[28px]
+        p-4 sm:p-5 md:p-6
+        border border-transparent
+        shadow-[0_4px_14px_rgba(0,0,0,.08)]
+        hover:shadow-[0_8px_24px_rgba(0,0,0,.12)]
+        transition-shadow duration-200
+        ${className}
+      `}
+      aria-labelledby={`task-title-${task.id}`}
+    >
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <div className={`${theme.icon} p-2 rounded-full`}>
+          <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm sm:text-[15px] font-semibold leading-tight truncate">
+            {getSubjectName() && <span>{getSubjectName()}</span>}
+          </h3>
+          <div
+            className={`mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${theme.muted}`}
+          >
+            <span className="tabular-nums">
+              {task.dueTime
+                ? task.dueTime.split(":").slice(0, 2).join(":")
+                : "No time"}
+            </span>
+            {isOverdue && <span className="font-medium">(Overdue)</span>}
+            {isDueSoon && !isOverdue && (
+              <span className="font-medium">
+                ({daysUntilDue} day{daysUntilDue !== 1 ? "s" : ""} left)
+              </span>
+            )}
+          </div>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`rounded-full ${theme.action}`}
+          aria-label="Open task detail"
+          title="Open task detail"
+          onClick={onOpenDetail}
+        >
+          <CircleArrowOutUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
+        </Button>
+      </div>
+
+      {/* Title */}
+      <h2
+        id={`task-title-${task.id}`}
+        className="mt-3 sm:mt-4 text-lg sm:text-xl font-semibold leading-snug line-clamp-2"
+      >
+        {task.title}
+      </h2>
+
+      {/* Footer */}
+      <div className="mt-4 sm:mt-5 flex flex-wrap gap-1.5 sm:gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl ${theme.chip} border-0 text-xs sm:text-sm`}
+          onClick={onToggleDone}
+          aria-pressed={task.status === "completed"}
+        >
+          {task.status === "completed" ? "Done" : "Mark Done"}
+        </Button>
+
+        <div
+          className={`flex items-center px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg sm:rounded-xl border ${theme.border} ${theme.pill} text-xs sm:text-sm`}
+        >
+          <time className="tabular-nums leading-none">
+            {new Date(task.dueDate).toLocaleDateString(undefined, {
+              weekday: "short",
+              day: "2-digit",
+              month: "short",
+            })}
+          </time>
+        </div>
+      </div>
+    </article>
+  );
+};

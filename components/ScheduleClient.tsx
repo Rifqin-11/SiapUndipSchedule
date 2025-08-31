@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import QRScanner from "./QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
-import ScheduleHeader from "./ScheduleHeader";
+import PageHeader from "./PageHeader";
 
 interface SubjectWithReschedule extends Subject {
   isReschedule?: boolean;
@@ -418,7 +418,10 @@ const ScheduleClient = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <ScheduleHeader selectedDay={selectedDay} />
+      <PageHeader
+        variant="calendar"
+        selectedDay={selectedDay}
+      />
 
       <div className="mx-5">
         <HorizonalCalendar

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BookOpen, Info, Palette, Upload, History } from "lucide-react";
+import { BookOpen, Info, Palette, History } from "lucide-react";
 import Link from "next/link";
 import SettingsPageSkeleton from "@/components/SettingsPageSkeleton";
 import { useSimulatedLoading } from "@/hooks/useLoadingState";
@@ -17,14 +17,6 @@ const SettingsPage = () => {
       href: "/settings/manage-subjects",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
-    },
-    {
-      icon: Upload,
-      title: "Upload IRS",
-      description: "Import schedule from IRS file",
-      href: "/settings/upload-krs",
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50",
     },
     {
       icon: History,
@@ -57,7 +49,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-6 hidden xl:block">
       <div className="max-full mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
