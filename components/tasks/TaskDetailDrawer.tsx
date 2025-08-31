@@ -153,7 +153,7 @@ export const TaskDetailDrawer: React.FC<Props> = ({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-4 overflow-y-auto pr-1 flex-1">
+        <div className="space-y-4 overflow-y-auto pr-1 flex-1">
           {/* Link */}
           <div className="flex items-center justify-between rounded-3xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 px-4 py-4">
             <div className="flex items-center gap-3 min-w-0">

@@ -30,7 +30,7 @@ function useMediaQuery(query: string) {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia(query);
     const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
-      setMatches("matches" in e ? e.matches : e.matches);
+      setMatches((e as MediaQueryListEvent).matches ?? (e as MediaQueryList).matches);
     setMatches(mql.matches);
     if (mql.addEventListener) {
       mql.addEventListener(
@@ -43,10 +43,7 @@ function useMediaQuery(query: string) {
           onChange as (e: MediaQueryListEvent) => void
         );
     } else {
-      // Safari lama
-      // @ts-ignore
       mql.addListener(onChange);
-      // @ts-ignore
       return () => mql.removeListener(onChange);
     }
   }, [query]);
