@@ -4,6 +4,8 @@
   "description": "Schedule management app for UNDIP students",
   "start_url": "/",
   "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "orientation": "portrait",
   "scope": "/",
   "icons": [

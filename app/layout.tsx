@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "Schedule management app for UNDIP students",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#232323" },
+    { media: "(prefers-color-scheme: dark)", color: "#141414" },
   ],
   viewport: {
     width: "device-width",
@@ -59,8 +59,9 @@ export default function RootLayout({
         {/* Additional PWA Meta Tags */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="SIAP UNDIP" />
-        <meta name="msapplication-TileColor" content="#1DA1F2" />
-        <meta name="theme-color" content="#1DA1F2" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141414" />
       </head>
       <body className={inter.className}>
         <AuthProvider>

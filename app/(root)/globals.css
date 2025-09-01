@@ -258,5 +258,14 @@
     .mobile-header {
       padding-top: max(1rem, env(safe-area-inset-top));
     }
+
+    /* Dynamic theme color updates */
+    :root {
+      --pwa-theme-color: #ffffff;
+    }
+
+    .dark {
+      --pwa-theme-color: #141414;
+    }
   }
 }
