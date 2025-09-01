@@ -239,7 +239,7 @@ export default function RegisterPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 dark:text-black rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.name
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -267,7 +267,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 dark:text-black rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.email
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -295,7 +295,7 @@ export default function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className={`pl-12 pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 pr-12 h-14 dark:text-black rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.password
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"

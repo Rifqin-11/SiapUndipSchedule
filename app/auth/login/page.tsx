@@ -120,7 +120,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`pl-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 h-14 dark:text-black rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.email
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
@@ -148,7 +148,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`pl-12 pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 dark:text-black pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.password
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
