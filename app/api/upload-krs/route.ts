@@ -323,7 +323,7 @@ Kembalikan HANYA JSON array dengan format berikut:
     "endTime": "", // Kosong jika tidak ada informasi jam selesai
     "room": "", // Kosong jika tidak ada informasi ruangan
     "lecturer": ["nama_dosen"], // Minimal harus ada, gunakan "TBA" jika tidak ada
-    "meeting": 0,
+    "meeting": 0, // Buat meeting awal adalah 0 semua
     "category": "High"
   }
 ]
