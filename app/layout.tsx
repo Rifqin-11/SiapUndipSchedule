@@ -51,10 +51,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="SIAP UNDIP" />
         
         {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon-180x180.png" />
-        <link rel="apple-touch-icon" sizes="167x167" href="/icon-167x167.png" />
+        <link rel="apple-touch-icon" href="/manifest-icon-192.maskable.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/manifest-icon-192.maskable.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/manifest-icon-512.maskable.png" />
         
         {/* Additional PWA Meta Tags */}
         <meta name="mobile-web-app-capable" content="yes" />
