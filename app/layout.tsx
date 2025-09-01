@@ -4,6 +4,7 @@ import "./(root)/globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import DynamicThemeColor from "@/components/DynamicThemeColor";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,7 +32,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   userScalable: false,
   maximumScale: 1,
-}
+};
 
 export default function RootLayout({
   children,
@@ -44,24 +45,40 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" type="image/png" sizes="196x196" href="/icon.png" />
-        
+
         {/* PWA Meta Tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SIAP UNDIP" />
-        
+
         {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="/manifest-icon-192.maskable.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/manifest-icon-192.maskable.png" />
-        <link rel="apple-touch-icon" sizes="512x512" href="/manifest-icon-512.maskable.png" />
-        
+        <link rel="apple-touch-icon" href="/apple-icon-180.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-icon-180.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="192x192"
+          href="/manifest-icon-192.maskable.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="512x512"
+          href="/manifest-icon-512.maskable.png"
+        />
+
         {/* Additional PWA Meta Tags */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="SIAP UNDIP" />
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="theme-color" content="#ffffff" />
-        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141414" />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content="#141414"
+        />
       </head>
       <body className={inter.className}>
         <AuthProvider>
@@ -71,6 +88,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <DynamicThemeColor />
             <div className="min-h-screen bg-background">{children}</div>
             <Toaster />
           </ThemeProvider>
