@@ -1,11 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { Edit, Bell, LogOut, Camera, User, BookOpen, InfoIcon, Palette } from "lucide-react";
+import {
+  Edit,
+  Bell,
+  LogOut,
+  Camera,
+  User,
+  BookOpen,
+  InfoIcon,
+  Palette,
+} from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useAttendance } from "@/hooks/useAttendance";
 import Image from "next/image";
 import UserPageSkeleton from "@/components/profile/UserPageSkeleton";
 import { toast } from "sonner";
@@ -19,6 +29,10 @@ const UserPage = () => {
   const { user, loading: userLoading } = useUserProfile();
   const { logout } = useAuth();
   const router = useRouter();
+
+  // Get attendance data
+  const { calculateAttendancePercentage, loading: attendanceLoading } =
+    useAttendance();
 
   // State for logout loading
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -72,6 +86,11 @@ const UserPage = () => {
     },
   ];
 
+  // Calculate attendance percentage
+  const attendancePercentage = subjects
+    ? calculateAttendancePercentage(subjects.length)
+    : 0;
+
   // Get initials from user name
   const getInitials = (name: string) => {
     return name
@@ -101,7 +120,10 @@ const UserPage = () => {
           </div>
         </div>
         <div>
-          <Link href="/settings/about" className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full hover:text-gray-900">
+          <Link
+            href="/settings/about"
+            className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full hover:text-gray-900"
+          >
             <InfoIcon className="w-6 h-6 text-gray-400" />
           </Link>
         </div>
@@ -151,7 +173,11 @@ const UserPage = () => {
           </div>
           <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              85%
+              {attendanceLoading ? (
+                <div className="w-6 h-6 mx-auto border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                `${attendancePercentage}%`
+              )}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Attendance

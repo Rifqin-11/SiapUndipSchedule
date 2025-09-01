@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
-import SubjectModal from "@/components/subject-detail/SubjectModal";
+import SubjectModal from "@/components/SubjectModal";
 import {
   AlertDialog,
   AlertDialogAction,

@@ -8,7 +8,7 @@ import {
 } from "@/utils/date";
 import HorizonalCalendar from "@/components/schedule/HorizonalCalendar";
 import CalendarCard from "@/components/schedule/CalendarCard";
-import SubjectModal from "@/components/subject-detail/SubjectModal";
+import SubjectModal from "@/components/SubjectModal";
 import RescheduleModal from "@/components/reschedule/RescheduleModal";
 import Link from "next/link";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
@@ -435,7 +435,7 @@ const ScheduleClient = () => {
             <Button
               onClick={handleAddSubject}
               size="sm"
-              className="dark:bg-card hover:bg-secondary border border-gray-200 dark:border-gray-700  dark:text-white shadow-sm"
+              className="dark:bg-card hover:bg-gray-800 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-700  dark:text-white shadow-sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add

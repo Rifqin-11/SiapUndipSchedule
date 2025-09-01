@@ -122,17 +122,34 @@ const Sidebar = () => {
           <div className="mt-2 space-y-3">
             <Link
               href="/settings"
-              className="flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium
-                         text-gray-600 hover:text-gray-900 hover:bg-gray-50
-                         dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800/60 transition-colors"
+              className={[
+                "flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                isActive("/settings")
+                  ? "bg-gray-100 text-gray-900 dark:bg-secondary dark:text-white"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800/60",
+              ].join(" ")}
             >
-              <span className="grid place-items-center rounded-full size-7 bg-gray-100 text-gray-500 dark:bg-secondary">
+              <span
+                className={[
+                  "grid place-items-center rounded-full size-7",
+                  isActive("/settings")
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-500 dark:bg-secondary",
+                ].join(" ")}
+              >
                 <Settings2 className="h-4 w-4" />
               </span>
               <span>Settings</span>
             </Link>
 
-            <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+            <div
+              className={[
+                "rounded-xl border p-3 transition-colors",
+                isActive("/user")
+                  ? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30"
+                  : "border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800",
+              ].join(" ")}
+            >
               <Link href="/user" className="flex items-center gap-3">
                 {user?.profileImage ? (
                   <Image

@@ -1,7 +1,7 @@
 "use client";
 
 import BackButton from "@/components/Back-Button";
-import SubjectModal from "@/components/subject-detail/SubjectModal";
+import SubjectModal from "@/components/SubjectModal";
 import { Edit3 } from "lucide-react";
 import React, { ReactNode, useState, useEffect } from "react";
 import { useParams } from "next/navigation";

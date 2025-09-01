@@ -5,7 +5,7 @@ import CoursesCard from "@/components/homepage/CoursesCard";
 import TodaySubject from "@/components/homepage/TodaySubject";
 import CurrentDayDate from "@/components/homepage/CurrentDayDate";
 import FloatingActionButton from "@/components/homepage/FloatingActionButton";
-import SubjectModal from "@/components/subject-detail/SubjectModal";
+import SubjectModal from "@/components/SubjectModal";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
@@ -20,7 +20,11 @@ import { useTasks } from "@/hooks/useTasks";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import type { Task } from "@/components/tasks/types";
-import { DeleteConfirmDialog, TaskDetailDrawer, TaskFormDrawer } from "@/components/tasks";
+import {
+  DeleteConfirmDialog,
+  TaskDetailDrawer,
+  TaskFormDrawer,
+} from "@/components/tasks";
 import { toast } from "sonner";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
@@ -65,7 +69,8 @@ const Page = () => {
   // TOGGLE status: hanya "in-progress" ⇄ "done"
   const toggleStatus = useCallback(
     async (task: Task) => {
-      const newStatus = task.status === "completed" ? "in-progress" : "completed";
+      const newStatus =
+        task.status === "completed" ? "in-progress" : "completed";
       try {
         await updateTask(task._id || task.id, { status: newStatus });
         toast.success("Task status updated");
@@ -133,8 +138,13 @@ const Page = () => {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const handleAddSubject = useCallback(() => {
+    // Set today's date as the selectedDate when adding from homepage
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+    setSelectedDate(todayString);
     setIsModalOpen(true);
   }, []);
 
@@ -202,9 +212,13 @@ const Page = () => {
       );
     }
 
-    return subjects.slice(0, 6).map((subject) => (
+    return subjects.map((subject) => (
       <div key={subject.id} className="flex-shrink-0 w-64">
-        <CoursesCard name={subject.name} meeting={subject.meeting} />
+        <CoursesCard
+          name={subject.name}
+          meeting={subject.meeting}
+          specificDate={subject.specificDate}
+        />
       </div>
     ));
   }, [subjects, handleAddSubject]);
@@ -395,6 +409,7 @@ const Page = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveSubject}
         mode="add"
+        selectedDate={selectedDate}
       />
     </main>
   );
