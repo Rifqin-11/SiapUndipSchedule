@@ -267,7 +267,7 @@ const Page = () => {
   return (
     <main className="animate-fadeIn">
       {/* Header Section with Profile and Notifications - Hide on desktop since it's in sidebar */}
-      <section className="flex flex-row gap-2 items-center mt-4 mx-5 lg:hidden">
+      <section className="flex flex-row gap-2 items-center mobile-header mt-4 mx-5 lg:hidden">
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row gap-2 items-center">
             {user?.profileImage ? (

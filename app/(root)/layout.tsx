@@ -8,7 +8,7 @@ import Sidebar from "@/components/Sidebar";
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen pwa-safe-area">
         {/* Sidebar for desktop */}
         <Sidebar />
 
