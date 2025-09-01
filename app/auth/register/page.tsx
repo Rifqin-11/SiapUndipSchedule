@@ -432,7 +432,7 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`pl-12 pr-12 h-14 rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
+                className={`pl-12 pr-12 h-14 dark:text-black rounded-2xl border-2 bg-[#F8FAFC] focus:bg-[#F8FAFC] transition-all duration-200 input-focus ${
                   errors.confirmPassword
                     ? "border-red-300"
                     : "border-[#E2E8F0] focus:border-[#2563EB]"
