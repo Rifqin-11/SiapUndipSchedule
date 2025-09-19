@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bell, Clock, Volume2, Smartphone, BellOff, Save, RotateCcw } from "lucide-react";
+import {
+  Bell,
+  Clock,
+  Volume2,
+  Smartphone,
+  BellOff,
+  Save,
+  RotateCcw,
+} from "lucide-react";
 import BackButton from "@/components/Back-Button";
 import useClassNotifications from "@/hooks/useClassNotifications";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
@@ -110,7 +118,9 @@ const NotificationsPage = () => {
 
       // Show info about assignment reminders
       if (notificationsEnabled && settings.assignmentReminders) {
-        toast.info("Pengingat tugas telah diaktifkan untuk deadline yang akan datang.");
+        toast.info(
+          "Pengingat tugas telah diaktifkan untuk deadline yang akan datang."
+        );
       }
     } else {
       toast.error(result.message);
@@ -255,7 +265,9 @@ const NotificationsPage = () => {
                   <Clock className="w-4 h-4 text-gray-500" />
                   <select
                     value={settings.beforeClass}
-                    onChange={(e) => updateSetting("beforeClass", Number(e.target.value))}
+                    onChange={(e) =>
+                      updateSetting("beforeClass", Number(e.target.value))
+                    }
                     className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value={5}>5 menit sebelum</option>
@@ -442,7 +454,6 @@ const NotificationsPage = () => {
             </Button>
           </div>
         </div>
-
       </div>
     </div>
   );

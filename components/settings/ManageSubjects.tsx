@@ -147,6 +147,7 @@ const ManageSubjects = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingSubject(null);
+    setModalMode("add"); // Reset mode
   };
 
   if (loading) {

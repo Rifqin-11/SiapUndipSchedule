@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -22,6 +23,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
+import { DialogPortal } from "@radix-ui/react-dialog";
+import { forceModalCleanup, useModalCleanup } from "@/lib/modal-utils";
 
 interface SubjectModalProps {
   isOpen: boolean;
@@ -66,6 +69,9 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [repeatWeekly, setRepeatWeekly] = useState(false); // State for repeat checkbox
 
+  // Use modal cleanup hook
+  useModalCleanup(isOpen);
+
   // Reset form when modal opens/closes or subject changes
   useEffect(() => {
     if (isOpen) {
@@ -97,6 +103,9 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
         // If preselectedDay is provided (from schedule page), default to true since user selected a specific day
         setRepeatWeekly(initialDay !== "no-schedule");
       }
+    } else {
+      // Cleanup when modal closes
+      setIsLoading(false);
     }
   }, [isOpen, mode, subject, preselectedDay, selectedDate]);
 
@@ -236,8 +245,25 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isLoading) {
+          // Force cleanup before closing
+          forceModalCleanup();
+          onClose();
+        }
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto data-[state=closed]:pointer-events-none"
+        onPointerDownOutside={(e) => {
+          if (isLoading) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (isLoading) e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {mode === "add" ? "Add Subject" : "Edit Subject"}
@@ -402,7 +428,16 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                // Force cleanup using utility function
+                forceModalCleanup();
+                onClose();
+              }}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>

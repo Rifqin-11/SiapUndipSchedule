@@ -24,7 +24,8 @@ const defaultSettings: NotificationSettings = {
 };
 
 export const useNotificationSettings = () => {
-  const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
+  const [settings, setSettings] =
+    useState<NotificationSettings>(defaultSettings);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,22 +47,25 @@ export const useNotificationSettings = () => {
   }, []);
 
   // Update a specific setting
-  const updateSetting = useCallback(<K extends keyof NotificationSettings>(
-    key: K,
-    value: NotificationSettings[K]
-  ) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-    setHasUnsavedChanges(true);
-  }, []);
+  const updateSetting = useCallback(
+    <K extends keyof NotificationSettings>(
+      key: K,
+      value: NotificationSettings[K]
+    ) => {
+      setSettings((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+      setHasUnsavedChanges(true);
+    },
+    []
+  );
 
   // Toggle a boolean setting
   const toggleSetting = useCallback((key: keyof NotificationSettings) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [key]: !prev[key] as any
+      [key]: !prev[key] as any,
     }));
     setHasUnsavedChanges(true);
   }, []);
@@ -71,16 +75,16 @@ export const useNotificationSettings = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
       setHasUnsavedChanges(false);
-      
+
       return {
         success: true,
-        message: "Pengaturan notifikasi berhasil disimpan!"
+        message: "Pengaturan notifikasi berhasil disimpan!",
       };
     } catch (error) {
       console.error("Error saving notification settings:", error);
       return {
         success: false,
-        message: "Gagal menyimpan pengaturan. Silakan coba lagi."
+        message: "Gagal menyimpan pengaturan. Silakan coba lagi.",
       };
     }
   }, [settings]);
@@ -94,23 +98,25 @@ export const useNotificationSettings = () => {
   // Get settings status info
   const getSettingsInfo = useCallback(() => {
     const activeFeatures = [];
-    
+
     if (settings.classReminders) {
-      activeFeatures.push(`Pengingat kelas ${settings.beforeClass} menit sebelumnya`);
+      activeFeatures.push(
+        `Pengingat kelas ${settings.beforeClass} menit sebelumnya`
+      );
     }
-    
+
     if (settings.assignmentReminders) {
       activeFeatures.push("Pengingat tugas");
     }
-    
+
     if (settings.weekendReminders) {
       activeFeatures.push("Pengingat weekend");
     }
-    
+
     if (settings.soundEnabled) {
       activeFeatures.push("Suara notifikasi");
     }
-    
+
     if (settings.vibrationEnabled) {
       activeFeatures.push("Getaran");
     }
@@ -118,7 +124,8 @@ export const useNotificationSettings = () => {
     return {
       activeFeatures,
       totalActive: activeFeatures.length,
-      hasActiveReminders: settings.classReminders || settings.assignmentReminders
+      hasActiveReminders:
+        settings.classReminders || settings.assignmentReminders,
     };
   }, [settings]);
 
