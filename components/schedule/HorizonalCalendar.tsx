@@ -69,6 +69,55 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
     onWeekChange?.(0);
   };
 
+  // Function to get display text for the header
+  const getDisplayText = () => {
+    if (weekOffset === 0) {
+      return currentDate; // Show full current date when viewing current week
+    } else {
+      // Show month name when viewing different weeks
+      const weekDates = getWeekDatesWithOffset(weekOffset);
+      const weekStartDate = weekDates[0].fullDate;
+      const weekEndDate = weekDates[6].fullDate;
+      
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      
+      // Alternative: Indonesian month names
+      // const monthNames = [
+      //   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      //   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      // ];
+      
+      // If week spans across two months, show the month that has more days in the week
+      if (weekStartDate.getMonth() !== weekEndDate.getMonth()) {
+        // Count days in each month for this week
+        const startMonth = weekStartDate.getMonth();
+        const endMonth = weekEndDate.getMonth();
+        
+        let startMonthDays = 0;
+        let endMonthDays = 0;
+        
+        weekDates.forEach(day => {
+          if (day.fullDate.getMonth() === startMonth) {
+            startMonthDays++;
+          } else if (day.fullDate.getMonth() === endMonth) {
+            endMonthDays++;
+          }
+        });
+        
+        // Return the month with more days
+        return startMonthDays >= endMonthDays 
+          ? monthNames[startMonth] 
+          : monthNames[endMonth];
+      } else {
+        // Same month for the entire week
+        return monthNames[weekStartDate.getMonth()];
+      }
+    }
+  };
+
   const dayNameMap: Record<string, string> = {
     Mon: "Monday",
     Tue: "Tuesday",
@@ -91,7 +140,7 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
               onClick={goToCurrentWeek}
               title={weekOffset !== 0 ? "Click to return to current week" : ""}
             >
-              {currentDate}
+              {getDisplayText()}
             </h1>
             {weekOffset !== 0 && (
               <p className="text-xs text-gray-500 mt-1">

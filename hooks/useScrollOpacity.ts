@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 interface UseScrollOpacityOptions {
   /** Jarak scroll (px) dimana header akan sepenuhnya hilang (opacity 0) */
@@ -22,7 +22,7 @@ export function useScrollOpacity(options: UseScrollOpacityOptions = {}) {
   useEffect(() => {
     const calculateOpacity = () => {
       const scrollY = window.scrollY;
-      
+
       // Jika scroll belum mencapai start offset, opacity tetap 1
       if (scrollY <= startOffset) {
         return 1;
@@ -30,10 +30,10 @@ export function useScrollOpacity(options: UseScrollOpacityOptions = {}) {
 
       // Hitung progress scroll dari start offset
       const scrollProgress = scrollY - startOffset;
-      
+
       // Hitung opacity berdasarkan fade distance
-      const newOpacity = Math.max(0, 1 - (scrollProgress / fadeDistance));
-      
+      const newOpacity = Math.max(0, 1 - scrollProgress / fadeDistance);
+
       return newOpacity;
     };
 
@@ -54,15 +54,15 @@ export function useScrollOpacity(options: UseScrollOpacityOptions = {}) {
     isInitialized.current = true;
 
     // Add scroll listener
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     // Add pageshow listener for back navigation
-    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener("pageshow", handlePageShow);
 
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("pageshow", handlePageShow);
     };
   }, [fadeDistance, startOffset]);
 
@@ -71,14 +71,14 @@ export function useScrollOpacity(options: UseScrollOpacityOptions = {}) {
     if (!isInitialized.current) {
       const calculateOpacity = () => {
         const scrollY = window.scrollY;
-        
+
         if (scrollY <= startOffset) {
           return 1;
         }
 
         const scrollProgress = scrollY - startOffset;
-        const newOpacity = Math.max(0, 1 - (scrollProgress / fadeDistance));
-        
+        const newOpacity = Math.max(0, 1 - scrollProgress / fadeDistance);
+
         return newOpacity;
       };
 
