@@ -166,7 +166,7 @@ const SecurityPage = () => {
         iconColor="text-purple-600"
       />
 
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-2xl mx-auto pt-25 lg:pt-10 p-6">
         {/* Change Password Section */}
         <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center space-x-3 mb-6">

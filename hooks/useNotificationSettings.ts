@@ -218,7 +218,7 @@ export const useNotificationSettings = () => {
       // Only show once per day and only on weekends
       const dayOfWeek = new Date().getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
-      
+
       if (lastShown !== today && isWeekend) {
         const timeoutId = setTimeout(() => {
           showWeekendNotification();

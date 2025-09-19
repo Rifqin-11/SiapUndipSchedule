@@ -17,6 +17,8 @@ import {
   MapPin,
   LucideIcon,
   Info,
+  BookOpen,
+  History,
 } from "lucide-react";
 import BackButton from "./Back-Button";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
@@ -37,6 +39,8 @@ const iconMap: Record<string, LucideIcon> = {
   Clock,
   MapPin,
   Info,
+  BookOpen,
+  History,
 };
 
 interface SimplePageHeaderProps {

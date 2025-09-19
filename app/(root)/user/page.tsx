@@ -12,6 +12,7 @@ import {
   Palette,
   History,
   PencilIcon,
+  UserRoundCog,
 } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -147,14 +148,11 @@ const UserPage = () => {
             </div>
           </div>
         </div>
-        <div>
-          <Link
-            href="/settings/about"
-            className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full pt-2 hover:text-white transition-colors"
-          >
-            <InfoIcon className="w-6 h-6 text-gray-400" />
-          </Link>
-        </div>
+        <Link href="/settings/about">
+          <div className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full p-3 transition-colors">
+            <InfoIcon className="w-5 h-5 text-gray-400" />
+          </div>
+        </Link>
       </section>
 
       {/* Content wrapper dengan padding-top untuk fixed header di mobile */}
@@ -162,24 +160,26 @@ const UserPage = () => {
         <div className="max-w-2xl mx-auto p-6 space-y-6">
           <div className="text-center space-y-4">
             <div className="relative inline-block">
-              {user?.profileImage ? (
-                <Image
-                  src={user.profileImage}
-                  alt="Profile"
-                  width={96}
-                  height={96}
-                  className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
-                />
-              ) : (
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
-                  {getInitials(user?.name || "User")}
-                </div>
-              )}
-              <Link
-                href="/user/profile"
-                className="absolute bottom-1 right-1 bg-white dark:bg-card p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-background transition-colors"
-              >
-                <PencilIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Link href="/user/profile" className="">
+                {user?.profileImage ? (
+                  <Image
+                    src={user.profileImage}
+                    alt="Profile"
+                    width={96}
+                    height={96}
+                    className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
+                    {getInitials(user?.name || "User")}
+                  </div>
+                )}
+                <Link
+                  href="/user/profile"
+                  className="absolute bottom-1 right-1 bg-white dark:bg-card p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-background transition-colors"
+                >
+                  <UserRoundCog className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </Link>
               </Link>
             </div>
             <div>
@@ -230,7 +230,7 @@ const UserPage = () => {
           {/* Account Settings */}
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white px-2">
-              Account Settings
+              Application Settings
             </h2>
             {userMenuItems.map((item, index) => {
               const IconComponent = item.icon;

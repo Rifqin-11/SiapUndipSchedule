@@ -1,16 +1,16 @@
-import SettingsHeader from "@/components/settings/SettingsHeader";
-import { BookOpen } from "lucide-react";
+
+import SimplePageHeader from "@/components/SimplePageHeader";
 import React, { ReactNode } from "react";
 
 const layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen bg-background">
-      <SettingsHeader
+      <SimplePageHeader
         title="Manage Subjects"
-        description="Add, edit, and delete your subjects"
-        icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+        icon="BookOpen"
+        iconColor="text-purple-600"
       />
-      <div className="pt-6 pb-12">{children}</div>
+      <div className="pt-20 lg:pt-0 pb-12">{children}</div>
     </div>
   );
 };

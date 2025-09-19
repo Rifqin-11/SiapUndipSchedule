@@ -276,7 +276,10 @@ export const useWeeklyStats = () => {
   }, [weeklyStats]); // Keep only weeklyStats dependency
 
   // Wrap generateWeeklySummary in a callback for external use
-  const getWeeklySummary = useCallback(() => generateWeeklySummary, [generateWeeklySummary]);
+  const getWeeklySummary = useCallback(
+    () => generateWeeklySummary,
+    [generateWeeklySummary]
+  );
 
   return {
     weeklyStats,
