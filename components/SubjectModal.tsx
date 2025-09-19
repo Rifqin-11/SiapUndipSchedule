@@ -296,7 +296,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
               <Select
                 value={formData.day}
                 onValueChange={(value) => handleInputChange("day", value)}
-                disabled={mode === "edit" || !!preselectedDay} // Disable in edit mode OR when preselectedDay is provided (from schedule page)
+                disabled={!!preselectedDay} // Only disable when preselectedDay is provided (from schedule page)
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select day (optional)" />

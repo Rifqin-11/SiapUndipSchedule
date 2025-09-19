@@ -21,6 +21,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const { data: subject, isLoading: loading, error } = useSubject(id);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [showAllMeetings, setShowAllMeetings] = useState(false);
   const [reschedules, setReschedules] = useState<
     {
       subjectId: string;
@@ -297,51 +298,111 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           <h4 className="font-medium text-gray-900 dark:text-white mb-4">
             Meeting History
           </h4>
-          <div className="space-y-2">
-            {subject.attendanceDates && subject.attendanceDates.length > 0
-              ? subject.attendanceDates
-                  .slice(0, 7)
-                  .map((date: string, index: number) => {
-                    const meetingNumber = index + 1;
-                    return (
-                      <Timeline
-                        key={index}
-                        meetingNumber={meetingNumber}
-                        date={date}
-                        isCompleted={true}
-                      />
-                    );
-                  })
-              : Array.from(
-                  { length: Math.min(subject.meeting, 7) },
-                  (_, index) => {
-                    const meetingNumber = index + 1;
-                    const fallbackDates = [
-                      "Mon, 5 February 2025",
-                      "Mon, 12 February 2025",
-                      "Mon, 19 February 2025",
-                      "Mon, 26 February 2025",
-                      "Mon, 5 March 2025",
-                      "Mon, 12 March 2025",
-                      "Mon, 19 March 2025",
-                    ];
-                    return (
-                      <Timeline
-                        key={index}
-                        meetingNumber={meetingNumber}
-                        date={
-                          fallbackDates[index] || `Meeting ${meetingNumber}`
-                        }
-                        isCompleted={true}
-                      />
-                    );
-                  }
-                )}
+          <div className="relative">
+            <div className="space-y-2">
+              {subject.attendanceDates && subject.attendanceDates.length > 0
+                ? subject.attendanceDates
+                    .slice(
+                      0,
+                      showAllMeetings
+                        ? subject.attendanceDates.length
+                        : subject.attendanceDates.length > 3
+                        ? 4
+                        : 3
+                    )
+                    .map((date: string, index: number) => {
+                      const meetingNumber = index + 1;
+                      const isPartiallyVisible =
+                        !showAllMeetings &&
+                        index === 3 &&
+                        subject.attendanceDates &&
+                        subject.attendanceDates.length > 3;
+
+                      return (
+                        <div
+                          key={index}
+                          className={`relative ${
+                            isPartiallyVisible ? "overflow-hidden" : ""
+                          }`}
+                        >
+                          <Timeline
+                            meetingNumber={meetingNumber}
+                            date={date}
+                            isCompleted={true}
+                          />
+                          {/* Fade overlay for 4th item */}
+                          {isPartiallyVisible && (
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none"></div>
+                          )}
+                        </div>
+                      );
+                    })
+                : Array.from(
+                    {
+                      length: Math.min(
+                        subject.meeting,
+                        showAllMeetings
+                          ? subject.meeting
+                          : subject.meeting > 3
+                          ? 4
+                          : 3
+                      ),
+                    },
+                    (_, index) => {
+                      const meetingNumber = index + 1;
+                      const isPartiallyVisible =
+                        !showAllMeetings && index === 3 && subject.meeting > 3;
+                      const fallbackDates = [
+                        "Mon, 5 February 2025",
+                        "Mon, 12 February 2025",
+                        "Mon, 19 February 2025",
+                        "Mon, 26 February 2025",
+                        "Mon, 5 March 2025",
+                        "Mon, 12 March 2025",
+                        "Mon, 19 March 2025",
+                      ];
+
+                      return (
+                        <div
+                          key={index}
+                          className={`relative ${
+                            isPartiallyVisible ? "overflow-hidden" : ""
+                          }`}
+                        >
+                          <Timeline
+                            meetingNumber={meetingNumber}
+                            date={
+                              fallbackDates[index] || `Meeting ${meetingNumber}`
+                            }
+                            isCompleted={true}
+                          />
+                          {/* Fade overlay for 4th item */}
+                          {isPartiallyVisible && (
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none"></div>
+                          )}
+                        </div>
+                      );
+                    }
+                  )}
+            </div>
           </div>
-          {(subject.attendanceDates?.length || subject.meeting) > 7 && (
-            <button className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200">
-              View all meetings (
-              {(subject.attendanceDates?.length || subject.meeting) - 7} more)
+
+          {/* Show More/Less Button */}
+          {((subject.attendanceDates && subject.attendanceDates.length > 3) ||
+            subject.meeting > 3) && (
+            <button
+              onClick={() => setShowAllMeetings(!showAllMeetings)}
+              className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
+            >
+              {showAllMeetings ? (
+                "Show less"
+              ) : (
+                <>
+                  View all meetings (
+                  {(subject.attendanceDates?.length || subject.meeting) - 4}{" "}
+                  more)
+                </>
+              )}
             </button>
           )}
         </div>
