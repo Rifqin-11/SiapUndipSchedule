@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Calendar, Home, CheckCircle, UserRound, QrCode } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import QRScanner from "./QRScanner";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -11,6 +11,14 @@ const BottomNavbar = () => {
   const pathname = usePathname();
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const { user } = useAuth();
+
+  // iOS Safari standalone detection (for data attribute)
+  useEffect(() => {
+    const isIOSStandalone = (window.navigator as any).standalone === true;
+    if (isIOSStandalone) {
+      document.documentElement.setAttribute('data-standalone', 'true');
+    }
+  }, []);
 
   // Don't show navbar on auth pages or when user is not logged in
   if (!user || pathname.startsWith("/auth")) {
@@ -28,7 +36,10 @@ const BottomNavbar = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 lg:hidden">
+      <div 
+        className="fixed left-1/2 transform -translate-x-1/2 z-50 lg:hidden"
+        style={{ bottom: 'var(--bottom-navbar-spacing)' }}
+      >
         <div
           className="w-[360px] h-[70px] px-6 rounded-full flex justify-between items-center
           shadow-xl relative border border-white/20

@@ -262,10 +262,27 @@
     /* Dynamic theme color updates */
     :root {
       --pwa-theme-color: #ffffff;
+      --bottom-navbar-spacing: 1rem; /* default: bottom-4 (16px) */
     }
 
     .dark {
       --pwa-theme-color: #141414;
+    }
+
+    /* PWA standalone mode detection */
+    @media (display-mode: standalone) {
+      :root {
+        --bottom-navbar-spacing: 1.5rem; /* PWA: bottom-6 (24px) */
+      }
+    }
+
+    /* iOS Safari standalone detection */
+    @media (display-mode: browser) {
+      @supports (-webkit-touch-callout: none) {
+        :root[data-standalone="true"] {
+          --bottom-navbar-spacing: 1.5rem; /* iOS PWA: bottom-6 (24px) */
+        }
+      }
     }
   }
 }
