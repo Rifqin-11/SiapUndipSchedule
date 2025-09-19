@@ -84,7 +84,7 @@ export default function PageHeader(props: PageHeaderProps) {
 
   // Hook untuk scroll opacity effect
   const scrollOpacity = useScrollOpacity({
-    fadeDistance: 25,
+    fadeDistance: 20,
     startOffset: 10,
   });
 

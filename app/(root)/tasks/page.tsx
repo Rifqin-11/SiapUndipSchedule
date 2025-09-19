@@ -205,7 +205,7 @@ export default function TasksPage() {
         }
       />
       {/* Content dengan padding-top untuk fixed header di mobile saja */}
-      <div className="pt-20 lg:pt-10 mx-auto p-6 space-y-6">
+      <div className="pt-23 lg:pt-8 mx-auto p-6 space-y-6">
         {/* stats */}
         <div className=" grid-cols-1 md:grid-cols-3 gap-4 hidden xl:grid">
           <StatCard
