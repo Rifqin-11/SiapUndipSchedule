@@ -27,6 +27,8 @@ const NotificationsPage = () => {
     saveSettings,
     resetSettings,
     getSettingsInfo,
+    showWeekendNotification,
+    getWeekendSummary,
   } = useNotificationSettings();
 
   // States for notification permission
@@ -105,6 +107,15 @@ const NotificationsPage = () => {
     }
   };
 
+  const handleTestWeekendReminder = () => {
+    if (notificationsEnabled) {
+      showWeekendNotification();
+      toast.success("Weekend reminder sent!");
+    } else {
+      toast.error("Please enable notifications first.");
+    }
+  };
+
   const handleSaveSettings = async () => {
     const result = await saveSettings();
 
@@ -142,7 +153,7 @@ const NotificationsPage = () => {
       />
 
       {/* Notification Permission & Test */}
-      <div className="max-w-2xl mx-auto px-6 mb-6">
+      <div className="max-w-2xl mx-auto px-6 mb-6 mt-4">
         {isClient && isSupported && (
           <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-3">
@@ -191,6 +202,14 @@ const NotificationsPage = () => {
                     size="sm"
                   >
                     Test Notification
+                  </Button>
+                  <Button
+                    onClick={handleTestWeekendReminder}
+                    variant="outline"
+                    size="sm"
+                    className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+                  >
+                    Test Weekend Reminder
                   </Button>
                 </>
               )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { useWeeklyStats } from "./useWeeklyStats";
 
 export interface NotificationSettings {
   classReminders: boolean;
@@ -28,6 +29,7 @@ export const useNotificationSettings = () => {
     useState<NotificationSettings>(defaultSettings);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { generateWeeklySummary, weeklyStats } = useWeeklyStats();
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -110,7 +112,7 @@ export const useNotificationSettings = () => {
     }
 
     if (settings.weekendReminders) {
-      activeFeatures.push("Pengingat weekend");
+      activeFeatures.push("Ringkasan mingguan weekend");
     }
 
     if (settings.soundEnabled) {
@@ -125,9 +127,69 @@ export const useNotificationSettings = () => {
       activeFeatures,
       totalActive: activeFeatures.length,
       hasActiveReminders:
-        settings.classReminders || settings.assignmentReminders,
+        settings.classReminders || settings.assignmentReminders || settings.weekendReminders,
     };
   }, [settings]);
+
+  // Function untuk mendapatkan weekend summary jika fitur aktif
+  const getWeekendSummary = useCallback(() => {
+    if (!settings.weekendReminders) return null;
+    return generateWeeklySummary();
+  }, [settings.weekendReminders, generateWeeklySummary]);
+
+  // Function untuk show weekend notification
+  const showWeekendNotification = useCallback(() => {
+    if (!settings.weekendReminders) return;
+
+    const summary = generateWeeklySummary();
+    if (!summary) return;
+
+    // Check if it's weekend (Saturday or Sunday)
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
+
+    if (isWeekend) {
+      // Show toast notification
+      toast.success(summary.title, {
+        description: summary.message,
+        duration: 8000, // 8 seconds
+        action: {
+          label: "Lihat Detail",
+          onClick: () => {
+            console.log("Weekly stats details:", weeklyStats);
+            // You could open a modal or navigate to a detailed view here
+          },
+        },
+      });
+
+      // Optional: Show browser notification if permission granted
+      if (Notification.permission === "granted") {
+        new Notification(summary.title, {
+          body: summary.message,
+          icon: "/icon-192x192.png", // Use your app icon
+        });
+      }
+    }
+  }, [settings.weekendReminders, generateWeeklySummary, weeklyStats]);
+
+  // Check for weekend and show notification
+  useEffect(() => {
+    if (settings.weekendReminders && !isLoading) {
+      // Check if we should show weekend notification
+      const lastShownKey = "last_weekend_notification";
+      const lastShown = localStorage.getItem(lastShownKey);
+      const today = new Date().toDateString();
+
+      // Only show once per day
+      if (lastShown !== today) {
+        setTimeout(() => {
+          showWeekendNotification();
+          localStorage.setItem(lastShownKey, today);
+        }, 2000); // Delay 2 seconds after page load
+      }
+    }
+  }, [settings.weekendReminders, isLoading, showWeekendNotification]);
 
   return {
     settings,
@@ -138,5 +200,8 @@ export const useNotificationSettings = () => {
     saveSettings,
     resetSettings,
     getSettingsInfo,
+    getWeekendSummary,
+    showWeekendNotification,
+    weeklyStats,
   };
 };
