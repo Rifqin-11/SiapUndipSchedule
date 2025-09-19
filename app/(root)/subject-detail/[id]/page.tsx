@@ -306,29 +306,25 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                   subject.attendanceDates?.length || 0,
                   subject.meeting || 0
                 );
-                
+
                 const displayCount = showAllMeetings ? actualMeetingCount : 3;
-                
+
                 // Generate meetings array combining real dates and fallback dates
-                const meetings = Array.from({ length: actualMeetingCount }, (_, index) => {
-                  const meetingNumber = index + 1;
-                  const fallbackDates = [
-                    "Mon, 5 February 2025",
-                    "Mon, 12 February 2025", 
-                    "Mon, 19 February 2025",
-                    "Mon, 26 February 2025",
-                    "Mon, 5 March 2025",
-                    "Mon, 12 March 2025",
-                    "Mon, 19 March 2025",
-                  ];
-                  
-                  return {
-                    meetingNumber,
-                    date: subject.attendanceDates?.[index] || fallbackDates[index] || `Meeting ${meetingNumber}`,
-                    isCompleted: true
-                  };
-                });
-                
+                const meetings = Array.from(
+                  { length: actualMeetingCount },
+                  (_, index) => {
+                    const meetingNumber = index + 1;
+
+                    return {
+                      meetingNumber,
+                      date:
+                        subject.attendanceDates?.[index] ||
+                        `Meeting ${meetingNumber}`,
+                      isCompleted: true,
+                    };
+                  }
+                );
+
                 return meetings.slice(0, displayCount).map((meeting, index) => {
                   const isPartiallyVisible =
                     !showAllMeetings && index === 2 && actualMeetingCount > 3;
@@ -362,20 +358,20 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
               subject.attendanceDates?.length || 0,
               subject.meeting || 0
             );
-            
-            return actualMeetingCount > 3 && (
-              <button
-                onClick={() => setShowAllMeetings(!showAllMeetings)}
-                className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
-              >
-                {showAllMeetings ? (
-                  "Show less"
-                ) : (
-                  <>
-                    View all meetings ({actualMeetingCount - 3} more)
-                  </>
-                )}
-              </button>
+
+            return (
+              actualMeetingCount > 3 && (
+                <button
+                  onClick={() => setShowAllMeetings(!showAllMeetings)}
+                  className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
+                >
+                  {showAllMeetings ? (
+                    "Show less"
+                  ) : (
+                    <>View all meetings ({actualMeetingCount - 3} more)</>
+                  )}
+                </button>
+              )
             );
           })()}
         </div>
