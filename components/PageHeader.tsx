@@ -84,8 +84,8 @@ export default function PageHeader(props: PageHeaderProps) {
 
   // Hook untuk scroll opacity effect
   const scrollOpacity = useScrollOpacity({
-    fadeDistance: 40,
-    startOffset: 0,
+    fadeDistance: 25,
+    startOffset: 10,
   });
 
   // avatar default dari user profile, tapi bisa dioverride

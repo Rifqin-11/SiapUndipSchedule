@@ -165,7 +165,7 @@ const NotificationsPage = () => {
       />
 
       {/* Notification Permission & Test */}
-      <div className="max-w-2xl mx-auto px-6 mt-20">
+      <div className="max-w-2xl mx-auto px-6 pt-25">
         {isClient && isSupported && (
           <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-3">

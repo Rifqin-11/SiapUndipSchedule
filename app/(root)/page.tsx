@@ -49,8 +49,8 @@ const Page = () => {
 
   // Hook untuk scroll opacity effect pada mobile header
   const scrollOpacity = useScrollOpacity({
-    fadeDistance: 50,
-    startOffset: 0,
+    fadeDistance: 25,
+    startOffset: 10,
   });
 
   const createTaskMutation = useCreateTask();

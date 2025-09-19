@@ -430,7 +430,7 @@ const ScheduleClient = () => {
     <div className="min-h-screen bg-background">
       <PageHeader variant="calendar" selectedDay={selectedDay} />
 
-      <div className="pt-20 lg:pt-0 mx-5">
+      <div className="pt-15 lg:pt-0 mx-5">
         <HorizonalCalendar
           selectedDay={selectedDay}
           onDaySelect={handleDaySelect}
