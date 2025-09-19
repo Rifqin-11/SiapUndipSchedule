@@ -101,16 +101,16 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             <BookOpen className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-2">
-            Gagal Memuat Data
+            Failed to Load Data
           </h3>
           <p className="text-red-700 dark:text-red-300 mb-6">
-            {error?.message || "Terjadi kesalahan"}
+            {error?.message || "An error occurred"}
           </p>
           <button
             onClick={() => window.history.back()}
             className="px-6 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
           >
-            Kembali
+            Back
           </button>
         </div>
       </div>
@@ -155,11 +155,10 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            Mata kuliah ini merupakan bagian integral dari kurikulum yang
-            dirancang untuk memberikan pemahaman mendalam tentang konsep-konsep
-            fundamental dalam bidang studi. Dengan pendekatan pembelajaran yang
-            interaktif dan komprehensif, mata kuliah ini bertujuan untuk
-            mengembangkan kemampuan analitis dan praktis mahasiswa.
+            This course is an integral part of the curriculum designed to
+            provide deep understanding of fundamental concepts in the field of
+            study. With an interactive and comprehensive learning approach, this
+            course aims to develop students' analytical and practical abilities.
           </p>
         </div>
       </div>
@@ -173,11 +172,11 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
               <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white">
-              Jadwal
+              Schedule
             </h3>
           </div>
           <div className="space-y-2">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Hari</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Day</p>
             <p className="font-medium text-gray-900 dark:text-white">
               {subject.day}
             </p>
@@ -191,12 +190,12 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
               <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white">
-              Waktu
+              Time
             </h3>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Jam Kuliah
+              Class Hours
             </p>
             <p className="font-medium text-gray-900 dark:text-white">
               {subject.startTime} - {subject.endTime}
@@ -211,11 +210,11 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
               <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white">
-              Lokasi
+              Location
             </h3>
           </div>
           <div className="space-y-2">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Ruangan</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Room</p>
             <p className="font-medium text-gray-900 dark:text-white">
               {subject.room}
             </p>
@@ -230,7 +229,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             <User className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Dosen Pengampu
+            Lecturers
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -252,7 +251,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                   {lect}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Dosen
+                  Lecturer
                 </p>
               </div>
             </div>
@@ -268,13 +267,11 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
               <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Progress Pembelajaran
+              Learning Progress
             </h3>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Pertemuan
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Meetings</p>
             <p className="text-lg font-bold text-gray-900 dark:text-white">
               {subject.meeting}/14
             </p>
@@ -284,7 +281,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         {/* Progress Bar */}
         <div className="mb-6">
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-            <span>Progress Kehadiran</span>
+            <span>Attendance Progress</span>
             <span>{Math.round((subject.meeting / 14) * 100)}%</span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-black/20 rounded-full h-3">
@@ -298,7 +295,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         {/* Timeline */}
         <div className="space-y-3">
           <h4 className="font-medium text-gray-900 dark:text-white mb-4">
-            Riwayat Pertemuan
+            Meeting History
           </h4>
           <div className="space-y-2">
             {subject.attendanceDates && subject.attendanceDates.length > 0
@@ -343,9 +340,8 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
           {(subject.attendanceDates?.length || subject.meeting) > 7 && (
             <button className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200">
-              Lihat semua pertemuan (
-              {(subject.attendanceDates?.length || subject.meeting) - 7}{" "}
-              lainnya)
+              View all meetings (
+              {(subject.attendanceDates?.length || subject.meeting) - 7} more)
             </button>
           )}
         </div>

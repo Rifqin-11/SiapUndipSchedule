@@ -282,13 +282,20 @@ const QRScanner: React.FC<QRScannerProps> = ({
               constraints.whiteBalanceMode = "continuous";
             }
 
-            // Add zoom support
-            if (capabilities.zoom && zoomLevel !== 1) {
-              const zoomRange = capabilities.zoom as { max?: number; min?: number };
-              const maxZoom = zoomRange.max || 3;
-              const minZoom = zoomRange.min || 1;
-              constraints.zoom = Math.min(Math.max(zoomLevel, minZoom), maxZoom);
-            }
+            // Don't apply zoom during stream initialization to prevent conflicts
+            // Zoom will be handled separately by handleZoomChange
+            // if (capabilities.zoom && zoomLevel !== 1) {
+            //   const zoomRange = capabilities.zoom as {
+            //     max?: number;
+            //     min?: number;
+            //   };
+            //   const maxZoom = zoomRange.max || 3;
+            //   const minZoom = zoomRange.min || 1;
+            //   constraints.zoom = Math.min(
+            //     Math.max(zoomLevel, minZoom),
+            //     maxZoom
+            //   );
+            // }
 
             // Only apply constraints if track is still live
             if (
@@ -314,7 +321,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
         throw error;
       }
     },
-    [zoomLevel]
+    [] // Removed zoomLevel dependency to prevent camera restart
   );
 
   // Brightness detection for auto-adjustment
@@ -349,86 +356,52 @@ const QRScanner: React.FC<QRScannerProps> = ({
     [setBrightness]
   );
 
-  // Zoom functions
+  // Zoom functions - simplified to prevent camera restart
   const handleZoomChange = useCallback(async (value: number[]) => {
     const newZoomLevel = value[0];
     setZoomLevel(newZoomLevel);
-    
+
     if (streamRef.current) {
       const track = streamRef.current.getVideoTracks()[0];
-      if (track && "getCapabilities" in track) {
-        const capabilities = track.getCapabilities() as Record<string, unknown>;
-        if (capabilities.zoom) {
-          try {
-            const zoomRange = capabilities.zoom as { max?: number; min?: number };
+      if (track && track.readyState === "live" && "getCapabilities" in track) {
+        try {
+          const capabilities = track.getCapabilities() as Record<
+            string,
+            unknown
+          >;
+          if (capabilities.zoom) {
+            const zoomRange = capabilities.zoom as {
+              max?: number;
+              min?: number;
+            };
             const maxZoom = zoomRange.max || 3;
             const minZoom = zoomRange.min || 1;
-            const clampedZoom = Math.min(Math.max(newZoomLevel, minZoom), maxZoom);
-            
+            const clampedZoom = Math.min(
+              Math.max(newZoomLevel, minZoom),
+              maxZoom
+            );
+
+            // Use simple applyConstraints without advanced array
             await track.applyConstraints({
-              advanced: [{ zoom: clampedZoom } as Record<string, unknown>],
+              advanced: [{ zoom: clampedZoom } as MediaTrackConstraintSet],
             });
-          } catch (error) {
-            console.warn("Failed to apply zoom:", error);
           }
+        } catch (error) {
+          console.warn("Failed to apply zoom:", error);
         }
       }
     }
   }, []);
 
   const zoomIn = useCallback(async () => {
-    if (streamRef.current && zoomLevel < 3) {
-      const newZoomLevel = Math.min(zoomLevel + 0.5, 3);
-      setZoomLevel(newZoomLevel);
-      
-      const track = streamRef.current.getVideoTracks()[0];
-      if (track && "getCapabilities" in track) {
-        const capabilities = track.getCapabilities() as Record<string, unknown>;
-        if (capabilities.zoom) {
-          try {
-            const zoomRange = capabilities.zoom as { max?: number; min?: number };
-            const maxZoom = zoomRange.max || 3;
-            const clampedZoom = Math.min(newZoomLevel, maxZoom);
-            
-            await track.applyConstraints({
-              advanced: [{ zoom: clampedZoom } as Record<string, unknown>],
-            });
-            toast.success(`Zoom: ${clampedZoom.toFixed(1)}x`);
-          } catch (error) {
-            console.warn("Failed to apply zoom:", error);
-            toast.error("Zoom tidak tersedia pada perangkat ini");
-          }
-        }
-      }
-    }
-  }, [zoomLevel]);
+    const newZoomLevel = Math.min(zoomLevel + 0.5, 3);
+    handleZoomChange([newZoomLevel]);
+  }, [zoomLevel, handleZoomChange]);
 
   const zoomOut = useCallback(async () => {
-    if (streamRef.current && zoomLevel > 1) {
-      const newZoomLevel = Math.max(zoomLevel - 0.5, 1);
-      setZoomLevel(newZoomLevel);
-      
-      const track = streamRef.current.getVideoTracks()[0];
-      if (track && "getCapabilities" in track) {
-        const capabilities = track.getCapabilities() as Record<string, unknown>;
-        if (capabilities.zoom) {
-          try {
-            const zoomRange = capabilities.zoom as { max?: number; min?: number };
-            const minZoom = zoomRange.min || 1;
-            const clampedZoom = Math.max(newZoomLevel, minZoom);
-            
-            await track.applyConstraints({
-              advanced: [{ zoom: clampedZoom } as Record<string, unknown>],
-            });
-            toast.success(`Zoom: ${clampedZoom.toFixed(1)}x`);
-          } catch (error) {
-            console.warn("Failed to apply zoom:", error);
-            toast.error("Zoom tidak tersedia pada perangkat ini");
-          }
-        }
-      }
-    }
-  }, [zoomLevel]);
+    const newZoomLevel = Math.max(zoomLevel - 0.5, 1);
+    handleZoomChange([newZoomLevel]);
+  }, [zoomLevel, handleZoomChange]);
 
   // Manual QR code input handler (moved after handleScanResult)
   const saveAttendanceHistory = useCallback(async (code: string) => {
@@ -549,12 +522,12 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
           if (!foundAvailableCamera) {
             throw new Error(
-              "Semua kamera sedang digunakan oleh aplikasi lain."
+              "All cameras are being used by other applications."
             );
           }
         }
       } else {
-        throw new Error("Tidak ada kamera yang ditemukan di perangkat ini.");
+        throw new Error("No camera found on this device.");
       }
     } catch (err: unknown) {
       console.error("Scanner initialization error:", err);
@@ -562,7 +535,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
       setError(
         err instanceof Error
           ? err.message
-          : "Tidak dapat mengakses kamera. Pastikan Anda memberikan izin kamera."
+          : "Cannot access camera. Please grant camera permission."
       );
       setIsScanning(false);
 
@@ -570,7 +543,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
       setRetryCount((prev) => prev + 1);
       if (retryCount >= 2) {
         setShowManualInput(true);
-        toast.info("Kesulitan mengakses kamera? Coba input manual di bawah.");
+        toast.info("Having trouble accessing camera? Try manual input below.");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -854,7 +827,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
         }, 2000);
       } catch (err: unknown) {
         console.error("Start scanning error:", err);
-        setError("Gagal memulai scanning. Silakan coba lagi.");
+        setError("Failed to start scanning. Please try again.");
         setIsScanning(false);
         setRetryCount((prev) => prev + 1);
       }
@@ -1214,10 +1187,10 @@ const QRScanner: React.FC<QRScannerProps> = ({
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Scan QR Code Absen
+                Scan Attendance QR Code
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Arahkan kamera atau pilih gambar QR
+                Point camera or select QR image
               </p>
             </div>
           </div>
@@ -1225,7 +1198,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
             onClick={onClose}
             variant="ghost"
             size="sm"
-            className="text-gray-500 hover:text-gray-700"
+            className="p-1 rounded-xl text-gray-200 bg-white/50"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -1236,7 +1209,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
               <Button onClick={initScanner} className="mt-2 text-sm" size="sm">
-                Coba Lagi
+                Try Again
               </Button>
             </div>
           )}
@@ -1244,14 +1217,14 @@ const QRScanner: React.FC<QRScannerProps> = ({
             <div className="text-center py-8">
               <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                Izin Kamera Diperlukan
+                Camera Permission Required
               </h4>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Berikan izin akses kamera untuk memindai QR code
+                Grant camera access to scan QR codes
               </p>
               <Button onClick={initScanner}>
                 <Camera className="w-4 h-4 mr-2" />
-                Aktifkan Kamera
+                Enable Camera
               </Button>
             </div>
           )}
@@ -1281,9 +1254,9 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
                 {/* Enhanced Controls Overlay */}
                 {isScanning && (
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4 z-10">
                     {/* Vertical Zoom Control */}
-                    <div className="bg-black/60 backdrop-blur-sm rounded-lg p-2">
+                    <div className="bg-black/70 backdrop-blur-sm rounded-lg p-3 shadow-lg">
                       <Slider
                         value={[zoomLevel]}
                         onValueChange={handleZoomChange}
@@ -1291,7 +1264,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                         max={3}
                         step={0.1}
                         orientation="vertical"
-                        className="h-20 [&_[data-slot=slider-track]]:bg-white/20 [&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:bg-white [&_[data-slot=slider-thumb]]:border-white"
+                        className="h-24 w-4 [&_[role=slider]]:bg-white [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-md"
                       />
                     </div>
                   </div>
@@ -1301,7 +1274,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                 {brightness < 30 && isScanning && (
                   <div className="absolute bottom-2 left-2 right-2">
                     <div className="bg-orange-500/80 text-white text-xs px-2 py-1 rounded">
-                      ⚠️ Cahaya kurang terang - Pindah ke tempat yang lebih terang
+                      ⚠️ Low light - Move to a brighter location
                     </div>
                   </div>
                 )}
@@ -1342,10 +1315,10 @@ const QRScanner: React.FC<QRScannerProps> = ({
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {brightness < 30
-                          ? "Gelap"
+                          ? "Dark"
                           : brightness < 60
-                          ? "Cukup"
-                          : "Terang"}
+                          ? "Fair"
+                          : "Bright"}
                       </span>
                     </div>
                   )}
@@ -1359,17 +1332,17 @@ const QRScanner: React.FC<QRScannerProps> = ({
                       disabled={!isScanning}
                     >
                       <RotateCcw className="w-4 h-4 mr-1" />
-                      Ganti
+                      Switch
                     </Button>
                   )}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => galleryInputRef.current?.click()}
-                    title="Upload gambar QR code dari galeri"
+                    title="Upload QR code image from gallery"
                   >
                     <ImagePlus className="w-4 h-4 mr-1" />
-                    Galeri
+                    Gallery
                   </Button>
 
                   {/* Input untuk galeri (tanpa capture) */}
@@ -1399,16 +1372,16 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   <div className="flex items-center gap-2 mb-3">
                     <Type className="w-4 h-4 text-muted-foreground" />
                     <h3 className="font-medium text-card-foreground">
-                      Input Manual
+                      Manual Input
                     </h3>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Jika scanner tidak berfungsi, masukkan kode QR (12 karakter)
-                    secara manual:
+                    If scanner doesn't work, enter QR code (12 characters)
+                    manually:
                   </p>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Contoh: a1b2c3d4e5f6"
+                      placeholder="Example: a1b2c3d4e5f6"
                       value={manualCode}
                       onChange={(e) => setManualCode(e.target.value)}
                       className="flex-1"
@@ -1423,7 +1396,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                     </Button>
                   </div>
                   <div className="text-xs text-muted-foreground mt-2">
-                    Kode harus berupa 12 karakter huruf dan angka
+                    Code must be 12 characters of letters and numbers
                   </div>
                 </div>
               )}
@@ -1437,19 +1410,17 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   className="w-full"
                 >
                   <Type className="w-4 h-4 mr-1" />
-                  {showManualInput
-                    ? "Sembunyikan Input Manual"
-                    : "Input Manual"}
+                  {showManualInput ? "Hide Manual Input" : "Manual Input"}
                 </Button>
               </div>
             </div>
           )}{" "}
-          {/* Tombol manual untuk membuka halaman absen jika popup diblokir */}
+          {/* Manual button to open attendance page if popup is blocked */}
           {lastScannedUrl && (
             <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-green-700 dark:text-green-300 text-sm mb-3">
-                QR Code berhasil dipindai! Jika halaman absen tidak terbuka
-                otomatis, klik tombol di bawah:
+                QR Code scanned successfully! If the attendance page doesn't
+                open automatically, click the button below:
               </p>
               <div className="flex gap-2">
                 <Button
@@ -1461,7 +1432,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   className="flex-1"
                   size="sm"
                 >
-                  🌐 Buka Halaman Absen
+                  🌐 Open Attendance Page
                 </Button>
                 <Button
                   onClick={() => {
@@ -1470,7 +1441,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   variant="outline"
                   size="sm"
                 >
-                  ✕ Tutup
+                  ✕ Close
                 </Button>
               </div>
             </div>

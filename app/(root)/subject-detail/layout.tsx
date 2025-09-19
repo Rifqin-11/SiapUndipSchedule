@@ -50,11 +50,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
         subject: subjectData,
       });
 
-      toast.success("Mata kuliah berhasil diupdate!");
+      toast.success("Subject updated successfully!");
       setIsEditModalOpen(false);
       return { success: true };
     } catch (error: any) {
-      const errorMessage = error?.message || "Gagal mengupdate mata kuliah";
+      const errorMessage = error?.message || "Failed to update subject";
       toast.error(`Error: ${errorMessage}`);
       return { success: false, error: errorMessage };
     }
@@ -75,10 +75,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 <BackButton />
                 <div>
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Detail Mata Kuliah
+                    Subject Detail
                   </h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Informasi lengkap tentang mata kuliah
+                    Complete information about the subject
                   </p>
                 </div>
               </div>

@@ -135,13 +135,15 @@ const NotificationsPage = () => {
       // Initialize notifications with new settings
       if (notificationsEnabled && settings.classReminders) {
         initializeNotifications();
-        toast.info("Pengingat kelas telah diaktifkan sesuai jadwal Anda.");
+        toast.info(
+          "Class reminders have been activated according to your schedule."
+        );
       }
 
       // Show info about assignment reminders
       if (notificationsEnabled && settings.assignmentReminders) {
         toast.info(
-          "Pengingat tugas telah diaktifkan untuk deadline yang akan datang."
+          "Assignment reminders have been activated for upcoming deadlines."
         );
       }
     } else {
@@ -151,7 +153,7 @@ const NotificationsPage = () => {
 
   const handleResetSettings = () => {
     resetSettings();
-    toast.info("Pengaturan telah direset ke default");
+    toast.info("Settings have been reset to default");
   };
 
   return (
@@ -179,7 +181,7 @@ const NotificationsPage = () => {
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {notificationsEnabled
-                      ? `Pengingat ${settings.beforeClass} menit sebelum kelas dimulai`
+                      ? `Reminder ${settings.beforeClass} minutes before class starts`
                       : "Get notified before your classes start"}
                   </p>
                 </div>
@@ -254,17 +256,17 @@ const NotificationsPage = () => {
         {/* Class Reminders */}
         <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Pengingat Kelas
+            Class Reminders
           </h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-white">
-                  Aktifkan Pengingat
+                  Enable Reminders
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Dapatkan notifikasi sebelum kelas dimulai
+                  Get notifications before class starts
                 </p>
               </div>
               <button
@@ -286,7 +288,7 @@ const NotificationsPage = () => {
             {settings.classReminders && (
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                  Waktu Pengingat
+                  Reminder Time
                 </h3>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-500" />
@@ -297,11 +299,11 @@ const NotificationsPage = () => {
                     }
                     className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
-                    <option value={5}>5 menit sebelum</option>
-                    <option value={10}>10 menit sebelum</option>
-                    <option value={15}>15 menit sebelum</option>
-                    <option value={30}>30 menit sebelum</option>
-                    <option value={60}>1 jam sebelum</option>
+                    <option value={5}>5 minutes before</option>
+                    <option value={10}>10 minutes before</option>
+                    <option value={15}>15 minutes before</option>
+                    <option value={30}>30 minutes before</option>
+                    <option value={60}>1 hour before</option>
                   </select>
                 </div>
               </div>
@@ -312,7 +314,7 @@ const NotificationsPage = () => {
         {/* Sound & Vibration */}
         <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Suara & Getaran
+            Sound & Vibration
           </h2>
 
           <div className="space-y-4">
@@ -321,10 +323,10 @@ const NotificationsPage = () => {
                 <Volume2 className="w-5 h-5 text-gray-500" />
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    Suara Notifikasi
+                    Notification Sound
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Putar suara saat notifikasi muncul
+                    Play sound when notifications appear
                   </p>
                 </div>
               </div>
@@ -349,10 +351,10 @@ const NotificationsPage = () => {
                 <Smartphone className="w-5 h-5 text-gray-500" />
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    Getaran
+                    Vibration
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Aktifkan getaran untuk notifikasi
+                    Enable vibration for notifications
                   </p>
                 </div>
               </div>
@@ -379,17 +381,17 @@ const NotificationsPage = () => {
         {/* Other Settings */}
         <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Pengaturan Lain
+            Other Settings
           </h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-white">
-                  Pengingat Weekend
+                  Weekend Reminders
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Dapatkan notifikasi di akhir pekan
+                  Get notifications on weekends
                 </p>
               </div>
               <button
@@ -413,10 +415,10 @@ const NotificationsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-white">
-                  Pengingat Tugas
+                  Assignment Reminders
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Notifikasi 24 jam & 1 jam sebelum deadline tugas
+                  Notifications 24 hours & 1 hour before assignment deadlines
                 </p>
               </div>
               <button
@@ -444,20 +446,21 @@ const NotificationsPage = () => {
                     ℹ️
                   </div>
                   <div className="text-sm text-blue-700 dark:text-blue-300">
-                    <p className="font-medium mb-1">Jadwal Notifikasi Tugas:</p>
+                    <p className="font-medium mb-1">
+                      Assignment Notification Schedule:
+                    </p>
                     <ul className="space-y-1 text-xs">
                       <li>
-                        • ⏰ <strong>24 jam sebelum deadline</strong> -
-                        Pengingat awal
+                        • ⏰ <strong>24 hours before deadline</strong> - Early
+                        reminder
                       </li>
                       <li>
-                        • 🚨 <strong>1 jam sebelum deadline</strong> -
-                        Peringatan segera
+                        • 🚨 <strong>1 hour before deadline</strong> - Urgent
+                        warning
                       </li>
                     </ul>
                     <p className="mt-2 text-xs opacity-75">
-                      Setiap notifikasi hanya akan muncul sekali untuk mencegah
-                      spam
+                      Each notification will only appear once to prevent spam
                     </p>
                   </div>
                 </div>
@@ -471,12 +474,12 @@ const NotificationsPage = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Simpan Pengaturan
+                Save Settings
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {hasUnsavedChanges
-                  ? "Ada perubahan yang belum disimpan"
-                  : "Semua pengaturan telah disimpan"}
+                  ? "There are unsaved changes"
+                  : "All settings have been saved"}
               </p>
             </div>
             {hasUnsavedChanges && (
@@ -495,7 +498,7 @@ const NotificationsPage = () => {
               disabled={!hasUnsavedChanges}
             >
               <Save className="w-4 h-4 mr-2" />
-              {hasUnsavedChanges ? "Simpan Pengaturan" : "Tersimpan"}
+              {hasUnsavedChanges ? "Save Settings" : "Saved"}
             </Button>
 
             <Button
