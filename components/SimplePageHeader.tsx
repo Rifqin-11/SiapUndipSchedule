@@ -74,7 +74,7 @@ const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
     <section
       className={`
         lg:relative lg:top-auto lg:left-auto lg:right-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none
-        fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm
+        fixed top-0 left-0 right-0 z-50
         flex flex-row items-center pt-4 pb-2 px-5 ${className}
       `}
       style={{ opacity: scrollOpacity < 1 ? scrollOpacity : undefined }}

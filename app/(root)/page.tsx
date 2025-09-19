@@ -285,7 +285,7 @@ const Page = () => {
     <main className="animate-fadeIn">
       {/* Header Section with Profile and Notifications - Hide on desktop since it's in sidebar */}
       <section
-        className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm flex flex-row gap-2 items-center pt-4 px-5 lg:hidden"
+        className="fixed top-0 left-0 right-0 z-50 flex flex-row gap-2 items-center pt-4 px-5 lg:hidden"
         style={{ opacity: scrollOpacity }}
       >
         <div className="flex flex-row justify-between items-center w-full">

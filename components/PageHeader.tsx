@@ -203,7 +203,7 @@ function HeaderFrame({
       className={cn(
         // Mobile: fixed positioning dengan full width
         "lg:relative lg:top-auto lg:left-auto lg:right-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none",
-        "fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm",
+        "fixed top-0 left-0 right-0 z-50",
         "mt-4 lg:mb-2 mx-5",
         className
       )}
