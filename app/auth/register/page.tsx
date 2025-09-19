@@ -236,6 +236,10 @@ export default function RegisterPage() {
                 name="name"
                 type="text"
                 autoComplete="name"
+                autoCapitalize="words"
+                autoCorrect="on"
+                spellCheck="true"
+                inputMode="text"
                 required
                 value={formData.name}
                 onChange={handleChange}
@@ -264,6 +268,10 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+                inputMode="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
@@ -292,6 +300,9 @@ export default function RegisterPage() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 required
                 value={formData.password}
                 onChange={handleChange}
@@ -429,6 +440,9 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 autoComplete="new-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
