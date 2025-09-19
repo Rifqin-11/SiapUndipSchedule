@@ -1,21 +1,24 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bell, Clock, Volume2, Smartphone, BellOff } from "lucide-react";
+import { Bell, Clock, Volume2, Smartphone, BellOff, Save, RotateCcw } from "lucide-react";
 import BackButton from "@/components/Back-Button";
 import useClassNotifications from "@/hooks/useClassNotifications";
+import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const NotificationsPage = () => {
-  const [settings, setSettings] = useState({
-    classReminders: true,
-    beforeClass: 15,
-    soundEnabled: true,
-    vibrationEnabled: true,
-    weekendReminders: false,
-    assignmentReminders: true,
-  });
+  const {
+    settings,
+    hasUnsavedChanges,
+    isLoading,
+    toggleSetting,
+    updateSetting,
+    saveSettings,
+    resetSettings,
+    getSettingsInfo,
+  } = useNotificationSettings();
 
   // States for notification permission
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -93,18 +96,30 @@ const NotificationsPage = () => {
     }
   };
 
-  const handleToggle = (key: keyof typeof settings) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+  const handleSaveSettings = async () => {
+    const result = await saveSettings();
+
+    if (result.success) {
+      toast.success(result.message);
+
+      // Initialize notifications with new settings
+      if (notificationsEnabled && settings.classReminders) {
+        initializeNotifications();
+        toast.info("Pengingat kelas telah diaktifkan sesuai jadwal Anda.");
+      }
+
+      // Show info about assignment reminders
+      if (notificationsEnabled && settings.assignmentReminders) {
+        toast.info("Pengingat tugas telah diaktifkan untuk deadline yang akan datang.");
+      }
+    } else {
+      toast.error(result.message);
+    }
   };
 
-  const handleTimeChange = (value: number) => {
-    setSettings((prev) => ({
-      ...prev,
-      beforeClass: value,
-    }));
+  const handleResetSettings = () => {
+    resetSettings();
+    toast.info("Pengaturan telah direset ke default");
   };
 
   return (
@@ -118,6 +133,9 @@ const NotificationsPage = () => {
               <h1 className="font-bold text-xl text-gray-900 dark:text-white">
                 Notifikasi
               </h1>
+              {hasUnsavedChanges && (
+                <div className="size-2 bg-orange-500 rounded-full animate-pulse"></div>
+              )}
             </div>
           </div>
         </div>
@@ -140,7 +158,7 @@ const NotificationsPage = () => {
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {notificationsEnabled
-                      ? "You'll receive reminders 15 & 5 minutes before class"
+                      ? `Pengingat ${settings.beforeClass} menit sebelum kelas dimulai`
                       : "Get notified before your classes start"}
                   </p>
                 </div>
@@ -213,7 +231,7 @@ const NotificationsPage = () => {
                 </p>
               </div>
               <button
-                onClick={() => handleToggle("classReminders")}
+                onClick={() => toggleSetting("classReminders")}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.classReminders
                     ? "bg-blue-600"
@@ -237,7 +255,7 @@ const NotificationsPage = () => {
                   <Clock className="w-4 h-4 text-gray-500" />
                   <select
                     value={settings.beforeClass}
-                    onChange={(e) => handleTimeChange(Number(e.target.value))}
+                    onChange={(e) => updateSetting("beforeClass", Number(e.target.value))}
                     className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value={5}>5 menit sebelum</option>
@@ -272,7 +290,7 @@ const NotificationsPage = () => {
                 </div>
               </div>
               <button
-                onClick={() => handleToggle("soundEnabled")}
+                onClick={() => toggleSetting("soundEnabled")}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.soundEnabled
                     ? "bg-blue-600"
@@ -300,7 +318,7 @@ const NotificationsPage = () => {
                 </div>
               </div>
               <button
-                onClick={() => handleToggle("vibrationEnabled")}
+                onClick={() => toggleSetting("vibrationEnabled")}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.vibrationEnabled
                     ? "bg-blue-600"
@@ -336,7 +354,7 @@ const NotificationsPage = () => {
                 </p>
               </div>
               <button
-                onClick={() => handleToggle("weekendReminders")}
+                onClick={() => toggleSetting("weekendReminders")}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.weekendReminders
                     ? "bg-blue-600"
@@ -363,7 +381,7 @@ const NotificationsPage = () => {
                 </p>
               </div>
               <button
-                onClick={() => handleToggle("assignmentReminders")}
+                onClick={() => toggleSetting("assignmentReminders")}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.assignmentReminders
                     ? "bg-blue-600"
@@ -383,9 +401,48 @@ const NotificationsPage = () => {
         </div>
 
         {/* Save Button */}
-        <button className="w-full p-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
-          Simpan Pengaturan
-        </button>
+        <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Simpan Pengaturan
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {hasUnsavedChanges
+                  ? "Ada perubahan yang belum disimpan"
+                  : "Semua pengaturan telah disimpan"}
+              </p>
+            </div>
+            {hasUnsavedChanges && (
+              <div className="size-3 bg-orange-500 rounded-full"></div>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              onClick={handleSaveSettings}
+              className={`flex-1 ${
+                hasUnsavedChanges
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-green-600 hover:bg-green-700"
+              } text-white`}
+              disabled={!hasUnsavedChanges}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {hasUnsavedChanges ? "Simpan Pengaturan" : "Tersimpan"}
+            </Button>
+
+            <Button
+              onClick={handleResetSettings}
+              variant="outline"
+              className="px-4"
+              disabled={isLoading}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
       </div>
     </div>
   );

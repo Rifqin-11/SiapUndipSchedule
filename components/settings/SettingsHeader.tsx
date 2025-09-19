@@ -36,7 +36,7 @@ const SettingsHeader = ({ title, description, icon }: SettingsHeaderProps) => {
 
   return (
     <section
-      className={`bg-card border-b border-border sticky top-0 z-50 shadow-sm transition-transform duration-300 ease-in-out ${
+      className={`bg-background border-b border-border sticky top-0 z-50 shadow-sm transition-transform duration-300 ease-in-out ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >

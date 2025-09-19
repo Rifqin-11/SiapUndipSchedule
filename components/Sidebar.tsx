@@ -157,7 +157,7 @@ const Sidebar = () => {
                     alt="Profile"
                     width={36}
                     height={36}
-                    className="rounded-full object-cover"
+                    className="size-9 rounded-full object-cover"
                   />
                 ) : (
                   <div className="size-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 text-white grid place-items-center text-xs font-bold">

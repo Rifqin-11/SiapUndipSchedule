@@ -217,7 +217,7 @@ const SecurityPage = () => {
                     errors.currentPassword
                       ? "border-red-300 dark:border-red-600"
                       : "border-gray-300 dark:border-gray-600"
-                  } bg-white dark:bg-secondary text-gray-900 dark:text-white`}
+                  } bg-white dark:bg-background text-gray-900 dark:text-white`}
                   placeholder="Enter your current password"
                 />
                 <button
@@ -254,7 +254,7 @@ const SecurityPage = () => {
                     errors.newPassword
                       ? "border-red-300 dark:border-red-600"
                       : "border-gray-300 dark:border-gray-600"
-                  } bg-white dark:bg-secondary text-gray-900 dark:text-white`}
+                  } bg-white dark:bg-background text-gray-900 dark:text-white`}
                   placeholder="Enter your new password"
                 />
                 <button
@@ -321,7 +321,7 @@ const SecurityPage = () => {
                     errors.confirmPassword
                       ? "border-red-300 dark:border-red-600"
                       : "border-gray-300 dark:border-gray-600"
-                  } bg-white dark:bg-secondary text-gray-900 dark:text-white`}
+                  } bg-white dark:bg-background text-gray-900 dark:text-white`}
                   placeholder="Confirm your new password"
                 />
                 <button
@@ -412,7 +412,7 @@ const SecurityPage = () => {
             <div className="flex space-x-4 pt-4">
               <Link
                 href="/user"
-                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary transition-colors text-center font-medium"
+                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-background transition-colors text-center font-medium"
               >
                 Cancel
               </Link>

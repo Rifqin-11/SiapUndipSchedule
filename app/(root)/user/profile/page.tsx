@@ -206,11 +206,11 @@ const ProfilePage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondary dark:text-white"
                   required
                 />
               ) : (
-                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">
+                <div className="px-3 py-2 bg-gray-50 dark:bg-background rounded-lg text-gray-900 dark:text-white">
                   {formData.name}
                 </div>
               )}
@@ -227,10 +227,10 @@ const ProfilePage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, nim: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondary dark:text-white"
                 />
               ) : (
-                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">
+                <div className="px-3 py-2 bg-gray-50 dark:bg-background rounded-lg text-gray-900 dark:text-white">
                   {formData.nim}
                 </div>
               )}
@@ -247,11 +247,11 @@ const ProfilePage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondary dark:text-white"
                   required
                 />
               ) : (
-                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">
+                <div className="px-3 py-2 bg-gray-50 dark:bg-background rounded-lg text-gray-900 dark:text-white">
                   {formData.email}
                 </div>
               )}
@@ -268,10 +268,10 @@ const ProfilePage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, jurusan: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondary dark:text-white"
                 />
               ) : (
-                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">
+                <div className="px-3 py-2 bg-gray-50 dark:bg-background rounded-lg text-gray-900 dark:text-white">
                   {formData.jurusan}
                 </div>
               )}
@@ -288,10 +288,10 @@ const ProfilePage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, fakultas: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondary dark:text-white"
                 />
               ) : (
-                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">
+                <div className="px-3 py-2 bg-gray-50 dark:bg-background rounded-lg text-gray-900 dark:text-white">
                   {formData.fakultas}
                 </div>
               )}
@@ -308,10 +308,10 @@ const ProfilePage = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, angkatan: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-secondary dark:text-white"
                 />
               ) : (
-                <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white">
+                <div className="px-3 py-2 bg-gray-50 dark:bg-background rounded-lg text-gray-900 dark:text-white">
                   {formData.angkatan}
                 </div>
               )}
