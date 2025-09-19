@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubjects } from "./useSubjects";
 import { useTasks } from "./useTasks";
 
@@ -189,11 +189,16 @@ export const useWeeklyStats = () => {
 
   // Recalculate when subjects or tasks change
   useEffect(() => {
-    calculateWeeklyStats();
-  }, [calculateWeeklyStats]);
+    // Add debouncing to prevent excessive recalculations
+    const timeoutId = setTimeout(() => {
+      calculateWeeklyStats();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [subjects, tasks]); // Change dependency to actual data instead of callback
 
   // Generate summary message untuk notification
-  const generateWeeklySummary = useCallback(() => {
+  const generateWeeklySummary = useMemo(() => {
     if (!weeklyStats) return null;
 
     const {
@@ -268,13 +273,16 @@ export const useWeeklyStats = () => {
         tasks: `${weeklyStats.completedTasks}/${totalTasks} tugas selesai`,
       },
     };
-  }, [weeklyStats]);
+  }, [weeklyStats]); // Keep only weeklyStats dependency
+
+  // Wrap generateWeeklySummary in a callback for external use
+  const getWeeklySummary = useCallback(() => generateWeeklySummary, [generateWeeklySummary]);
 
   return {
     weeklyStats,
     isLoading,
     calculateWeeklyStats,
-    generateWeeklySummary,
+    generateWeeklySummary: getWeeklySummary,
     refreshStats: calculateWeeklyStats,
   };
 };

@@ -173,7 +173,7 @@ export const useNotificationSettings = () => {
         });
       }
     }
-  }, [settings.weekendReminders, generateWeeklySummary, weeklyStats]);
+  }, [settings.weekendReminders, generateWeeklySummary, weeklyStats]); // Restore minimal dependencies
 
   // Function untuk testing weekend notification (bypasses restrictions)
   const testWeekendNotification = useCallback(() => {
@@ -205,7 +205,7 @@ export const useNotificationSettings = () => {
         icon: "/icon-192x192.png", // Use your app icon
       });
     }
-  }, [generateWeeklySummary, weeklyStats]);
+  }, [generateWeeklySummary, weeklyStats]); // Restore minimal dependencies
 
   // Check for weekend and show notification
   useEffect(() => {
@@ -215,15 +215,20 @@ export const useNotificationSettings = () => {
       const lastShown = localStorage.getItem(lastShownKey);
       const today = new Date().toDateString();
 
-      // Only show once per day
-      if (lastShown !== today) {
-        setTimeout(() => {
+      // Only show once per day and only on weekends
+      const dayOfWeek = new Date().getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
+      
+      if (lastShown !== today && isWeekend) {
+        const timeoutId = setTimeout(() => {
           showWeekendNotification();
           localStorage.setItem(lastShownKey, today);
         }, 2000); // Delay 2 seconds after page load
+
+        return () => clearTimeout(timeoutId);
       }
     }
-  }, [settings.weekendReminders, isLoading, showWeekendNotification]);
+  }, [settings.weekendReminders, isLoading, showWeekendNotification]); // Add showWeekendNotification back
 
   return {
     settings,
