@@ -1,6 +1,6 @@
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -13,15 +13,9 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         className
       )}
-      // iOS specific attributes to ensure keyboard appears
-      autoCapitalize="none"
-      autoCorrect="off"
-      spellCheck="false"
-      autoComplete="off"
-      style={{ fontSize: "16px" }} // Prevent zoom on iOS
       {...props}
     />
-  );
+  )
 }
 
-export { Input };
+export { Input }
