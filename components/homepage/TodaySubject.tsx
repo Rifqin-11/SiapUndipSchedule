@@ -281,7 +281,7 @@ const TodaySubject = () => {
             );
           })
         ) : (
-          <div className="flex flex-col justify-center items-center mt-10">
+          <div className="flex flex-col justify-center items-center mt-10 mb-10">
             <h3 className="font-bold text-lg text-gray-700 dark:text-gray-300">
               No Schedule Today 🎉
             </h3>
