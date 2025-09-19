@@ -1,11 +1,12 @@
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Offline - SIAP UNDIP Schedule",
-  description: "Offline mode for SIAP UNDIP Schedule application",
-};
+import { useEffect } from "react";
 
 export default function OfflinePage() {
+  useEffect(() => {
+    document.title = "Offline - SIAP UNDIP Schedule";
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
