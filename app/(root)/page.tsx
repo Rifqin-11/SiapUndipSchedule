@@ -35,23 +35,16 @@ import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 const Page = () => {
   const {
-    data: subjectsData = [],
+    data: subjects = [],
     isLoading: loading,
     error,
     refetch,
   } = useSubjects();
-
-  // Ensure subjects is always an array
-  const subjects = Array.isArray(subjectsData) ? subjectsData : [];
-
   const createSubjectMutation = useCreateSubject();
   const { user } = useUserProfile();
   const { loading: subjectsLoading } = useSubjectsForTasks();
 
-  const { data: tasksData = [], isLoading: tasksLoading } = useTasks();
-
-  // Ensure tasks is always an array
-  const tasks = Array.isArray(tasksData) ? tasksData : [];
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks();
 
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
@@ -202,12 +195,6 @@ const Page = () => {
 
   // Courses carousel content
   const coursesContent = useMemo(() => {
-    // Ensure subjects is an array before proceeding
-    if (!Array.isArray(subjects)) {
-      console.warn("Subjects is not an array:", subjects);
-      return null;
-    }
-
     if (subjects.length === 0) {
       return (
         <div className="w-full max-w-xs mx-auto">
@@ -238,8 +225,6 @@ const Page = () => {
     return subjects.map((subject) => (
       <div key={subject.id} className="flex-shrink-0 w-64">
         <CoursesCard
-          id={subject.id}
-          _id={subject._id}
           name={subject.name}
           meeting={subject.meeting}
           specificDate={subject.specificDate}
@@ -273,12 +258,6 @@ const Page = () => {
 
   // ⬇️ Ambil task “in-progress” yang due hari ini, lalu urutkan
   const todaysInProgressTasks = useMemo(() => {
-    // Ensure tasks is an array before proceeding
-    if (!Array.isArray(tasks)) {
-      console.warn("Tasks is not an array:", tasks);
-      return [];
-    }
-
     const today = new Date();
     return tasks
       .filter(

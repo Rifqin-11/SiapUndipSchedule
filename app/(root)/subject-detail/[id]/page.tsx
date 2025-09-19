@@ -74,7 +74,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
 
         {/* Loading Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(3)].map((_, i: number) => (
             <div
               key={i}
               className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6"
@@ -104,7 +104,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             Gagal Memuat Data
           </h3>
           <p className="text-red-700 dark:text-red-300 mb-6">
-            {error?.message || "Terjadi kesalahan saat memuat data subject"}
+            {error?.message || "Terjadi kesalahan"}
           </p>
           <button
             onClick={() => window.history.back()}
@@ -234,7 +234,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {subject.lecturer.map((lect, index) => (
+          {subject.lecturer.map((lect: string, index: number) => (
             <div
               key={index}
               className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-black/20 rounded-lg"
@@ -242,7 +242,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                 {lect
                   .split(" ")
-                  .map((name) => name[0])
+                  .map((name: string) => name[0])
                   .join("")
                   .toUpperCase()
                   .slice(0, 2)}

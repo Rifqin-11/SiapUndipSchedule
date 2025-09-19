@@ -9,7 +9,6 @@ import BottomNavbar from "@/components/BottomNavbar";
 const notfound = () => {
   return (
     <div className="flex min-h-screen">
-
       {/* Main content area */}
       <div className="flex-1 w-full lg:pl-64">
         <div className="flex flex-col justify-center items-center h-screen bg-white dark:bg-background  text-white gap-3">

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 const Layout = ({ children }: { children: ReactNode }) => {
   const params = useParams();
   const subjectId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { data: subject, isLoading, error } = useSubject(subjectId || "");
+  const { data: subject } = useSubject(subjectId || "");
   const updateSubjectMutation = useUpdateSubject();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -45,7 +45,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
     if (!subject) return { success: false, error: "Subject not found" };
 
     try {
-      const result = await updateSubjectMutation.mutateAsync({
+      await updateSubjectMutation.mutateAsync({
         id: subject.id,
         subject: subjectData,
       });
@@ -53,9 +53,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
       toast.success("Mata kuliah berhasil diupdate!");
       setIsEditModalOpen(false);
       return { success: true };
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Gagal mengupdate mata kuliah";
+    } catch (error: any) {
+      const errorMessage = error?.message || "Gagal mengupdate mata kuliah";
       toast.error(`Error: ${errorMessage}`);
       return { success: false, error: errorMessage };
     }
@@ -79,44 +78,25 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     Detail Mata Kuliah
                   </h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {isLoading
-                      ? "Loading..."
-                      : "Informasi lengkap tentang mata kuliah"}
+                    Informasi lengkap tentang mata kuliah
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleEdit}
-                disabled={
-                  isLoading || !subject || updateSubjectMutation.isPending
-                }
-                className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 shadow-sm"
+                className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm"
                 title="Edit Subject"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">
-                  {updateSubjectMutation.isPending ? "Saving..." : "Edit"}
-                </span>
+                <span className="text-sm font-medium">Edit</span>
               </button>
             </div>
           </div>
         </section>
 
         {/* Content Area */}
-        <div className="pt-6 pb-12">
-          {error ? (
-            <div className="max-w-4xl mx-auto px-6">
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-800 dark:text-red-200">
-                  Error loading subject: {error.message}
-                </p>
-              </div>
-            </div>
-          ) : (
-            children
-          )}
-        </div>
+        <div className="pt-6 pb-12">{children}</div>
       </div>
 
       {/* Edit Subject Modal */}

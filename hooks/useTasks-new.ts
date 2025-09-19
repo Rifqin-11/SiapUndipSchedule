@@ -1,8 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchWithCacheBusting,
-  createCacheBustingHeaders,
-} from "@/lib/cache-buster";
 
 interface Subject {
   id: string;
@@ -31,7 +27,7 @@ export const TASKS_QUERY_KEY = ["tasks"] as const;
 
 // API functions
 const fetchTasks = async (): Promise<Task[]> => {
-  const response = await fetchWithCacheBusting("/api/tasks", {
+  const response = await fetch("/api/tasks", {
     credentials: "include",
   });
 
@@ -50,7 +46,6 @@ const createTaskAPI = async (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...createCacheBustingHeaders(),
     },
     credentials: "include",
     body: JSON.stringify(taskData),
@@ -75,7 +70,6 @@ const updateTaskAPI = async ({
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...createCacheBustingHeaders(),
     },
     credentials: "include",
     body: JSON.stringify(taskData),
@@ -92,9 +86,6 @@ const updateTaskAPI = async ({
 const deleteTaskAPI = async (id: string): Promise<void> => {
   const response = await fetch(`/api/tasks/${id}`, {
     method: "DELETE",
-    headers: {
-      ...createCacheBustingHeaders(),
-    },
     credentials: "include",
   });
 
@@ -108,12 +99,9 @@ export const useTasks = () => {
   return useQuery({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchTasks,
-    staleTime: 0, // Always consider stale untuk fresh data setiap saat
-    gcTime: 1 * 60 * 1000, // 1 minute cache time saja
+    staleTime: 2 * 60 * 1000, // 2 minutes - tasks berubah lebih sering
+    gcTime: 5 * 60 * 1000, // 5 minutes cache time
     refetchOnWindowFocus: false,
-    refetchOnReconnect: true, // Refetch saat reconnect
-    refetchOnMount: "always", // Always refetch saat component mount
-    refetchInterval: false, // Disable auto refetch interval
   });
 };
 
@@ -122,30 +110,9 @@ export const useCreateTask = () => {
 
   return useMutation({
     mutationFn: createTaskAPI,
-    onSuccess: (newTask) => {
-      // Force update cache dengan data dari server
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        // Tambah task baru di awal array
-        return [newTask, ...old];
-      });
-
-      // Force remove cache dan refetch untuk memastikan konsistensi
-      queryClient.removeQueries({ queryKey: TASKS_QUERY_KEY, exact: false });
-      queryClient.refetchQueries({
-        queryKey: TASKS_QUERY_KEY,
-        type: "active",
-      });
-    },
-    onError: (error) => {
-      console.error("Create task error:", error);
-    },
-    onSettled: () => {
-      // Force invalidate dan refresh
+    onSuccess: () => {
+      // Invalidate tasks query untuk refresh data
       queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: TASKS_QUERY_KEY });
-      }, 100);
     },
   });
 };
@@ -155,55 +122,9 @@ export const useUpdateTask = () => {
 
   return useMutation({
     mutationFn: updateTaskAPI,
-    onMutate: async ({ id, taskData }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: TASKS_QUERY_KEY });
-
-      // Snapshot previous value
-      const previousTasks = queryClient.getQueryData(TASKS_QUERY_KEY);
-
-      // Optimistically update to new value
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        return old.map((task) =>
-          task._id === id || task.id === id ? { ...task, ...taskData } : task
-        );
-      });
-
-      return { previousTasks };
-    },
-    onSuccess: (updatedTask) => {
-      // Force update cache dengan data dari server
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        return old.map((task) =>
-          task._id === updatedTask._id || task.id === updatedTask.id
-            ? updatedTask
-            : task
-        );
-      });
-
-      // Force refetch dengan bypass cache
-      queryClient.refetchQueries({
-        queryKey: TASKS_QUERY_KEY,
-        type: "active",
-      });
-    },
-    onError: (err, variables, context) => {
-      // Rollback on error
-      if (context?.previousTasks) {
-        queryClient.setQueryData(TASKS_QUERY_KEY, context.previousTasks);
-      }
-    },
-    onSettled: () => {
-      // Invalidate semua queries terkait
+    onSuccess: () => {
+      // Invalidate tasks query untuk refresh data
       queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-
-      // Force remove dari cache untuk fresh fetch
-      queryClient.removeQueries({ queryKey: TASKS_QUERY_KEY, exact: false });
-
-      // Refetch dengan force
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: TASKS_QUERY_KEY });
-      }, 100);
     },
   });
 };
@@ -213,44 +134,9 @@ export const useDeleteTask = () => {
 
   return useMutation({
     mutationFn: deleteTaskAPI,
-    onMutate: async (taskId) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: TASKS_QUERY_KEY });
-
-      // Snapshot previous value
-      const previousTasks = queryClient.getQueryData(TASKS_QUERY_KEY);
-
-      // Optimistically remove task
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        return old.filter((task) => task._id !== taskId && task.id !== taskId);
-      });
-
-      return { previousTasks };
-    },
     onSuccess: () => {
-      // Force remove dari cache
-      queryClient.removeQueries({ queryKey: TASKS_QUERY_KEY, exact: false });
-
-      // Fresh fetch dari server dengan bypass cache
-      queryClient.refetchQueries({
-        queryKey: TASKS_QUERY_KEY,
-        type: "active",
-      });
-    },
-    onError: (err, variables, context) => {
-      // Rollback on error
-      if (context?.previousTasks) {
-        queryClient.setQueryData(TASKS_QUERY_KEY, context.previousTasks);
-      }
-    },
-    onSettled: () => {
-      // Force invalidate dan refresh
+      // Invalidate tasks query untuk refresh data
       queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-
-      // Additional delay untuk memastikan server sudah update
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: TASKS_QUERY_KEY });
-      }, 200);
     },
   });
 };
