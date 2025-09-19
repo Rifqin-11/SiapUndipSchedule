@@ -300,111 +300,84 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           </h4>
           <div className="relative">
             <div className="space-y-2">
-              {subject.attendanceDates && subject.attendanceDates.length > 0
-                ? subject.attendanceDates
-                    .slice(
-                      0,
-                      showAllMeetings
-                        ? subject.attendanceDates.length
-                        : subject.attendanceDates.length > 3
-                        ? 4
-                        : 3
-                    )
-                    .map((date: string, index: number) => {
-                      const meetingNumber = index + 1;
-                      const isPartiallyVisible =
-                        !showAllMeetings &&
-                        index === 3 &&
-                        subject.attendanceDates &&
-                        subject.attendanceDates.length > 3;
+              {(() => {
+                // Determine the actual number of meetings to display
+                const actualMeetingCount = Math.max(
+                  subject.attendanceDates?.length || 0,
+                  subject.meeting || 0
+                );
+                
+                const displayCount = showAllMeetings ? actualMeetingCount : 3;
+                
+                // Generate meetings array combining real dates and fallback dates
+                const meetings = Array.from({ length: actualMeetingCount }, (_, index) => {
+                  const meetingNumber = index + 1;
+                  const fallbackDates = [
+                    "Mon, 5 February 2025",
+                    "Mon, 12 February 2025", 
+                    "Mon, 19 February 2025",
+                    "Mon, 26 February 2025",
+                    "Mon, 5 March 2025",
+                    "Mon, 12 March 2025",
+                    "Mon, 19 March 2025",
+                  ];
+                  
+                  return {
+                    meetingNumber,
+                    date: subject.attendanceDates?.[index] || fallbackDates[index] || `Meeting ${meetingNumber}`,
+                    isCompleted: true
+                  };
+                });
+                
+                return meetings.slice(0, displayCount).map((meeting, index) => {
+                  const isPartiallyVisible =
+                    !showAllMeetings && index === 2 && actualMeetingCount > 3;
 
-                      return (
-                        <div
-                          key={index}
-                          className={`relative ${
-                            isPartiallyVisible ? "overflow-hidden" : ""
-                          }`}
-                        >
-                          <Timeline
-                            meetingNumber={meetingNumber}
-                            date={date}
-                            isCompleted={true}
-                          />
-                          {/* Fade overlay for 4th item */}
-                          {isPartiallyVisible && (
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none"></div>
-                          )}
-                        </div>
-                      );
-                    })
-                : Array.from(
-                    {
-                      length: Math.min(
-                        subject.meeting,
-                        showAllMeetings
-                          ? subject.meeting
-                          : subject.meeting > 3
-                          ? 4
-                          : 3
-                      ),
-                    },
-                    (_, index) => {
-                      const meetingNumber = index + 1;
-                      const isPartiallyVisible =
-                        !showAllMeetings && index === 3 && subject.meeting > 3;
-                      const fallbackDates = [
-                        "Mon, 5 February 2025",
-                        "Mon, 12 February 2025",
-                        "Mon, 19 February 2025",
-                        "Mon, 26 February 2025",
-                        "Mon, 5 March 2025",
-                        "Mon, 12 March 2025",
-                        "Mon, 19 March 2025",
-                      ];
-
-                      return (
-                        <div
-                          key={index}
-                          className={`relative ${
-                            isPartiallyVisible ? "overflow-hidden" : ""
-                          }`}
-                        >
-                          <Timeline
-                            meetingNumber={meetingNumber}
-                            date={
-                              fallbackDates[index] || `Meeting ${meetingNumber}`
-                            }
-                            isCompleted={true}
-                          />
-                          {/* Fade overlay for 4th item */}
-                          {isPartiallyVisible && (
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none"></div>
-                          )}
-                        </div>
-                      );
-                    }
-                  )}
+                  return (
+                    <div
+                      key={index}
+                      className={`relative ${
+                        isPartiallyVisible ? "overflow-hidden" : ""
+                      }`}
+                    >
+                      <Timeline
+                        meetingNumber={meeting.meetingNumber}
+                        date={meeting.date}
+                        isCompleted={meeting.isCompleted}
+                      />
+                      {/* Fade overlay for 3rd item when there are more than 3 meetings */}
+                      {isPartiallyVisible && (
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none"></div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
 
           {/* Show More/Less Button */}
-          {((subject.attendanceDates && subject.attendanceDates.length > 3) ||
-            subject.meeting > 3) && (
-            <button
-              onClick={() => setShowAllMeetings(!showAllMeetings)}
-              className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
-            >
-              {showAllMeetings ? (
-                "Show less"
-              ) : (
-                <>
-                  View all meetings (
-                  {(subject.attendanceDates?.length || subject.meeting) - 4}{" "}
-                  more)
-                </>
-              )}
-            </button>
-          )}
+          {(() => {
+            const actualMeetingCount = Math.max(
+              subject.attendanceDates?.length || 0,
+              subject.meeting || 0
+            );
+            
+            return actualMeetingCount > 3 && (
+              <button
+                onClick={() => setShowAllMeetings(!showAllMeetings)}
+                className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
+              >
+                {showAllMeetings ? (
+                  "Show less"
+                ) : (
+                  <>
+                    View all meetings ({actualMeetingCount - 3} more)
+                  </>
+                )}
+              </button>
+            );
+          })()}
         </div>
       </div>
 
