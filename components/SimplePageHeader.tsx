@@ -19,6 +19,7 @@ import {
   Info,
 } from "lucide-react";
 import BackButton from "./Back-Button";
+import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 
 // Icon mapping untuk mendukung penggunaan dari Server Components
 const iconMap: Record<string, LucideIcon> = {
@@ -55,6 +56,12 @@ const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
   iconColor = "text-green-600",
   className = "",
 }) => {
+  // Hook untuk scroll opacity effect
+  const scrollOpacity = useScrollOpacity({
+    fadeDistance: 50,
+    startOffset: 10,
+  });
+
   // Determine the icon component to render
   let IconComponent: LucideIcon | null = null;
 
@@ -65,9 +72,14 @@ const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
   }
   return (
     <section
-      className={`flex flex-row items-center pt-4 pb-2 mx-5 ${className}`}
+      className={`
+        lg:relative lg:top-auto lg:left-auto lg:right-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none
+        fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm
+        flex flex-row items-center pt-4 pb-2 px-5 ${className}
+      `}
+      style={{ opacity: scrollOpacity < 1 ? scrollOpacity : undefined }}
     >
-        <BackButton />
+      <BackButton />
 
       {/* Content di tengah */}
       <div className="flex-1 flex justify-center items-center">

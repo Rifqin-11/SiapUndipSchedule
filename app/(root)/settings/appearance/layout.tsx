@@ -1,4 +1,5 @@
 import SimplePageHeader from "@/components/SimplePageHeader";
+import FixedHeaderLayout from "@/components/FixedHeaderLayout";
 import React from "react";
 
 export default function AppearanceLayout({
@@ -14,7 +15,9 @@ export default function AppearanceLayout({
         iconColor="text-purple-600"
       />
 
-      <div className="pt-6 pb-12">{children}</div>
+      <FixedHeaderLayout extraPadding="pt-6 pb-12">
+        {children}
+      </FixedHeaderLayout>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import useAutoNotifications from "@/hooks/useAutoNotifications";
 import Link from "next/link";
 import Image from "next/image";
 import NotifIcon from "@/components/homepage/NotifIcon";
+import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 
 /** ⬇️ Tambahan: tasks & TaskCard */
 import {
@@ -45,6 +46,12 @@ const Page = () => {
   const { loading: subjectsLoading } = useSubjectsForTasks();
 
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
+
+  // Hook untuk scroll opacity effect pada mobile header
+  const scrollOpacity = useScrollOpacity({
+    fadeDistance: 50,
+    startOffset: 0,
+  });
 
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
@@ -277,7 +284,10 @@ const Page = () => {
   return (
     <main className="animate-fadeIn">
       {/* Header Section with Profile and Notifications - Hide on desktop since it's in sidebar */}
-      <section className="flex flex-row gap-2 items-center mobile-header mt-4 mx-5 lg:hidden">
+      <section
+        className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm flex flex-row gap-2 items-center pt-4 px-5 lg:hidden"
+        style={{ opacity: scrollOpacity }}
+      >
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row gap-2 items-center">
             {user?.profileImage ? (
@@ -311,116 +321,119 @@ const Page = () => {
         </div>
       </section>
 
-      <section className="flex flex-row justify-between items-center mt-6 mx-6">
-        <div className="flex flex-col text-lg dark:text-white space-y-1">
-          <h1 className="text-xl font-extrabold tracking-tight">
-            Hi {firstName}, here&apos;s your schedule
-          </h1>
-          <CurrentDayDate />
-        </div>
-        <div className="size-10 hidden xl:block">
-          <NotifIcon />
-        </div>
-      </section>
+      {/* Content wrapper dengan padding-top untuk fixed header di mobile */}
+      <div className="pt-15 lg:pt-0">
+        <section className="flex flex-row justify-between items-center mt-6 mx-6">
+          <div className="flex flex-col text-lg dark:text-white space-y-1">
+            <h1 className="text-xl font-extrabold tracking-tight">
+              Hi {firstName}, here&apos;s your schedule
+            </h1>
+            <CurrentDayDate />
+          </div>
+          <div className="size-10 hidden xl:block">
+            <NotifIcon />
+          </div>
+        </section>
 
-      <section className="mt-6 dark:text-white">
-        <div className="flex flex-row justify-between items-center mx-6 mb-2">
-          <h2 className="font-bold text-xl">Your Courses</h2>
-          <Link
-            href="/settings/manage-subjects"
-            className="text-xs text-blue-600 hover:underline dark:text-blue-400"
-          >
-            View more
-          </Link>
-        </div>
-
-        {/* This div maintains overflow-x auto for horizontal scrolling */}
-        <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-900 dark:scrollbar-thumb-gray-900">
-          <div className="flex gap-4">{coursesContent}</div>
-        </div>
-      </section>
-
-      <section className="mt-6 mx-6 dark:text-white">
-        <div className="flex flex-row justify-between items-center mb-2">
-          <h2 className="font-bold text-xl">Today&apos;s Schedule</h2>
-        </div>
-
-        <TodaySubject />
-      </section>
-
-      {todaysInProgressTasks.length > 0 && (
-        <section className="mt-4 mx-6 dark:text-white">
-          <div className="flex flex-row justify-between items-center mb-2">
-            <h2 className="font-bold text-xl">Today&apos;s Tasks</h2>
+        <section className="mt-6 dark:text-white">
+          <div className="flex flex-row justify-between items-center mx-6 mb-2">
+            <h2 className="font-bold text-xl">Your Courses</h2>
             <Link
-              href="/tasks"
+              href="/settings/manage-subjects"
               className="text-xs text-blue-600 hover:underline dark:text-blue-400"
             >
-              View all
+              View more
             </Link>
           </div>
 
-          {tasksLoading ? (
-            <div className="bg-white dark:bg-card rounded-xl p-6 border border-gray-200 dark:border-border text-sm text-gray-600 dark:text-gray-400">
-              Loading tasks…
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {todaysInProgressTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  subjects={subjects}
-                  onOpenDetail={() => openDetail(task)} // ⬅️ buka drawer
-                  onToggleDone={() => toggleStatus(task)} // ⬅️ toggle in-progress/done
-                  getDaysUntilDue={getDaysUntilDue}
-                />
-              ))}
-            </div>
-          )}
+          {/* This div maintains overflow-x auto for horizontal scrolling */}
+          <div className="overflow-x-auto px-6 py-2 scrollbar-thin scrollbar-thumb-gray-900 dark:scrollbar-thumb-gray-900">
+            <div className="flex gap-4">{coursesContent}</div>
+          </div>
         </section>
-      )}
 
-      {/* form drawer (create/edit) */}
-      <TaskFormDrawer
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        loadingSubjects={subjectsLoading}
-        subjects={subjects}
-        initialTask={editingTask}
-        submitting={submitting}
-        onSubmit={submitForm}
-      />
+        <section className="mt-6 mx-6 dark:text-white">
+          <div className="flex flex-row justify-between items-center mb-2">
+            <h2 className="font-bold text-xl">Today&apos;s Schedule</h2>
+          </div>
 
-      {/* delete dialog */}
-      <DeleteConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        task={taskToDelete}
-        onConfirm={confirmDelete}
-      />
+          <TodaySubject />
+        </section>
 
-      {/* detail drawer */}
-      <TaskDetailDrawer
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        task={selectedTask}
-        onEdit={openEdit}
-        onDelete={requestDelete}
-        onToggleStatus={() => selectedTask && toggleStatus(selectedTask)}
-      />
+        {todaysInProgressTasks.length > 0 && (
+          <section className="mt-4 mx-6 dark:text-white">
+            <div className="flex flex-row justify-between items-center mb-2">
+              <h2 className="font-bold text-xl">Today&apos;s Tasks</h2>
+              <Link
+                href="/tasks"
+                className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+              >
+                View all
+              </Link>
+            </div>
 
-      {/* Floating Action Button */}
-      <FloatingActionButton onClick={handleAddSubject} />
+            {tasksLoading ? (
+              <div className="bg-white dark:bg-card rounded-xl p-6 border border-gray-200 dark:border-border text-sm text-gray-600 dark:text-gray-400">
+                Loading tasks…
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {todaysInProgressTasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    subjects={subjects}
+                    onOpenDetail={() => openDetail(task)} // ⬅️ buka drawer
+                    onToggleDone={() => toggleStatus(task)} // ⬅️ toggle in-progress/done
+                    getDaysUntilDue={getDaysUntilDue}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
-      {/* Subject Modal */}
-      <SubjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveSubject}
-        mode="add"
-        selectedDate={selectedDate}
-      />
+        {/* form drawer (create/edit) */}
+        <TaskFormDrawer
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          loadingSubjects={subjectsLoading}
+          subjects={subjects}
+          initialTask={editingTask}
+          submitting={submitting}
+          onSubmit={submitForm}
+        />
+
+        {/* delete dialog */}
+        <DeleteConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          task={taskToDelete}
+          onConfirm={confirmDelete}
+        />
+
+        {/* detail drawer */}
+        <TaskDetailDrawer
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          task={selectedTask}
+          onEdit={openEdit}
+          onDelete={requestDelete}
+          onToggleStatus={() => selectedTask && toggleStatus(selectedTask)}
+        />
+
+        {/* Floating Action Button */}
+        <FloatingActionButton onClick={handleAddSubject} />
+
+        {/* Subject Modal */}
+        <SubjectModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveSubject}
+          mode="add"
+          selectedDate={selectedDate}
+        />
+      </div>
     </main>
   );
 };

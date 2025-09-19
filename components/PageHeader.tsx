@@ -8,6 +8,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 import { useTasks } from "@/hooks/useTasks";
 import { getCurrentDayAndDate, normalizeDayName } from "@/utils/date";
+import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 
 /** ===== Utilities lokal kecil2 ===== */
 
@@ -81,6 +82,12 @@ export default function PageHeader(props: PageHeaderProps) {
   const { data: subjects = [], isLoading: subjectsLoading } = useSubjects();
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
 
+  // Hook untuk scroll opacity effect
+  const scrollOpacity = useScrollOpacity({
+    fadeDistance: 40,
+    startOffset: 0,
+  });
+
   // avatar default dari user profile, tapi bisa dioverride
   const avatar = props.avatarOverride ?? {
     name: user?.name,
@@ -131,6 +138,7 @@ export default function PageHeader(props: PageHeaderProps) {
         rightSlot={props.rightSlot}
         className={props.className}
         avatar={props.hideAvatar ? undefined : avatar}
+        opacity={scrollOpacity}
       />
     );
   }
@@ -154,6 +162,7 @@ export default function PageHeader(props: PageHeaderProps) {
         rightSlot={props.rightSlot}
         className={props.className}
         avatar={props.hideAvatar ? undefined : avatar}
+        opacity={scrollOpacity}
       />
     );
   }
@@ -167,6 +176,7 @@ export default function PageHeader(props: PageHeaderProps) {
       rightSlot={props.rightSlot}
       className={props.className}
       avatar={props.hideAvatar ? undefined : avatar}
+      opacity={scrollOpacity}
     />
   );
 }
@@ -179,15 +189,26 @@ function HeaderFrame({
   rightSlot,
   className,
   avatar,
+  opacity = 1,
 }: {
   title: string;
   subtitle?: React.ReactNode;
   rightSlot?: React.ReactNode;
   className?: string;
   avatar?: { name?: string; imageUrl?: string };
+  opacity?: number;
 }) {
   return (
-    <section className={cn("mt-4 mb-2 mx-5", className)}>
+    <section
+      className={cn(
+        // Mobile: fixed positioning dengan full width
+        "lg:relative lg:top-auto lg:left-auto lg:right-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none",
+        "fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm",
+        "mt-4 lg:mb-2 mx-5",
+        className
+      )}
+      style={{ opacity: opacity < 1 ? opacity : undefined }}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="font-bold text-xl truncate">{title}</h1>

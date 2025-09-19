@@ -204,7 +204,8 @@ export default function TasksPage() {
           </Button>
         }
       />
-      <div className="mx-auto p-6 space-y-6">
+      {/* Content dengan padding-top untuk fixed header di mobile saja */}
+      <div className="pt-20 lg:pt-0 mx-auto p-6 space-y-6">
         {/* stats */}
         <div className=" grid-cols-1 md:grid-cols-3 gap-4 hidden xl:grid">
           <StatCard
