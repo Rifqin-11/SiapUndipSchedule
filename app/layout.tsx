@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import DynamicThemeColor from "@/components/DynamicThemeColor";
+import IOSKeyboardFix from "@/components/IOSKeyboardFix";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,17 +46,22 @@ export default function RootLayout({
         />
         <link rel="icon" type="image/png" sizes="196x196" href="/icon.png" />
 
-        {/* PWA Meta Tags */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        {/* PWA Meta Tags - Modified for better iOS keyboard support */}
+        <meta name="apple-mobile-web-app-capable" content="no" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="SIAP UNDIP" />
 
         {/* iOS Keyboard Support */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="apple-touch-fullscreen" content="yes" />
         <meta name="apple-mobile-web-app-orientations" content="portrait" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        
+        {/* Additional iOS Input Support */}
+        <meta name="HandheldFriendly" content="true" />
+        <meta name="MobileOptimized" content="width" />
 
-        {/* iOS Keyboard Fix Script */}
+        {/* iOS Keyboard Fix Script - Enhanced */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -85,14 +91,49 @@ export default function RootLayout({
                     window.visualViewport.addEventListener('resize', handleViewportChange);
                   }
 
-                  // Focus management for inputs
+                  // Enhanced focus management for inputs
                   document.addEventListener('focusin', function(e) {
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                      // Force enable text selection
+                      e.target.style.webkitUserSelect = 'text';
+                      e.target.style.userSelect = 'text';
+                      e.target.style.pointerEvents = 'auto';
+                      
+                      // Ensure minimum font size to prevent zoom
+                      if (!e.target.style.fontSize || parseFloat(e.target.style.fontSize) < 16) {
+                        e.target.style.fontSize = '16px';
+                      }
+                      
                       setTimeout(function() {
+                        e.target.focus();
                         e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }, 300);
+                      }, 100);
                     }
                   });
+
+                  // Fix for all inputs on page load
+                  function fixInputs() {
+                    const inputs = document.querySelectorAll('input, textarea');
+                    inputs.forEach(function(input) {
+                      input.style.webkitUserSelect = 'text';
+                      input.style.userSelect = 'text';
+                      input.style.pointerEvents = 'auto';
+                      if (!input.style.fontSize || parseFloat(input.style.fontSize) < 16) {
+                        input.style.fontSize = '16px';
+                      }
+                    });
+                  }
+
+                  // Run on load and when DOM changes
+                  if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', fixInputs);
+                  } else {
+                    fixInputs();
+                  }
+
+                  // Observer for dynamic content
+                  const observer = new MutationObserver(fixInputs);
+                  observer.observe(document.body, { childList: true, subtree: true });
                 }
               })();
             `,
@@ -138,6 +179,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <DynamicThemeColor />
+              <IOSKeyboardFix />
               <div className="min-h-screen bg-background">{children}</div>
               <Toaster />
             </ThemeProvider>

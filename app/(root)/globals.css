@@ -254,6 +254,15 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* Allow text selection for form elements */
+    input,
+    textarea,
+    [contenteditable="true"] {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
+    }
+
     /* Ensure status bar area is properly handled */
     .mobile-header {
       padding-top: max(1rem, env(safe-area-inset-top));
@@ -292,10 +301,28 @@
   input,
   textarea,
   select {
-    -webkit-user-select: text;
-    user-select: text;
-    -webkit-touch-callout: default;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    /* Prevent iOS zoom on focus */
+    font-size: 16px !important;
+    
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1) !important;
+    pointer-events: auto !important;
+    
+    /* Remove iOS styling */
+    -webkit-appearance: none;
+    border-radius: 0;
+    background-clip: padding-box;
+  }
+
+  /* Force input focus capability */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    font-size: 16px !important;
   }
 
   /* Fix for iOS input styling */
