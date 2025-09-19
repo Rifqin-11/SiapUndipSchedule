@@ -45,16 +45,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
     if (!subject) return { success: false, error: "Subject not found" };
 
     try {
-      const result = await updateSubjectMutation.mutateAsync({ 
-        id: subject.id, 
-        subject: subjectData 
+      const result = await updateSubjectMutation.mutateAsync({
+        id: subject.id,
+        subject: subjectData,
       });
-      
+
       toast.success("Mata kuliah berhasil diupdate!");
       setIsEditModalOpen(false);
       return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Gagal mengupdate mata kuliah";
+      const errorMessage =
+        error instanceof Error ? error.message : "Gagal mengupdate mata kuliah";
       toast.error(`Error: ${errorMessage}`);
       return { success: false, error: errorMessage };
     }
@@ -78,14 +79,18 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     Detail Mata Kuliah
                   </h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {isLoading ? "Loading..." : "Informasi lengkap tentang mata kuliah"}
+                    {isLoading
+                      ? "Loading..."
+                      : "Informasi lengkap tentang mata kuliah"}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleEdit}
-                disabled={isLoading || !subject || updateSubjectMutation.isPending}
+                disabled={
+                  isLoading || !subject || updateSubjectMutation.isPending
+                }
                 className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 shadow-sm"
                 title="Edit Subject"
               >

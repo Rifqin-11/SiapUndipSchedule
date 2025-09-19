@@ -381,12 +381,12 @@ export const useSubject = (id: string) => {
         }
 
         const data = await response.json();
-        
+
         // Ensure we always return a valid subject object
         if (!data || !data.data) {
           throw new Error("Invalid subject data received");
         }
-        
+
         return data.data;
       } catch (error) {
         console.error("Error in fetchSubject:", error);

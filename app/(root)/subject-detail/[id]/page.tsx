@@ -104,7 +104,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             Gagal Memuat Data
           </h3>
           <p className="text-red-700 dark:text-red-300 mb-6">
-            {error?.message || 'Terjadi kesalahan saat memuat data subject'}
+            {error?.message || "Terjadi kesalahan saat memuat data subject"}
           </p>
           <button
             onClick={() => window.history.back()}

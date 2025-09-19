@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 
 const UserPage = () => {
   // Get subjects data
-  const { subjects } = useSubjects();
+  const { data: subjects } = useSubjects();
 
   // Get user profile data
   const { user, loading: userLoading } = useUserProfile();
