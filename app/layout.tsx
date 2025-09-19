@@ -47,8 +47,11 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="196x196" href="/icon.png" />
 
         {/* PWA Meta Tags - Modified for better iOS keyboard support */}
-        <meta name="apple-mobile-web-app-capable" content="no" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="SIAP UNDIP" />
 
         {/* iOS Keyboard Support */}
@@ -56,7 +59,7 @@ export default function RootLayout({
         <meta name="apple-touch-fullscreen" content="yes" />
         <meta name="apple-mobile-web-app-orientations" content="portrait" />
         <meta name="mobile-web-app-capable" content="yes" />
-        
+
         {/* Additional iOS Input Support */}
         <meta name="HandheldFriendly" content="true" />
         <meta name="MobileOptimized" content="width" />
@@ -67,6 +70,10 @@ export default function RootLayout({
             __html: `
               (function() {
                 if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                  // Check if running as PWA
+                  const isPWA = window.navigator.standalone === true ||
+                               window.matchMedia('(display-mode: standalone)').matches;
+
                   // Detect when virtual keyboard appears
                   let initialViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
 
@@ -91,25 +98,55 @@ export default function RootLayout({
                     window.visualViewport.addEventListener('resize', handleViewportChange);
                   }
 
-                  // Enhanced focus management for inputs
-                  document.addEventListener('focusin', function(e) {
+                  // Enhanced focus management for inputs - PWA specific
+                  function handleInputFocus(e) {
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                       // Force enable text selection
                       e.target.style.webkitUserSelect = 'text';
                       e.target.style.userSelect = 'text';
                       e.target.style.pointerEvents = 'auto';
-                      
+                      e.target.style.webkitAppearance = 'none';
+                      e.target.style.borderRadius = '0';
+
                       // Ensure minimum font size to prevent zoom
                       if (!e.target.style.fontSize || parseFloat(e.target.style.fontSize) < 16) {
                         e.target.style.fontSize = '16px';
                       }
-                      
-                      setTimeout(function() {
-                        e.target.focus();
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }, 100);
+
+                      // PWA specific: Force focus with multiple attempts
+                      if (isPWA) {
+                        e.preventDefault();
+                        e.target.blur();
+
+                        setTimeout(function() {
+                          e.target.focus();
+                          e.target.click();
+                        }, 50);
+
+                        setTimeout(function() {
+                          e.target.focus();
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 150);
+                      } else {
+                        setTimeout(function() {
+                          e.target.focus();
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                      }
                     }
-                  });
+                  }
+
+                  document.addEventListener('focusin', handleInputFocus);
+                  document.addEventListener('touchstart', handleInputFocus);
+
+                  // Additional PWA specific handling
+                  if (isPWA) {
+                    document.addEventListener('click', function(e) {
+                      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                        handleInputFocus(e);
+                      }
+                    });
+                  }
 
                   // Fix for all inputs on page load
                   function fixInputs() {
@@ -118,8 +155,18 @@ export default function RootLayout({
                       input.style.webkitUserSelect = 'text';
                       input.style.userSelect = 'text';
                       input.style.pointerEvents = 'auto';
+                      input.style.webkitAppearance = 'none';
+                      input.style.borderRadius = '0';
+
                       if (!input.style.fontSize || parseFloat(input.style.fontSize) < 16) {
                         input.style.fontSize = '16px';
+                      }
+
+                      // PWA specific: Add touch event listeners
+                      if (isPWA) {
+                        input.addEventListener('touchstart', function(e) {
+                          e.target.focus();
+                        });
                       }
                     });
                   }

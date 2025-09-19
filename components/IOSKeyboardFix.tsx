@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export default function IOSKeyboardFix() {
   useEffect(() => {
@@ -8,38 +8,76 @@ export default function IOSKeyboardFix() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (!isIOS) return;
 
-    let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
-    let currentlyFocusedInput: HTMLInputElement | HTMLTextAreaElement | null = null;
+    // Check if running as PWA
+    const isPWA =
+      (window.navigator as any).standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches;
 
-    // Function to handle input focus
-    const handleInputFocus = (event: FocusEvent) => {
+    let initialViewportHeight =
+      window.visualViewport?.height || window.innerHeight;
+    let currentlyFocusedInput: HTMLInputElement | HTMLTextAreaElement | null =
+      null;
+
+    // Function to handle input focus - enhanced for PWA
+    const handleInputFocus = (event: FocusEvent | TouchEvent | Event) => {
       const target = event.target as HTMLInputElement | HTMLTextAreaElement;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
+      ) {
         currentlyFocusedInput = target;
-        
+
         // Force the input to be focusable
-        target.style.pointerEvents = 'auto';
-        (target.style as any).webkitUserSelect = 'text';
-        target.style.userSelect = 'text';
-        
-        // Add a small delay to ensure the keyboard appears
-        setTimeout(() => {
-          target.focus();
-          target.click();
-          
-          // Scroll the input into view
-          target.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-            inline: 'nearest'
-          });
-        }, 100);
+        target.style.pointerEvents = "auto";
+        (target.style as any).webkitUserSelect = "text";
+        target.style.userSelect = "text";
+        (target.style as any).webkitAppearance = "none";
+        target.style.borderRadius = "0";
+
+        // Ensure 16px font size to prevent zoom
+        if (!target.style.fontSize || parseFloat(target.style.fontSize) < 16) {
+          target.style.fontSize = "16px";
+        }
+
+        if (isPWA) {
+          // PWA specific handling - more aggressive approach
+          event.preventDefault?.();
+          target.blur();
+
+          setTimeout(() => {
+            target.focus();
+            target.click();
+          }, 50);
+
+          setTimeout(() => {
+            target.focus();
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }, 150);
+        } else {
+          // Regular Safari handling
+          setTimeout(() => {
+            target.focus();
+            target.click();
+
+            // Scroll the input into view
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }, 100);
+        }
 
         // Prevent body from being non-scalable
         const viewport = document.querySelector('meta[name="viewport"]');
         if (viewport) {
-          viewport.setAttribute('content', 
-            'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover'
+          viewport.setAttribute(
+            "content",
+            "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
           );
         }
       }
@@ -53,59 +91,78 @@ export default function IOSKeyboardFix() {
     // Function to handle viewport changes (keyboard open/close)
     const handleViewportChange = () => {
       if (!window.visualViewport) return;
-      
+
       const currentHeight = window.visualViewport.height;
       const heightDifference = initialViewportHeight - currentHeight;
-      
+
       // If height difference is significant, keyboard is likely open
       if (heightDifference > 150) {
-        document.body.classList.add('keyboard-open');
-        
+        document.body.classList.add("keyboard-open");
+
         // If there's a focused input, scroll it into view
         if (currentlyFocusedInput) {
           setTimeout(() => {
-            currentlyFocusedInput?.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'nearest'
+            currentlyFocusedInput?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
             });
           }, 300);
         }
       } else {
-        document.body.classList.remove('keyboard-open');
+        document.body.classList.remove("keyboard-open");
       }
     };
 
     // Function to ensure inputs are properly styled for iOS
     const setupInputs = () => {
-      const inputs = document.querySelectorAll('input, textarea');
+      const inputs = document.querySelectorAll("input, textarea");
       inputs.forEach((input) => {
         const element = input as HTMLInputElement | HTMLTextAreaElement;
-        
+
         // Ensure minimum font size to prevent zoom
-        if (element.style.fontSize === '' || parseFloat(element.style.fontSize) < 16) {
-          element.style.fontSize = '16px';
+        if (
+          element.style.fontSize === "" ||
+          parseFloat(element.style.fontSize) < 16
+        ) {
+          element.style.fontSize = "16px";
         }
-        
+
         // Remove any iOS styling that might interfere
-        (element.style as any).webkitAppearance = 'none';
-        element.style.borderRadius = '0';
-        
+        (element.style as any).webkitAppearance = "none";
+        element.style.borderRadius = "0";
+
         // Ensure proper touch behavior
-        (element.style as any).webkitTouchCallout = 'default';
-        (element.style as any).webkitUserSelect = 'text';
-        element.style.userSelect = 'text';
+        (element.style as any).webkitTouchCallout = "default";
+        (element.style as any).webkitUserSelect = "text";
+        element.style.userSelect = "text";
+
+        // PWA specific: Add touch event listeners
+        if (isPWA) {
+          element.addEventListener("touchstart", (e) => {
+            handleInputFocus(e);
+          });
+          element.addEventListener("click", (e) => {
+            handleInputFocus(e);
+          });
+        }
       });
     };
 
     // Set up event listeners
-    document.addEventListener('focusin', handleInputFocus, true);
-    document.addEventListener('focusout', handleInputBlur, true);
-    
+    document.addEventListener("focusin", handleInputFocus, true);
+    document.addEventListener("focusout", handleInputBlur, true);
+
+    // PWA specific event listeners
+    if (isPWA) {
+      document.addEventListener("touchstart", handleInputFocus, true);
+      document.addEventListener("click", handleInputFocus, true);
+    }
+
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener("resize", handleViewportChange);
     } else {
-      window.addEventListener('resize', handleViewportChange);
+      window.addEventListener("resize", handleViewportChange);
     }
 
     // Initial setup
@@ -118,22 +175,25 @@ export default function IOSKeyboardFix() {
 
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
 
     // Cleanup
     return () => {
-      document.removeEventListener('focusin', handleInputFocus, true);
-      document.removeEventListener('focusout', handleInputBlur, true);
-      
+      document.removeEventListener("focusin", handleInputFocus, true);
+      document.removeEventListener("focusout", handleInputBlur, true);
+
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener(
+          "resize",
+          handleViewportChange
+        );
       } else {
-        window.removeEventListener('resize', handleViewportChange);
+        window.removeEventListener("resize", handleViewportChange);
       }
-      
+
       observer.disconnect();
-      document.body.classList.remove('keyboard-open');
+      document.body.classList.remove("keyboard-open");
     };
   }, []);
 
