@@ -13,6 +13,7 @@ import {
 import BackButton from "@/components/Back-Button";
 import useClassNotifications from "@/hooks/useClassNotifications";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
+import { useTaskNotifications } from "@/hooks/useTaskNotifications";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import SimplePageHeader from "@/components/SimplePageHeader";
@@ -28,6 +29,7 @@ const NotificationsPage = () => {
     resetSettings,
     getSettingsInfo,
     showWeekendNotification,
+    testWeekendNotification,
     getWeekendSummary,
   } = useNotificationSettings();
 
@@ -43,6 +45,9 @@ const NotificationsPage = () => {
     initializeNotifications,
     testNotification,
   } = useClassNotifications();
+
+  const { testTaskNotification, clearNotificationHistory } =
+    useTaskNotifications();
 
   useEffect(() => {
     // Mark as client-side
@@ -108,12 +113,17 @@ const NotificationsPage = () => {
   };
 
   const handleTestWeekendReminder = () => {
-    if (notificationsEnabled) {
-      showWeekendNotification();
-      toast.success("Weekend reminder sent!");
-    } else {
-      toast.error("Please enable notifications first.");
-    }
+    testWeekendNotification();
+    toast.success("Weekend reminder test sent!");
+  };
+
+  const handleTestTaskReminder = () => {
+    testTaskNotification();
+    toast.success("Task reminder test sent!");
+  };
+
+  const handleClearNotificationHistory = () => {
+    clearNotificationHistory();
   };
 
   const handleSaveSettings = async () => {
@@ -209,7 +219,15 @@ const NotificationsPage = () => {
                     size="sm"
                     className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
                   >
-                    Test Weekend Reminder
+                    Test Weekend
+                  </Button>
+                  <Button
+                    onClick={handleTestTaskReminder}
+                    variant="outline"
+                    size="sm"
+                    className="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200"
+                  >
+                    Test Task
                   </Button>
                 </>
               )}
@@ -398,7 +416,7 @@ const NotificationsPage = () => {
                   Pengingat Tugas
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Notifikasi untuk deadline tugas
+                  Notifikasi 24 jam & 1 jam sebelum deadline tugas
                 </p>
               </div>
               <button
@@ -418,6 +436,33 @@ const NotificationsPage = () => {
                 />
               </button>
             </div>
+
+            {settings.assignmentReminders && (
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+                    ℹ️
+                  </div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="font-medium mb-1">Jadwal Notifikasi Tugas:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>
+                        • ⏰ <strong>24 jam sebelum deadline</strong> -
+                        Pengingat awal
+                      </li>
+                      <li>
+                        • 🚨 <strong>1 jam sebelum deadline</strong> -
+                        Peringatan segera
+                      </li>
+                    </ul>
+                    <p className="mt-2 text-xs opacity-75">
+                      Setiap notifikasi hanya akan muncul sekali untuk mencegah
+                      spam
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

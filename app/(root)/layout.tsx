@@ -5,8 +5,12 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import BottomNavbar from "@/components/BottomNavbar";
 import Sidebar from "@/components/Sidebar";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import { useTaskNotifications } from "@/hooks/useTaskNotifications";
 
 const Layout = ({ children }: { children: ReactNode }) => {
+  // Initialize task notifications
+  useTaskNotifications();
+
   return (
     <ProtectedRoute>
       {/* Offline indicator */}

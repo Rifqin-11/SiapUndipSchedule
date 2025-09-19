@@ -127,7 +127,9 @@ export const useNotificationSettings = () => {
       activeFeatures,
       totalActive: activeFeatures.length,
       hasActiveReminders:
-        settings.classReminders || settings.assignmentReminders || settings.weekendReminders,
+        settings.classReminders ||
+        settings.assignmentReminders ||
+        settings.weekendReminders,
     };
   }, [settings]);
 
@@ -173,6 +175,38 @@ export const useNotificationSettings = () => {
     }
   }, [settings.weekendReminders, generateWeeklySummary, weeklyStats]);
 
+  // Function untuk testing weekend notification (bypasses restrictions)
+  const testWeekendNotification = useCallback(() => {
+    const summary = generateWeeklySummary();
+    if (!summary) {
+      toast.error(
+        "Tidak dapat menghasilkan ringkasan mingguan. Pastikan ada data mata kuliah dan tugas."
+      );
+      return;
+    }
+
+    // Show toast notification (bypass weekend and setting checks for testing)
+    toast.success(summary.title, {
+      description: summary.message,
+      duration: 8000, // 8 seconds
+      action: {
+        label: "Lihat Detail",
+        onClick: () => {
+          console.log("Weekly stats details:", weeklyStats);
+          // You could open a modal or navigate to a detailed view here
+        },
+      },
+    });
+
+    // Optional: Show browser notification if permission granted
+    if (Notification.permission === "granted") {
+      new Notification(summary.title, {
+        body: summary.message,
+        icon: "/icon-192x192.png", // Use your app icon
+      });
+    }
+  }, [generateWeeklySummary, weeklyStats]);
+
   // Check for weekend and show notification
   useEffect(() => {
     if (settings.weekendReminders && !isLoading) {
@@ -202,6 +236,7 @@ export const useNotificationSettings = () => {
     getSettingsInfo,
     getWeekendSummary,
     showWeekendNotification,
+    testWeekendNotification,
     weeklyStats,
   };
 };
