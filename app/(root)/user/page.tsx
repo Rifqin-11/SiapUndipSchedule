@@ -23,7 +23,11 @@ import { useRouter } from "next/navigation";
 
 const UserPage = () => {
   // Get subjects data
-  const { subjects } = useSubjects();
+  const {
+    data: subjects,
+    isLoading: subjectsLoading,
+    error: subjectsError,
+  } = useSubjects();
 
   // Get user profile data
   const { user, loading: userLoading } = useUserProfile();
@@ -87,9 +91,10 @@ const UserPage = () => {
   ];
 
   // Calculate attendance percentage
-  const attendancePercentage = subjects
-    ? calculateAttendancePercentage(subjects.length)
-    : 0;
+  const attendancePercentage =
+    subjects && subjects.length > 0
+      ? calculateAttendancePercentage(subjects.length)
+      : 0;
 
   // Get initials from user name
   const getInitials = (name: string) => {
@@ -101,7 +106,7 @@ const UserPage = () => {
       .slice(0, 2);
   };
 
-  if (userLoading) {
+  if (userLoading || subjectsLoading) {
     return <UserPageSkeleton />;
   }
 
@@ -165,7 +170,7 @@ const UserPage = () => {
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {subjects?.length || 0}
+              {subjectsError ? "?" : subjects?.length || 0}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Subjects
