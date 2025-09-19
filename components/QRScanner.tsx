@@ -4,15 +4,16 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import {
   Camera,
   X,
   RotateCcw,
   Loader2,
   ImagePlus,
-  Flashlight,
-  FlashlightOff,
   Type,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -61,7 +62,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
   const [facingMode, setFacingMode] = useState<"user" | "environment">(
     "environment"
   );
-  const [torchEnabled, setTorchEnabled] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [brightness, setBrightness] = useState(50);
   const [scanAttempts, setScanAttempts] = useState(0);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -281,8 +282,12 @@ const QRScanner: React.FC<QRScannerProps> = ({
               constraints.whiteBalanceMode = "continuous";
             }
 
-            if (capabilities.torch) {
-              constraints.torch = torchEnabled;
+            // Add zoom support
+            if (capabilities.zoom && zoomLevel !== 1) {
+              const zoomRange = capabilities.zoom as { max?: number; min?: number };
+              const maxZoom = zoomRange.max || 3;
+              const minZoom = zoomRange.min || 1;
+              constraints.zoom = Math.min(Math.max(zoomLevel, minZoom), maxZoom);
             }
 
             // Only apply constraints if track is still live
@@ -309,7 +314,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
         throw error;
       }
     },
-    [torchEnabled]
+    [zoomLevel]
   );
 
   // Brightness detection for auto-adjustment
@@ -344,31 +349,86 @@ const QRScanner: React.FC<QRScannerProps> = ({
     [setBrightness]
   );
 
-  // Toggle torch/flashlight
-  const toggleTorch = useCallback(async () => {
+  // Zoom functions
+  const handleZoomChange = useCallback(async (value: number[]) => {
+    const newZoomLevel = value[0];
+    setZoomLevel(newZoomLevel);
+    
     if (streamRef.current) {
       const track = streamRef.current.getVideoTracks()[0];
       if (track && "getCapabilities" in track) {
         const capabilities = track.getCapabilities() as Record<string, unknown>;
-        if (capabilities.torch) {
+        if (capabilities.zoom) {
           try {
+            const zoomRange = capabilities.zoom as { max?: number; min?: number };
+            const maxZoom = zoomRange.max || 3;
+            const minZoom = zoomRange.min || 1;
+            const clampedZoom = Math.min(Math.max(newZoomLevel, minZoom), maxZoom);
+            
             await track.applyConstraints({
-              advanced: [{ torch: !torchEnabled } as Record<string, unknown>],
+              advanced: [{ zoom: clampedZoom } as Record<string, unknown>],
             });
-            setTorchEnabled(!torchEnabled);
-            toast.success(
-              torchEnabled ? "Flash dimatikan" : "Flash dinyalakan"
-            );
           } catch (error) {
-            console.warn("Failed to toggle torch:", error);
-            toast.error("Flash tidak tersedia pada perangkat ini");
+            console.warn("Failed to apply zoom:", error);
           }
-        } else {
-          toast.error("Flash tidak tersedia pada kamera ini");
         }
       }
     }
-  }, [torchEnabled]);
+  }, []);
+
+  const zoomIn = useCallback(async () => {
+    if (streamRef.current && zoomLevel < 3) {
+      const newZoomLevel = Math.min(zoomLevel + 0.5, 3);
+      setZoomLevel(newZoomLevel);
+      
+      const track = streamRef.current.getVideoTracks()[0];
+      if (track && "getCapabilities" in track) {
+        const capabilities = track.getCapabilities() as Record<string, unknown>;
+        if (capabilities.zoom) {
+          try {
+            const zoomRange = capabilities.zoom as { max?: number; min?: number };
+            const maxZoom = zoomRange.max || 3;
+            const clampedZoom = Math.min(newZoomLevel, maxZoom);
+            
+            await track.applyConstraints({
+              advanced: [{ zoom: clampedZoom } as Record<string, unknown>],
+            });
+            toast.success(`Zoom: ${clampedZoom.toFixed(1)}x`);
+          } catch (error) {
+            console.warn("Failed to apply zoom:", error);
+            toast.error("Zoom tidak tersedia pada perangkat ini");
+          }
+        }
+      }
+    }
+  }, [zoomLevel]);
+
+  const zoomOut = useCallback(async () => {
+    if (streamRef.current && zoomLevel > 1) {
+      const newZoomLevel = Math.max(zoomLevel - 0.5, 1);
+      setZoomLevel(newZoomLevel);
+      
+      const track = streamRef.current.getVideoTracks()[0];
+      if (track && "getCapabilities" in track) {
+        const capabilities = track.getCapabilities() as Record<string, unknown>;
+        if (capabilities.zoom) {
+          try {
+            const zoomRange = capabilities.zoom as { max?: number; min?: number };
+            const minZoom = zoomRange.min || 1;
+            const clampedZoom = Math.max(newZoomLevel, minZoom);
+            
+            await track.applyConstraints({
+              advanced: [{ zoom: clampedZoom } as Record<string, unknown>],
+            });
+            toast.success(`Zoom: ${clampedZoom.toFixed(1)}x`);
+          } catch (error) {
+            console.warn("Failed to apply zoom:", error);
+            toast.error("Zoom tidak tersedia pada perangkat ini");
+          }
+        }
+      }
+    }
+  }, [zoomLevel]);
 
   // Manual QR code input handler (moved after handleScanResult)
   const saveAttendanceHistory = useCallback(async (code: string) => {
@@ -525,6 +585,9 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
   const stopScanning = useCallback(() => {
     console.log("Stopping scanner...");
+
+    // Reset zoom level
+    setZoomLevel(1);
 
     // Stop BarcodeDetector interval
     if (detectionIntervalRef.current) {
@@ -784,7 +847,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
             const lightLevel = detectLighting(videoRef.current);
             if (lightLevel < 30) {
               toast.info(
-                "Cahaya kurang terang. Cobalah menyalakan flash atau pindah ke tempat yang lebih terang."
+                "Cahaya kurang terang. Pindah ke tempat yang lebih terang atau gunakan zoom untuk fokus yang lebih baik."
               );
             }
           }
@@ -1218,20 +1281,19 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
                 {/* Enhanced Controls Overlay */}
                 {isScanning && (
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    {/* Torch/Flash Button */}
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={toggleTorch}
-                      className="bg-black/50 hover:bg-black/70 text-white border-0"
-                    >
-                      {torchEnabled ? (
-                        <FlashlightOff className="w-4 h-4" />
-                      ) : (
-                        <Flashlight className="w-4 h-4" />
-                      )}
-                    </Button>
+                  <div className="absolute top-4 right-4">
+                    {/* Vertical Zoom Control */}
+                    <div className="bg-black/60 backdrop-blur-sm rounded-lg p-2">
+                      <Slider
+                        value={[zoomLevel]}
+                        onValueChange={handleZoomChange}
+                        min={1}
+                        max={3}
+                        step={0.1}
+                        orientation="vertical"
+                        className="h-20 [&_[data-slot=slider-track]]:bg-white/20 [&_[data-slot=slider-range]]:bg-white [&_[data-slot=slider-thumb]]:bg-white [&_[data-slot=slider-thumb]]:border-white"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -1239,7 +1301,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                 {brightness < 30 && isScanning && (
                   <div className="absolute bottom-2 left-2 right-2">
                     <div className="bg-orange-500/80 text-white text-xs px-2 py-1 rounded">
-                      ⚠️ Cahaya kurang terang - Coba nyalakan flash
+                      ⚠️ Cahaya kurang terang - Pindah ke tempat yang lebih terang
                     </div>
                   </div>
                 )}

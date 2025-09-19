@@ -213,7 +213,7 @@ const ManageSubjects = () => {
         </Link>
         <div className="flex justify-between items-center mb-6 mt-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Kelola Mata Kuliah
+            Manage Subjects
           </h1>
           <div className="flex gap-3">
             {/* Delete All Button - only show if there are subjects */}
