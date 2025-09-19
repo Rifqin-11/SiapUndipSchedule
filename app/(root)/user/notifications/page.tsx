@@ -15,6 +15,7 @@ import useClassNotifications from "@/hooks/useClassNotifications";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import SimplePageHeader from "@/components/SimplePageHeader";
 
 const NotificationsPage = () => {
   const {
@@ -134,22 +135,11 @@ const NotificationsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
-        <BackButton />
-        <div className="flex flex-row justify-center items-center w-full">
-          <div className="flex flex-col gap-0.5 justify-center text-center">
-            <div className="flex items-center justify-center gap-2">
-              <Bell className="w-6 h-6 text-yellow-600" />
-              <h1 className="font-bold text-xl text-gray-900 dark:text-white">
-                Notifikasi
-              </h1>
-              {hasUnsavedChanges && (
-                <div className="size-2 bg-orange-500 rounded-full animate-pulse"></div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <SimplePageHeader
+        title="Notification"
+        icon="Bell"
+        iconColor="text-yellow-600"
+      />
 
       {/* Notification Permission & Test */}
       <div className="max-w-2xl mx-auto px-6 mb-6">

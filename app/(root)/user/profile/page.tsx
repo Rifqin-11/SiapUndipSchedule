@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, Camera, Save, Shield, ArrowLeft } from "lucide-react";
+import { User, Camera, Save, Shield } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { toast } from "sonner";
 import Image from "next/image";
 import ProfilePageSkeleton from "@/components/profile/ProfilePageSkeleton";
 import Link from "next/link";
+import SimplePageHeader from "@/components/SimplePageHeader";
 
 const ProfilePage = () => {
   const { user, loading, updateUserProfile, getInitials } = useUserProfile();
@@ -109,24 +110,11 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="flex flex-row gap-2 items-center pt-4 pb-2 mx-5">
-        <Link
-          href="/user"
-          className="p-2 hover:bg-gray-100 dark:hover:bg-secondary rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-        </Link>
-        <div className="flex flex-row justify-center items-center w-full">
-          <div className="flex flex-col gap-0.5 justify-center text-center">
-            <div className="flex items-center justify-center gap-2">
-              <User className="w-6 h-6 text-green-600" />
-              <h1 className="font-bold text-xl text-gray-900 dark:text-white">
-                Profile
-              </h1>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SimplePageHeader
+        title="Profile"
+        icon="User"
+        iconColor="text-green-600"
+      />
 
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Profile Picture */}

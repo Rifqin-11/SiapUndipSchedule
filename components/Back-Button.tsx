@@ -7,7 +7,7 @@ const BackButton = () => {
   const router = useRouter();
 
   return (
-    <button onClick={() => router.back()}>
+    <button onClick={() => router.back()} className="p-1 rounded-xl hover:bg-secondary transition">
       <ArrowLeft />
     </button>
   );

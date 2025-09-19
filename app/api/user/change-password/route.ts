@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "@/models/User";
+import { verifyJWTToken } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,28 +27,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Get token from cookies
-    const token = request.cookies.get("token")?.value;
+    const authToken = request.cookies.get("auth_token")?.value;
+    const rememberToken = request.cookies.get("remember_token")?.value;
 
-    if (!token) {
+    // Try to get user via JWT token first
+    let decoded = null;
+    if (authToken) {
+      decoded = verifyJWTToken(authToken);
+    }
+
+    if (!decoded && !rememberToken) {
       return NextResponse.json(
         { message: "Authentication required" },
         { status: 401 }
       );
     }
 
-    // Verify token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
-    } catch {
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
-
     // Connect to database
     await connectMongoDB();
 
-    // Find user
-    const user = await User.findById(decoded.id).select("+password");
+    let user;
+
+    if (decoded) {
+      // User authenticated via JWT token
+      user = await User.findById(decoded.userId).select("+password");
+    } else if (rememberToken) {
+      // User authenticated via remember token
+      user = await User.findOne({
+        rememberToken,
+        rememberTokenExpires: { $gt: new Date() },
+      }).select("+password");
+    }
+
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
@@ -85,7 +95,7 @@ export async function POST(request: NextRequest) {
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
     // Update user password
-    await User.findByIdAndUpdate(decoded.id, {
+    await User.findByIdAndUpdate(user._id, {
       password: hashedNewPassword,
       updatedAt: new Date(),
     });

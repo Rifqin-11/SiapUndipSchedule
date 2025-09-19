@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-fallback-secret-key";
@@ -20,12 +20,21 @@ export const comparePassword = async (
 
 // JWT token functions
 export const generateJWTToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+
+  return jwt.sign({ userId }, JWT_SECRET);
 };
 
 export const verifyJWTToken = (token: string): { userId: string } | null => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    if (!JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+    const decoded = jwt.verify(token, JWT_SECRET as string) as {
+      userId: string;
+    };
     return decoded;
   } catch (error) {
     console.error("JWT verification failed:", error);

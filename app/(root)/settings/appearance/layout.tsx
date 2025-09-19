@@ -1,5 +1,4 @@
-import SettingsHeader from "@/components/settings/SettingsHeader";
-import { Palette } from "lucide-react";
+import SimplePageHeader from "@/components/SimplePageHeader";
 import React from "react";
 
 export default function AppearanceLayout({
@@ -9,12 +8,10 @@ export default function AppearanceLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <SettingsHeader
+      <SimplePageHeader
         title="Appearance"
-        description="Theme, colors, and personalization"
-        icon={
-          <Palette className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-        }
+        icon="Palette"
+        iconColor="text-purple-600"
       />
 
       <div className="pt-6 pb-12">{children}</div>

@@ -5,6 +5,7 @@ import { Shield, Eye, EyeOff, ArrowLeft, Lock, Check } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import SimplePageHeader from "@/components/SimplePageHeader";
 
 const SecurityPage = () => {
   const router = useRouter();
@@ -84,6 +85,7 @@ const SecurityPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Important: include cookies for authentication
         body: JSON.stringify({
           currentPassword: formData.currentPassword,
           newPassword: formData.newPassword,
@@ -158,31 +160,11 @@ const SecurityPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/user/profile"
-              className="p-2 hover:bg-gray-100 dark:hover:bg-secondary rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </Link>
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Security
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Manage your account security
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SimplePageHeader
+        title="Security"
+        icon="Shield" // ← String
+        iconColor="text-purple-600"
+      />
 
       <div className="max-w-2xl mx-auto p-6">
         {/* Change Password Section */}
