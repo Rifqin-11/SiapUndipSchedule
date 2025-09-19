@@ -207,7 +207,10 @@ function HeaderFrame({
         "mt-4 lg:mb-2 mx-5",
         className
       )}
-      style={{ opacity: opacity < 1 ? opacity : undefined }}
+      style={{
+        opacity: opacity < 1 ? opacity : undefined,
+        pointerEvents: opacity < 0.3 ? "none" : "auto",
+      }}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">

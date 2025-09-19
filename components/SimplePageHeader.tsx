@@ -77,7 +77,10 @@ const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
         fixed top-0 left-0 right-0 z-50
         flex flex-row items-center pt-4 pb-2 px-5 ${className}
       `}
-      style={{ opacity: scrollOpacity < 1 ? scrollOpacity : undefined }}
+      style={{
+        opacity: scrollOpacity < 1 ? scrollOpacity : undefined,
+        pointerEvents: scrollOpacity < 0.3 ? "none" : "auto",
+      }}
     >
       <BackButton />
 

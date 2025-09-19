@@ -1,30 +1,30 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  ExternalLink,
-  Calendar,
-  Clock,
-  QrCode,
-} from "lucide-react";
-import Link from "next/link";
+import { Calendar, Clock, BookOpen, Users, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import FixedHeaderLayout from "@/components/FixedHeaderLayout";
+import PageHeader from "@/components/PageHeader";
 
 interface AttendanceRecord {
-  id: string;
-  code: string;
-  url: string;
-  timestamp: string;
+  _id: string;
+  subjectId: string;
+  subjectName: string;
+  attendanceDate: string;
   createdAt: string;
+  meetingNumber: number;
 }
 
 const AttendanceHistoryPage = () => {
   const [attendanceHistory, setAttendanceHistory] = useState<
     AttendanceRecord[]
   >([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     fetchAttendanceHistory();
@@ -32,22 +32,49 @@ const AttendanceHistoryPage = () => {
 
   const fetchAttendanceHistory = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       setError(null);
 
-      const response = await fetch("/api/attendance-history");
+      // Fetch all subjects with attendance data
+      const response = await fetch("/api/subjects");
       const result = await response.json();
 
-      if (result.success) {
-        setAttendanceHistory(result.data);
+      if (response.ok && result.success) {
+        const subjects = result.data;
+        const allAttendanceRecords: AttendanceRecord[] = [];
+
+        // Extract attendance records from all subjects
+        subjects.forEach((subject: any) => {
+          if (subject.attendanceDates && subject.attendanceDates.length > 0) {
+            subject.attendanceDates.forEach((date: string, index: number) => {
+              allAttendanceRecords.push({
+                _id: `${subject._id}-${index}`,
+                subjectId: subject._id,
+                subjectName: subject.name,
+                attendanceDate: date,
+                createdAt: date,
+                meetingNumber: index + 1,
+              });
+            });
+          }
+        });
+
+        // Sort by attendance date (newest first)
+        const sortedHistory = allAttendanceRecords.sort(
+          (a, b) =>
+            new Date(b.attendanceDate).getTime() -
+            new Date(a.attendanceDate).getTime()
+        );
+
+        setAttendanceHistory(sortedHistory);
       } else {
-        setError("Failed to load attendance history");
+        setError(result.error || "Failed to fetch attendance history");
       }
-    } catch (error) {
-      console.error("Fetch attendance history error:", error);
-      setError("An error occurred while loading data");
+    } catch (err) {
+      setError("An error occurred while fetching attendance history");
+      console.error("Fetch error:", err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -69,122 +96,181 @@ const AttendanceHistoryPage = () => {
     });
   };
 
-  const handleOpenUrl = (url: string) => {
-    window.open(url, "_blank");
-    toast.success("Opening SIAP UNDIP page");
-  };
-
-  if (loading) {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
-          <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl p-4 border border-gray-200"
-            >
-              <div className="w-full h-16 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      {/* Error State */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
-          <p className="text-red-700 dark:text-red-400">{error}</p>
-          <Button onClick={fetchAttendanceHistory} className="mt-2" size="sm">
-            Try Again
-          </Button>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!error && attendanceHistory.length === 0 && (
-        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <QrCode className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            No Attendance History Yet
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Scan QR code for class attendance and history will appear here
-          </p>
-          <Link href="/schedule">
-            <Button>
-              <QrCode className="w-4 h-4 mr-2" />
-              Start Attendance
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* Attendance List */}
-      {attendanceHistory.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-white">
-              {attendanceHistory.length} Attendance Records
+    <FixedHeaderLayout>
+      <div className="w-full mx-auto p-4 space-y-6">
+        {/* Stats Summary */}
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Attendance Summary
             </h2>
-            <Button
-              onClick={fetchAttendanceHistory}
-              variant="outline"
-              size="sm"
-            >
-              Refresh
-            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-gray-50 dark:bg-background/50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {attendanceHistory.length}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Total Meetings
+              </div>
+            </div>
+            <div className="text-center p-4 bg-gray-50 dark:bg-background/50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {
+                  new Set(attendanceHistory.map((record) => record.subjectId))
+                    .size
+                }
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Different Subjects
+              </div>
+            </div>
+            <div className="text-center p-4 bg-gray-50 dark:bg-background/50 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {attendanceHistory.length > 0
+                  ? Math.round(
+                      attendanceHistory.reduce(
+                        (sum, record) => sum + record.meetingNumber,
+                        0
+                      ) / attendanceHistory.length
+                    )
+                  : 0}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Avg Meeting
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Attendance List */}
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border">
+          <div className="p-6 border-b border-gray-200 dark:border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Attendance Records
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Sorted by most recent attendance
+                </p>
+              </div>
+              <Button
+                onClick={fetchAttendanceHistory}
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+              >
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </Button>
+            </div>
           </div>
 
-          {attendanceHistory.map((record) => (
-            <div
-              key={record.id}
-              className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded">
-                      <QrCode className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          {isLoading ? (
+            <div className="p-6">
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-background/50 rounded-lg">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-muted rounded-lg"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 dark:bg-muted rounded w-1/3"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-muted rounded w-1/2"></div>
+                      </div>
+                      <div className="h-4 bg-gray-200 dark:bg-muted rounded w-20"></div>
                     </div>
-                    <span className="font-mono text-sm text-gray-900 dark:text-white font-medium">
-                      {record.code}
-                    </span>
                   </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDate(record.timestamp)}</span>
+                ))}
+              </div>
+            </div>
+          ) : error ? (
+            <div className="p-6 text-center">
+              <div className="text-red-600 dark:text-red-400 mb-2">{error}</div>
+              <Button
+                onClick={fetchAttendanceHistory}
+                variant="outline"
+                size="sm"
+              >
+                Try Again
+              </Button>
+            </div>
+          ) : attendanceHistory.length === 0 ? (
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No Attendance Records
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                You haven't marked any attendance yet. Start attending classes
+                to see your history here.
+              </p>
+              <Button
+                onClick={() => router.push("/schedule")}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Go to Schedule
+              </Button>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200 dark:divide-border">
+              {attendanceHistory.map((record) => (
+                <div
+                  key={record._id}
+                  className="p-4 hover:bg-gray-50 dark:hover:bg-background/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Subject Icon */}
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-6 h-6 text-white" />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Clock className="w-4 h-4" />
-                      <span>{formatTime(record.timestamp)}</span>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {record.subjectName}
+                      </h4>
+                      <div className="flex items-center gap-4 mt-1 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{formatDate(record.attendanceDate)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatTime(record.attendanceDate)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Meeting Number */}
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        Meeting {record.meetingNumber}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        #{record.meetingNumber.toString().padStart(2, "0")}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <Button
-                  onClick={() => handleOpenUrl(record.url)}
-                  variant="outline"
-                  size="sm"
-                  className="ml-4 text-blue-600 border-blue-200 hover:bg-blue-50"
-                >
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  Open
-                </Button>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </FixedHeaderLayout>
   );
 };
 

@@ -83,18 +83,18 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <QueryProvider>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <DynamicThemeColor />
-            <div className="min-h-screen bg-background">{children}</div>
-            <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange={false}
+            >
+              <DynamicThemeColor />
+              <div className="min-h-screen bg-background">{children}</div>
+              <Toaster />
+            </ThemeProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

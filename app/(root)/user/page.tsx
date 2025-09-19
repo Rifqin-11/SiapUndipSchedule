@@ -10,6 +10,8 @@ import {
   BookOpen,
   InfoIcon,
   Palette,
+  History,
+  PencilIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -21,6 +23,7 @@ import UserPageSkeleton from "@/components/profile/UserPageSkeleton";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const UserPage = () => {
   // Get subjects data
@@ -63,14 +66,14 @@ const UserPage = () => {
   };
 
   const userMenuItems = [
-    {
-      icon: Edit,
-      title: "Edit Profile",
-      description: "Update your profile information",
-      href: "/user/profile",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
+    // {
+    //   icon: Edit,
+    //   title: "Edit Profile",
+    //   description: "Update your profile information",
+    //   href: "/user/profile",
+    //   color: "text-green-600",
+    //   bgColor: "bg-green-50",
+    // },
     {
       icon: Bell,
       title: "Notifications",
@@ -88,12 +91,12 @@ const UserPage = () => {
       bgColor: "bg-blue-50",
     },
     {
-      icon: Palette,
-      title: "Appearance",
-      description: "Theme, colors, and personalization",
-      href: "/settings/appearance",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      icon: History,
+      title: "Attendance History",
+      description: "View QR code scan history",
+      href: "/settings/attendance-history",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
     },
   ];
 
@@ -126,9 +129,15 @@ const UserPage = () => {
           fixed top-0 left-0 right-0 z-50
           flex flex-row gap-2 items-center pt-4 pb-2 px-5 justify-between
         "
-        style={{ opacity: scrollOpacity < 1 ? scrollOpacity : undefined }}
+        style={{
+          opacity: scrollOpacity < 1 ? scrollOpacity : undefined,
+          pointerEvents: scrollOpacity < 0.3 ? "none" : "auto",
+        }}
       >
-        <div className="flex flex-row justify-center items-center w-full">
+        <div className="flex items-center">
+          <ThemeToggle />
+        </div>
+        <div className="flex flex-row justify-center items-center flex-1">
           <div className="flex flex-col gap-0.5 justify-center text-center">
             <div className="flex items-center justify-center gap-2">
               <User className="w-6 h-6 text-green-600" />
@@ -141,7 +150,7 @@ const UserPage = () => {
         <div>
           <Link
             href="/settings/about"
-            className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full hover:text-gray-900"
+            className="bg-gray-400/10 hover:bg-gray-400/20 rounded-full pt-2 hover:text-white transition-colors"
           >
             <InfoIcon className="w-6 h-6 text-gray-400" />
           </Link>
@@ -166,9 +175,12 @@ const UserPage = () => {
                   {getInitials(user?.name || "User")}
                 </div>
               )}
-              <button className="absolute bottom-1 right-1 bg-white dark:bg-card p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-secondary transition-colors">
-                <Camera className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              </button>
+              <Link
+                href="/user/profile"
+                className="absolute bottom-1 right-1 bg-white dark:bg-card p-2 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-background transition-colors"
+              >
+                <PencilIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              </Link>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

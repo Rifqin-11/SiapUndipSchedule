@@ -16,7 +16,9 @@ const BottomNavbar = () => {
   // Detect if app is running as PWA
   useEffect(() => {
     const checkPWA = () => {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isStandalone = window.matchMedia(
+        "(display-mode: standalone)"
+      ).matches;
       const isInAppBrowser = (window.navigator as any).standalone === true;
       setIsPWA(isStandalone || isInAppBrowser);
     };
@@ -24,11 +26,11 @@ const BottomNavbar = () => {
     checkPWA();
 
     // Listen for display mode changes
-    const mediaQuery = window.matchMedia('(display-mode: standalone)');
-    mediaQuery.addEventListener('change', checkPWA);
+    const mediaQuery = window.matchMedia("(display-mode: standalone)");
+    mediaQuery.addEventListener("change", checkPWA);
 
     return () => {
-      mediaQuery.removeEventListener('change', checkPWA);
+      mediaQuery.removeEventListener("change", checkPWA);
     };
   }, []);
 
@@ -48,7 +50,11 @@ const BottomNavbar = () => {
 
   return (
     <>
-      <div className={`fixed left-1/2 transform -translate-x-1/2 z-50 lg:hidden ${isPWA ? 'bottom-6' : 'bottom-4'}`}>
+      <div
+        className={`fixed left-1/2 transform -translate-x-1/2 z-50 lg:hidden ${
+          isPWA ? "bottom-6" : "bottom-4"
+        }`}
+      >
         <div
           className="w-[360px] h-[70px] px-6 rounded-full flex justify-between items-center
           shadow-xl relative border border-white/20
