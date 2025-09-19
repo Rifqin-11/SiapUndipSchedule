@@ -4,15 +4,24 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for auth, api, static files, and splash
+  // Skip middleware for auth, api, static files, splash, and offline
   if (
     pathname.startsWith("/auth") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/splash") ||
+    pathname === "/offline" ||
     pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
+  }
+
+  // Check for offline header from service worker
+  const isOfflineRequest = request.headers.get("X-Offline-Request") === "true";
+
+  // If this is an offline request for a page, redirect to offline page
+  if (isOfflineRequest && !pathname.startsWith("/offline")) {
+    return NextResponse.redirect(new URL("/offline", request.url));
   }
 
   // Check if user has visited splash screen

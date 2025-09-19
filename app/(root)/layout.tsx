@@ -4,10 +4,14 @@ import React, { ReactNode } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import BottomNavbar from "@/components/BottomNavbar";
 import Sidebar from "@/components/Sidebar";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <ProtectedRoute>
+      {/* Offline indicator */}
+      <OfflineIndicator position="top" showConnectionInfo={true} />
+
       <div className="flex min-h-screen pwa-safe-area">
         {/* Sidebar for desktop */}
         <Sidebar />
