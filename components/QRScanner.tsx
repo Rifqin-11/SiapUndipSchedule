@@ -152,7 +152,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
     }
   }, []);
 
-  // BarcodeDetector scanning function
+  // BarcodeDetector scanning function - enhanced for better detection
   const scanWithBarcodeDetector = useCallback(
     async (video: HTMLVideoElement) => {
       if (
@@ -163,6 +163,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
         return;
 
       try {
+        // Try multiple detection approaches for better accuracy
         const barcodes = await barcodeDetectorRef.current.detect(video);
 
         for (const barcode of barcodes) {
@@ -177,6 +178,62 @@ const QRScanner: React.FC<QRScannerProps> = ({
                 detectionIntervalRef.current = null;
               }
               return barcode.rawValue;
+            }
+          }
+        }
+
+        // If no QR codes found, try with a canvas for enhanced contrast
+        if (barcodes.length === 0) {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            // Apply contrast enhancement
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+              // Increase contrast for better QR detection
+              const gray =
+                data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+              const enhanced = Math.min(
+                255,
+                Math.max(0, (gray - 128) * 1.5 + 128)
+              );
+              data[i] = enhanced;
+              data[i + 1] = enhanced;
+              data[i + 2] = enhanced;
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            // Try detection on enhanced canvas
+            const enhancedBarcodes = await barcodeDetectorRef.current.detect(
+              canvas
+            );
+            for (const barcode of enhancedBarcodes) {
+              if (barcode.format === "qr_code" && barcode.rawValue) {
+                console.log(
+                  "Enhanced BarcodeDetector QR detected:",
+                  barcode.rawValue
+                );
+                const validation = validateQRCode(barcode.rawValue);
+                if (validation.isValid) {
+                  if (detectionIntervalRef.current) {
+                    clearInterval(detectionIntervalRef.current);
+                    detectionIntervalRef.current = null;
+                  }
+                  return barcode.rawValue;
+                }
+              }
             }
           }
         }
@@ -729,7 +786,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
               formats: ["qr_code"],
             });
 
-            // Start BarcodeDetector scanning
+            // Start BarcodeDetector scanning - increased frequency for better detection
             detectionIntervalRef.current = setInterval(async () => {
               if (videoRef.current && videoRef.current.videoWidth > 0) {
                 const result = await scanWithBarcodeDetector(videoRef.current);
@@ -743,7 +800,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   return;
                 }
               }
-            }, 100); // Scan every 100ms
+            }, 50); // Increased frequency: scan every 50ms instead of 100ms
 
             console.log("BarcodeDetector scanning started");
           } catch (barcodeError) {
@@ -759,14 +816,16 @@ const QRScanner: React.FC<QRScannerProps> = ({
         if (!browserSupport.features.barcodeDetector || useFallback) {
           console.log("Using ZXing fallback...");
 
-          // Initialize enhanced code reader
+          // Initialize enhanced code reader with better sensitivity
           codeReaderRef.current = new BrowserMultiFormatReader();
 
-          // Configure reader with enhanced hints
+          // Configure reader with enhanced hints for better QR detection
           const hints = new Map();
           hints.set("TRY_HARDER", true);
-          hints.set("POSSIBLE_FORMATS", ["QR_CODE", "DATA_MATRIX"]);
+          hints.set("POSSIBLE_FORMATS", ["QR_CODE"]);
           hints.set("CHARACTER_SET", "UTF-8");
+          hints.set("PURE_BARCODE", false); // Allow detection even with some noise
+          hints.set("ASSUME_GS1", false);
 
           await codeReaderRef.current.decodeFromVideoDevice(
             deviceId,
@@ -863,10 +922,12 @@ const QRScanner: React.FC<QRScannerProps> = ({
       }, 500);
 
       toast.info(
-        `Beralih ke kamera: ${nextDevice.label || "Kamera " + (nextIndex + 1)}`
+        `Switching to camera: ${
+          nextDevice.label || "Camera " + (nextIndex + 1)
+        }`
       );
     } else {
-      toast.info("Hanya ada satu kamera yang tersedia");
+      toast.info("Only one camera available");
     }
   }, [devices, selectedDeviceId, startScanning, stopScanning]);
 
@@ -877,7 +938,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
         if (!validation.isValid) {
           toast.error(
-            "QR Code tidak valid. Pastikan ini adalah QR code absen UNDIP."
+            "Invalid QR Code. Make sure this is a valid UNDIP attendance QR code."
           );
           return;
         }
@@ -903,7 +964,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
           // Stop scanning immediately to prevent multiple scans
           stopScanning();
 
-          toast.success("QR Code berhasil dipindai!");
+          toast.success("QR Code scanned successfully!");
           await saveAttendanceHistory(extractedCode);
           onScanSuccess?.(extractedCode);
 
@@ -1239,7 +1300,11 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   playsInline
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-48 h-48 border-2 border-white/60 rounded-lg">
+                  <div
+                    className={`w-48 h-48 border-2 border-white/60 rounded-lg ${
+                      isScanning ? "animate-pulse" : ""
+                    }`}
+                  >
                     <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-blue-400 rounded-tl-lg"></div>
                     <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-blue-400 rounded-tr-lg"></div>
                     <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-blue-400 rounded-bl-lg"></div>
@@ -1285,14 +1350,14 @@ const QRScanner: React.FC<QRScannerProps> = ({
                   <p className="text-sm text-muted-foreground">
                     {isScanning
                       ? scanAttempts > 0
-                        ? `Mencoba scan ulang... (${scanAttempts}/3)`
-                        : `Memindai QR code... ${
+                        ? `Retrying scan... (${scanAttempts}/3)`
+                        : `Scanning QR code... ${
                             !useFallback &&
                             checkBrowserSupport().features.barcodeDetector
                               ? "⚡ Fast Mode"
                               : "🔄 ZXing Mode"
                           }`
-                      : "Menyiapkan kamera..."}
+                      : "Preparing camera..."}
                   </p>
                   {brightness > 0 && (
                     <div className="flex items-center gap-2 mt-1">
