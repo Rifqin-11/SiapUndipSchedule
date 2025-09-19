@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import DynamicThemeColor from "@/components/DynamicThemeColor";
+import ServiceWorkerInitializer from "@/components/ServiceWorkerInitializer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -82,20 +83,21 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <QueryProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <QueryProvider>
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
               enableSystem
               disableTransitionOnChange
             >
+              <ServiceWorkerInitializer />
               <DynamicThemeColor />
               <div className="min-h-screen bg-background">{children}</div>
               <Toaster />
             </ThemeProvider>
-          </AuthProvider>
-        </QueryProvider>
+          </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );

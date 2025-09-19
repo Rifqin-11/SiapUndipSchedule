@@ -31,16 +31,28 @@ export const TASKS_QUERY_KEY = ["tasks"] as const;
 
 // API functions
 const fetchTasks = async (): Promise<Task[]> => {
-  const response = await fetchWithCacheBusting("/api/tasks", {
-    credentials: "include",
-  });
+  try {
+    const response = await fetchWithCacheBusting("/api/tasks", {
+      credentials: "include",
+    });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch tasks");
+    if (!response.ok) {
+      throw new Error("Failed to fetch tasks");
+    }
+
+    const data = await response.json();
+
+    // Ensure we always return an array
+    if (!data || !data.data || !Array.isArray(data.data)) {
+      console.warn("Invalid tasks data format:", data);
+      return [];
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Error in fetchTasks:", error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.data;
 };
 
 const createTaskAPI = async (
@@ -105,7 +117,7 @@ const deleteTaskAPI = async (id: string): Promise<void> => {
 
 // React Query hooks
 export const useTasks = () => {
-  return useQuery({
+  const result = useQuery({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchTasks,
     staleTime: 0, // Always consider stale untuk fresh data setiap saat
@@ -115,6 +127,12 @@ export const useTasks = () => {
     refetchOnMount: "always", // Always refetch saat component mount
     refetchInterval: false, // Disable auto refetch interval
   });
+
+  // Ensure data is always an array
+  return {
+    ...result,
+    data: Array.isArray(result.data) ? result.data : [],
+  };
 };
 
 export const useCreateTask = () => {

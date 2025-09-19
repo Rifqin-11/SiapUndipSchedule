@@ -5,14 +5,14 @@ import SubjectModal from "@/components/SubjectModal";
 import { Edit3 } from "lucide-react";
 import React, { ReactNode, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useSubject, useSubjects, Subject } from "@/hooks/useSubjects";
+import { useSubject, useUpdateSubject, Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const params = useParams();
   const subjectId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { subject } = useSubject(subjectId || "");
-  const { updateSubject } = useSubjects();
+  const { data: subject, isLoading, error } = useSubject(subjectId || "");
+  const updateSubjectMutation = useUpdateSubject();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -45,17 +45,18 @@ const Layout = ({ children }: { children: ReactNode }) => {
     if (!subject) return { success: false, error: "Subject not found" };
 
     try {
-      const result = await updateSubject(subject.id, subjectData);
-      if (result.success) {
-        toast.success("Mata kuliah berhasil diupdate!");
-        setIsEditModalOpen(false);
-        return { success: true };
-      } else {
-        toast.error(`Error: ${result.error || "Gagal mengupdate mata kuliah"}`);
-        return { success: false, error: result.error };
-      }
-    } catch {
-      return { success: false, error: "Terjadi kesalahan tak terduga" };
+      const result = await updateSubjectMutation.mutateAsync({ 
+        id: subject.id, 
+        subject: subjectData 
+      });
+      
+      toast.success("Mata kuliah berhasil diupdate!");
+      setIsEditModalOpen(false);
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Gagal mengupdate mata kuliah";
+      toast.error(`Error: ${errorMessage}`);
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -77,25 +78,40 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     Detail Mata Kuliah
                   </h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Informasi lengkap tentang mata kuliah
+                    {isLoading ? "Loading..." : "Informasi lengkap tentang mata kuliah"}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleEdit}
-                className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm"
+                disabled={isLoading || !subject || updateSubjectMutation.isPending}
+                className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 shadow-sm"
                 title="Edit Subject"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">Edit</span>
+                <span className="text-sm font-medium">
+                  {updateSubjectMutation.isPending ? "Saving..." : "Edit"}
+                </span>
               </button>
             </div>
           </div>
         </section>
 
         {/* Content Area */}
-        <div className="pt-6 pb-12">{children}</div>
+        <div className="pt-6 pb-12">
+          {error ? (
+            <div className="max-w-4xl mx-auto px-6">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <p className="text-red-800 dark:text-red-200">
+                  Error loading subject: {error.message}
+                </p>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
+        </div>
       </div>
 
       {/* Edit Subject Modal */}

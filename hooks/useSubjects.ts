@@ -34,16 +34,28 @@ export const SUBJECTS_QUERY_KEY = ["subjects"] as const;
 
 // API functions
 const fetchSubjects = async (): Promise<Subject[]> => {
-  const response = await fetchWithCacheBusting("/api/subjects", {
-    credentials: "include",
-  });
+  try {
+    const response = await fetchWithCacheBusting("/api/subjects", {
+      credentials: "include",
+    });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch subjects");
+    if (!response.ok) {
+      throw new Error("Failed to fetch subjects");
+    }
+
+    const data = await response.json();
+
+    // Ensure we always return an array
+    if (!data || !data.data || !Array.isArray(data.data)) {
+      console.warn("Invalid subjects data format:", data);
+      return [];
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Error in fetchSubjects:", error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.data;
 };
 
 const deleteSubjectAPI = async (id: string): Promise<void> => {
@@ -129,7 +141,7 @@ const createSubjectAPI = async (
 
 // React Query hooks
 export const useSubjects = () => {
-  return useQuery({
+  const result = useQuery({
     queryKey: SUBJECTS_QUERY_KEY,
     queryFn: fetchSubjects,
     staleTime: 0, // Always consider stale untuk fresh data setiap saat
@@ -139,6 +151,12 @@ export const useSubjects = () => {
     refetchOnMount: "always", // Always refetch saat component mount
     refetchInterval: false, // Disable auto refetch interval
   });
+
+  // Ensure data is always an array
+  return {
+    ...result,
+    data: Array.isArray(result.data) ? result.data : [],
+  };
 };
 
 export const useCreateSubject = () => {
@@ -350,24 +368,37 @@ export const getSubjectsByDate = (
 
 // Hook untuk mendapatkan single subject by ID
 export const useSubject = (id: string) => {
-  return useQuery({
+  const result = useQuery({
     queryKey: ["subject", id],
     queryFn: async (): Promise<Subject> => {
-      const response = await fetch(`/api/subjects/${id}`, {
-        credentials: "include",
-      });
+      try {
+        const response = await fetch(`/api/subjects/${id}`, {
+          credentials: "include",
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch subject");
+        if (!response.ok) {
+          throw new Error("Failed to fetch subject");
+        }
+
+        const data = await response.json();
+        
+        // Ensure we always return a valid subject object
+        if (!data || !data.data) {
+          throw new Error("Invalid subject data received");
+        }
+        
+        return data.data;
+      } catch (error) {
+        console.error("Error in fetchSubject:", error);
+        throw error;
       }
-
-      const data = await response.json();
-      return data.data;
     },
     enabled: !!id, // Hanya fetch jika id ada
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
+  return result;
 };
 
 // Legacy compatibility - untuk migration bertahap

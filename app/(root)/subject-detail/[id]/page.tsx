@@ -19,7 +19,7 @@ import { useSubject } from "@/hooks/useSubjects";
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-  const { subject, loading, error } = useSubject(id);
+  const { data: subject, isLoading: loading, error } = useSubject(id);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [reschedules, setReschedules] = useState<
     {
@@ -103,7 +103,9 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-2">
             Gagal Memuat Data
           </h3>
-          <p className="text-red-700 dark:text-red-300 mb-6">{error}</p>
+          <p className="text-red-700 dark:text-red-300 mb-6">
+            {error?.message || 'Terjadi kesalahan saat memuat data subject'}
+          </p>
           <button
             onClick={() => window.history.back()}
             className="px-6 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-lg transition-colors duration-200"

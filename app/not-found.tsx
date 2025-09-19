@@ -9,8 +9,6 @@ import BottomNavbar from "@/components/BottomNavbar";
 const notfound = () => {
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar for desktop */}
-      <Sidebar />
 
       {/* Main content area */}
       <div className="flex-1 w-full lg:pl-64">
