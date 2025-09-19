@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSubjects, Subject } from "@/hooks/useSubjects";
+import {
+  useSubjects,
+  useCreateSubject,
+  useUpdateSubject,
+  useDeleteSubject,
+  useDeleteAllSubjects,
+  Subject,
+} from "@/hooks/useSubjects";
 import SubjectModal from "@/components/SubjectModal";
 import {
   AlertDialog,
@@ -19,15 +26,16 @@ import Link from "next/link";
 
 const ManageSubjects = () => {
   const {
-    subjects,
-    loading,
+    data: subjects = [],
+    isLoading: loading,
     error,
     refetch,
-    createSubject,
-    updateSubject,
-    deleteSubject,
-    deleteAllSubjects,
   } = useSubjects();
+
+  const createSubjectMutation = useCreateSubject();
+  const updateSubjectMutation = useUpdateSubject();
+  const deleteSubjectMutation = useDeleteSubject();
+  const deleteAllSubjectsMutation = useDeleteAllSubjects();
 
   // Ensure subjects is always an array
   const safeSubjects = Array.isArray(subjects) ? subjects : [];
@@ -73,25 +81,18 @@ const ManageSubjects = () => {
   const handleSaveSubject = async (subjectData: Omit<Subject, "_id">) => {
     try {
       if (modalMode === "add") {
-        const result = await createSubject(subjectData);
-        if (result.success) {
-          toast.success("Subject successfully added!");
-          setIsModalOpen(false);
-          return { success: true };
-        } else {
-          toast.error(`Error: ${result.error || "Failed to add subject"}`);
-          return { success: false, error: result.error };
-        }
+        await createSubjectMutation.mutateAsync(subjectData);
+        toast.success("Subject successfully added!");
+        setIsModalOpen(false);
+        return { success: true };
       } else if (modalMode === "edit" && editingSubject) {
-        const result = await updateSubject(editingSubject.id, subjectData);
-        if (result.success) {
-          toast.success("Subject successfully updated!");
-          setIsModalOpen(false);
-          return { success: true };
-        } else {
-          toast.error(`Error: ${result.error || "Failed to update subject"}`);
-          return { success: false, error: result.error };
-        }
+        await updateSubjectMutation.mutateAsync({
+          id: editingSubject.id,
+          subject: subjectData,
+        });
+        toast.success("Subject successfully updated!");
+        setIsModalOpen(false);
+        return { success: true };
       }
       return { success: false, error: "Invalid mode" };
     } catch {
@@ -107,12 +108,13 @@ const ManageSubjects = () => {
   const confirmDeleteSubject = async () => {
     if (!subjectToDelete) return;
 
-    const result = await deleteSubject(subjectToDelete.id);
-
-    if (result.success) {
+    try {
+      await deleteSubjectMutation.mutateAsync(subjectToDelete.id);
       toast.success("Mata kuliah berhasil dihapus!");
-    } else {
-      toast.error(`Error: ${result.error || "Gagal menghapus mata kuliah"}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Gagal menghapus mata kuliah";
+      toast.error(`Error: ${errorMessage}`);
     }
 
     setIsDeleteDialogOpen(false);
@@ -124,18 +126,19 @@ const ManageSubjects = () => {
   };
 
   const confirmDeleteAllSubjects = async () => {
-    const result = await deleteAllSubjects();
-
-    if (result.success) {
+    try {
+      const result = await deleteAllSubjectsMutation.mutateAsync();
       toast.success(
         `Berhasil menghapus semua mata kuliah! (${
           result.deletedCount || 0
         } mata kuliah dihapus)`
       );
-    } else {
-      toast.error(
-        `Error: ${result.error || "Gagal menghapus semua mata kuliah"}`
-      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Gagal menghapus semua mata kuliah";
+      toast.error(`Error: ${errorMessage}`);
     }
 
     setIsDeleteAllDialogOpen(false);
@@ -158,9 +161,9 @@ const ManageSubjects = () => {
     return (
       <div className="text-center py-8">
         <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500">{error?.message}</p>
         <button
-          onClick={refetch}
+          onClick={() => refetch()}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Coba Lagi

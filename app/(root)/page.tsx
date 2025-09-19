@@ -6,7 +6,7 @@ import TodaySubject from "@/components/homepage/TodaySubject";
 import CurrentDayDate from "@/components/homepage/CurrentDayDate";
 import FloatingActionButton from "@/components/homepage/FloatingActionButton";
 import SubjectModal from "@/components/SubjectModal";
-import { useSubjects, Subject } from "@/hooks/useSubjects";
+import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/homepage/HomeSkeleton";
@@ -16,7 +16,12 @@ import Image from "next/image";
 import NotifIcon from "@/components/homepage/NotifIcon";
 
 /** ⬇️ Tambahan: tasks & TaskCard */
-import { useTasks } from "@/hooks/useTasks";
+import {
+  useTasks,
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+} from "@/hooks/useTasks";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import type { Task } from "@/components/tasks/types";
@@ -29,17 +34,21 @@ import { toast } from "sonner";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 const Page = () => {
-  const { subjects, loading, createSubject, refetch } = useSubjects();
+  const {
+    data: subjects = [],
+    isLoading: loading,
+    error,
+    refetch,
+  } = useSubjects();
+  const createSubjectMutation = useCreateSubject();
   const { user } = useUserProfile();
   const { loading: subjectsLoading } = useSubjectsForTasks();
 
-  const {
-    tasks,
-    loading: tasksLoading,
-    createTask,
-    updateTask,
-    deleteTask,
-  } = useTasks();
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks();
+
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
 
   // Drawer detail task
   const [detailOpen, setDetailOpen] = useState(false);
@@ -72,7 +81,10 @@ const Page = () => {
       const newStatus =
         task.status === "completed" ? "in-progress" : "completed";
       try {
-        await updateTask(task._id || task.id, { status: newStatus });
+        await updateTaskMutation.mutateAsync({
+          id: task._id || task.id,
+          taskData: { status: newStatus },
+        });
         toast.success("Task status updated");
         // sinkronkan jika drawer sedang menampilkan task ini
         setSelectedTask((prev) =>
@@ -82,7 +94,7 @@ const Page = () => {
         toast.error("Failed to update status");
       }
     },
-    [updateTask]
+    [updateTaskMutation]
   );
 
   // SUBMIT form create/edit task dari drawer
@@ -95,10 +107,13 @@ const Page = () => {
       setSubmitting(true);
       try {
         if (editingTask) {
-          await updateTask(editingTask._id || editingTask.id, data);
+          await updateTaskMutation.mutateAsync({
+            id: editingTask._id || editingTask.id,
+            taskData: data,
+          });
           toast.success("Task updated");
         } else {
-          await createTask(data);
+          await createTaskMutation.mutateAsync(data);
           toast.success("Task created");
         }
         setFormOpen(false);
@@ -110,7 +125,7 @@ const Page = () => {
         setSubmitting(false);
       }
     },
-    [editingTask, updateTask, createTask]
+    [editingTask, updateTaskMutation, createTaskMutation]
   );
 
   // DELETE dari drawer (munculkan dialog konfirmasi)
@@ -122,7 +137,7 @@ const Page = () => {
   const confirmDelete = useCallback(async () => {
     if (!taskToDelete) return;
     try {
-      await deleteTask(taskToDelete._id || taskToDelete.id);
+      await deleteTaskMutation.mutateAsync(taskToDelete._id || taskToDelete.id);
       toast.success("Task deleted");
       setConfirmOpen(false);
       if (selectedTask?.id === taskToDelete.id) setDetailOpen(false);
@@ -131,7 +146,7 @@ const Page = () => {
     } finally {
       setTaskToDelete(null);
     }
-  }, [deleteTask, taskToDelete, selectedTask]);
+  }, [deleteTaskMutation, taskToDelete, selectedTask]);
 
   // Initialize auto notifications
   useAutoNotifications();
@@ -159,18 +174,13 @@ const Page = () => {
           ...subjectData,
           userId: user.id,
         };
-        const result = await createSubject(subjectWithUserId);
-        if (result.success) {
-          refetch();
-          return { success: true };
-        } else {
-          return { success: false, error: result.error };
-        }
-      } catch {
+        await createSubjectMutation.mutateAsync(subjectWithUserId);
+        return { success: true };
+      } catch (error) {
         return { success: false, error: "Terjadi kesalahan tak terduga" };
       }
     },
-    [user?.id, createSubject, refetch]
+    [user?.id, createSubjectMutation]
   );
 
   // Memoize computed values

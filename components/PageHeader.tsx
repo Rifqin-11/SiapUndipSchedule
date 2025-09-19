@@ -46,7 +46,6 @@ const hasValidSchedule = (s: Subject) =>
 
 /** ===== Props ===== */
 
-
 type BaseProps = {
   /** Judul yang tampil besar (default: diturunkan dari variant) */
   title?: string;
@@ -79,8 +78,8 @@ type PageHeaderProps =
 
 export default function PageHeader(props: PageHeaderProps) {
   const { user } = useUserProfile();
-  const { subjects, loading: subjectsLoading } = useSubjects();
-  const { tasks, loading: tasksLoading } = useTasks();
+  const { data: subjects = [], isLoading: subjectsLoading } = useSubjects();
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks();
 
   // avatar default dari user profile, tapi bisa dioverride
   const avatar = props.avatarOverride ?? {
@@ -91,9 +90,7 @@ export default function PageHeader(props: PageHeaderProps) {
   // Always call hooks at the top level
   const { currentDay } = getCurrentDayAndDate();
   const dayToCheck =
-    props.variant === "calendar"
-      ? props.selectedDay || currentDay
-      : currentDay;
+    props.variant === "calendar" ? props.selectedDay || currentDay : currentDay;
 
   const subjectsToday =
     props.variant === "calendar" && Array.isArray(subjects)
@@ -104,8 +101,7 @@ export default function PageHeader(props: PageHeaderProps) {
         )
       : [];
 
-  const count =
-    props.variant === "calendar" ? subjectsToday.length : 0;
+  const count = props.variant === "calendar" ? subjectsToday.length : 0;
 
   const calendarSubtitle = React.useMemo(() => {
     if (subjectsLoading) return "Loading subjects...";
@@ -115,9 +111,7 @@ export default function PageHeader(props: PageHeaderProps) {
     if (count === 0) return `No classes scheduled for ${dayText}`;
     if (count === 1)
       return `You have 1 subject ${isCurr ? "today" : `on ${dayText}`}!`;
-    return `You have ${count} subjects ${
-      isCurr ? "today" : `on ${dayText}`
-    }!`;
+    return `You have ${count} subjects ${isCurr ? "today" : `on ${dayText}`}!`;
   }, [subjectsLoading, count, dayToCheck, currentDay]);
 
   // Always call hooks at the top level

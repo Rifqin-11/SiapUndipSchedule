@@ -6,7 +6,7 @@ import {
   getCurrentDayAndDate,
   normalizeDayName,
 } from "@/utils/date";
-import TodayCard from "@/components/homepage/TodayCard"
+import TodayCard from "@/components/homepage/TodayCard";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 
 interface SubjectWithReschedule extends Subject {
@@ -25,7 +25,12 @@ interface SubjectWithReschedule extends Subject {
 
 const TodaySubject = () => {
   const { currentDay } = getCurrentDayAndDate();
-  const { subjects, loading, error, refetch } = useSubjects();
+  const {
+    data: subjects = [],
+    isLoading: loading,
+    error,
+    refetch,
+  } = useSubjects();
 
   // Memoize calculations to prevent re-computation
   const { allTodaySubjects } = useMemo(() => {
@@ -237,7 +242,7 @@ const TodaySubject = () => {
       return (
         <div className="flex flex-col justify-center items-center mt-10">
           <h3 className="font-bold text-lg text-red-600">Error</h3>
-          <p className="text-xs text-red-500">{error}</p>
+          <p className="text-xs text-red-500">{error?.message}</p>
         </div>
       );
     }

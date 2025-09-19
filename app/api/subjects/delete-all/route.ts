@@ -13,11 +13,21 @@ export async function DELETE() {
 
     console.log("Delete all subjects result:", result);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: `Successfully deleted ${result.deletedCount} subjects`,
       deletedCount: result.deletedCount,
     });
+
+    // Tambahkan no-cache headers untuk mutations
+    response.headers.set(
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
   } catch (error) {
     console.error("Error deleting all subjects:", error);
     return NextResponse.json(

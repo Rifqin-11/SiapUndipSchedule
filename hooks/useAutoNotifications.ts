@@ -5,7 +5,7 @@ import useClassNotifications from "@/hooks/useClassNotifications";
 import { useSubjects } from "@/hooks/useSubjects";
 
 const useAutoNotifications = () => {
-  const { subjects, loading } = useSubjects();
+  const { data: subjects = [], isLoading: loading } = useSubjects();
   const { initializeNotifications } = useClassNotifications();
 
   // Prevent multiple initializations
@@ -21,7 +21,7 @@ const useAutoNotifications = () => {
 
   const checkState = {
     loading,
-    subjectsCount: subjects.length,
+    subjectsCount: subjects?.length ?? 0,
     permission,
     isClient,
   };
@@ -30,6 +30,7 @@ const useAutoNotifications = () => {
     // Only initialize if conditions are met and not already initialized
     if (
       !loading &&
+      subjects &&
       subjects.length > 0 &&
       permission === "granted" &&
       isClient &&
@@ -48,21 +49,27 @@ const useAutoNotifications = () => {
         console.error("Failed to initialize notifications:", error);
       }
     }
-  }, [loading, subjects.length, permission, isClient, initializeNotifications]);
+  }, [
+    loading,
+    subjects?.length,
+    permission,
+    isClient,
+    initializeNotifications,
+  ]);
 
   useEffect(() => {
     // Only log once per state change in development
     if (process.env.NODE_ENV === "development") {
       console.log("Auto notifications check:", {
         loading,
-        subjectsCount: subjects.length,
+        subjectsCount: subjects?.length ?? 0,
         permission,
         isClient,
       });
     }
 
     initializeOnce();
-  }, [initializeOnce, loading, subjects.length, permission, isClient]);
+  }, [initializeOnce, loading, subjects?.length, permission, isClient]);
 
   // Reset on permission change
   useEffect(() => {

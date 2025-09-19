@@ -112,7 +112,17 @@ export async function PUT(
       );
     }
 
-    return NextResponse.json({ success: true, data: updateData });
+    const response = NextResponse.json({ success: true, data: updateData });
+
+    // Tambahkan no-cache headers untuk mutations
+    response.headers.set(
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
   } catch (error) {
     console.error("Error updating subject:", error);
     return NextResponse.json(
@@ -164,10 +174,20 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: "Subject deleted successfully",
     });
+
+    // Tambahkan no-cache headers untuk mutations
+    response.headers.set(
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
   } catch (error) {
     console.error("Error deleting subject:", error);
     return NextResponse.json(

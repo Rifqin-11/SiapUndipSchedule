@@ -24,7 +24,7 @@ interface MissedClass {
 }
 
 const NotifIcon = () => {
-  const { subjects } = useSubjects();
+  const { data: subjects = [] } = useSubjects();
   const [missedClasses, setMissedClasses] = useState<MissedClass[]>([]);
   const [isClient, setIsClient] = useState(false);
 

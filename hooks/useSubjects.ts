@@ -1,4 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchWithCacheBusting,
+  createCacheBustingHeaders,
+} from "@/lib/cache-buster";
 
 export interface Subject {
   _id?: string;
@@ -25,321 +29,357 @@ export interface Subject {
   category?: string;
 }
 
-// Simple cache to prevent multiple API calls
-const subjectsCache = {
-  data: null as Subject[] | null,
-  timestamp: 0,
-  ttl: 5 * 60 * 1000, // 5 minutes cache
+// Query keys
+export const SUBJECTS_QUERY_KEY = ["subjects"] as const;
+
+// API functions
+const fetchSubjects = async (): Promise<Subject[]> => {
+  const response = await fetchWithCacheBusting("/api/subjects", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch subjects");
+  }
+
+  const data = await response.json();
+  return data.data;
 };
 
+const deleteSubjectAPI = async (id: string): Promise<void> => {
+  const response = await fetch(`/api/subjects/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Cache-Control": "no-cache",
+      "X-Timestamp": Date.now().toString(), // Cache busting
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete subject");
+  }
+};
+
+const deleteAllSubjectsAPI = async (): Promise<{ deletedCount: number }> => {
+  const response = await fetch("/api/subjects/delete-all", {
+    method: "DELETE",
+    headers: {
+      "Cache-Control": "no-cache",
+      "X-Timestamp": Date.now().toString(), // Cache busting
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete all subjects");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+const updateSubjectAPI = async ({
+  id,
+  subject,
+}: {
+  id: string;
+  subject: Partial<Subject>;
+}): Promise<Subject> => {
+  const response = await fetch(`/api/subjects/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+      "X-Timestamp": Date.now().toString(), // Cache busting
+    },
+    credentials: "include",
+    body: JSON.stringify(subject),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update subject");
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
+const createSubjectAPI = async (
+  subjectData: Omit<Subject, "id" | "_id">
+): Promise<Subject> => {
+  const response = await fetch("/api/subjects", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+      "X-Timestamp": Date.now().toString(), // Cache busting
+    },
+    credentials: "include",
+    body: JSON.stringify(subjectData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create subject");
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
+// React Query hooks
 export const useSubjects = () => {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  return useQuery({
+    queryKey: SUBJECTS_QUERY_KEY,
+    queryFn: fetchSubjects,
+    staleTime: 0, // Always consider stale untuk fresh data setiap saat
+    gcTime: 2 * 60 * 1000, // 2 minutes cache time
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true, // Refetch saat reconnect
+    refetchOnMount: "always", // Always refetch saat component mount
+    refetchInterval: false, // Disable auto refetch interval
+  });
+};
 
-  // Prevent multiple simultaneous requests
-  const isLoadingRef = useRef(false);
+export const useCreateSubject = () => {
+  const queryClient = useQueryClient();
 
-  const fetchSubjects = useCallback(async () => {
-    // Check cache first
-    const now = Date.now();
-    if (
-      subjectsCache.data &&
-      now - subjectsCache.timestamp < subjectsCache.ttl
-    ) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Using cached subjects data");
-      }
-      setSubjects(subjectsCache.data);
-      setLoading(false);
-      return;
-    }
-
-    // Prevent multiple concurrent requests
-    if (isLoadingRef.current) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Request already in progress, skipping...");
-      }
-      return;
-    }
-
-    isLoadingRef.current = true;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (process.env.NODE_ENV === "development") {
-        console.log("Fetching subjects from API...");
-      }
-
-      const response = await fetch("/api/subjects", {
-        credentials: "include", // Include cookies for authentication
+  return useMutation({
+    mutationFn: createSubjectAPI,
+    onSuccess: (newSubject) => {
+      // Force update cache dengan data dari server
+      queryClient.setQueryData(SUBJECTS_QUERY_KEY, (old: Subject[] = []) => {
+        // Tambah subject baru di awal array
+        return [newSubject, ...old];
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          setError("Authentication required");
-        } else {
-          setError("Gagal mengambil data mata kuliah");
-        }
-        setSubjects([]);
-        return;
-      }
+      // Force remove cache dan refetch untuk memastikan konsistensi
+      queryClient.removeQueries({ queryKey: SUBJECTS_QUERY_KEY, exact: false });
+      queryClient.refetchQueries({
+        queryKey: SUBJECTS_QUERY_KEY,
+        type: "active",
+      });
+    },
+    onError: (error) => {
+      console.error("Create subject error:", error);
+    },
+    onSettled: () => {
+      // Force invalidate dan refresh
+      queryClient.invalidateQueries({ queryKey: SUBJECTS_QUERY_KEY });
 
-      const result = await response.json();
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: SUBJECTS_QUERY_KEY });
+      }, 100);
+    },
+  });
+};
 
-      if (result.success && Array.isArray(result.data)) {
-        // Ensure each subject has proper ID mapping
-        const mappedSubjects = result.data.map(
-          (subject: Subject & { _id?: string }) => ({
-            ...subject,
-            id: subject._id || subject.id, // Use _id as primary, fallback to id
-          })
+export const useDeleteSubject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteSubjectAPI,
+    onMutate: async (subjectId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: SUBJECTS_QUERY_KEY });
+
+      // Snapshot previous value
+      const previousSubjects = queryClient.getQueryData(SUBJECTS_QUERY_KEY);
+
+      // Optimistically remove subject
+      queryClient.setQueryData(SUBJECTS_QUERY_KEY, (old: Subject[] = []) => {
+        return old.filter(
+          (subject) => subject._id !== subjectId && subject.id !== subjectId
         );
-
-        // Update cache
-        subjectsCache.data = mappedSubjects;
-        subjectsCache.timestamp = now;
-
-        setSubjects(mappedSubjects);
-        setError(null);
-      } else {
-        setError("Format data tidak valid");
-        setSubjects([]);
-      }
-    } catch (err) {
-      console.error("Error fetching subjects:", err);
-      setError("Terjadi kesalahan saat mengambil data");
-      setSubjects([]);
-    } finally {
-      setLoading(false);
-      isLoadingRef.current = false;
-    }
-  }, []);
-
-  const createSubject = async (subjectData: Omit<Subject, "_id">) => {
-    try {
-      const response = await fetch("/api/subjects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // Include cookies for authentication
-        body: JSON.stringify(subjectData),
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Authentication required");
-        }
-        throw new Error("Failed to create subject");
+      return { previousSubjects };
+    },
+    onSuccess: () => {
+      // Force remove dari cache
+      queryClient.removeQueries({ queryKey: SUBJECTS_QUERY_KEY, exact: false });
+
+      // Fresh fetch dari server dengan bypass cache
+      queryClient.refetchQueries({
+        queryKey: SUBJECTS_QUERY_KEY,
+        type: "active",
+      });
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousSubjects) {
+        queryClient.setQueryData(SUBJECTS_QUERY_KEY, context.previousSubjects);
       }
+    },
+    onSettled: () => {
+      // Force invalidate dan refresh
+      queryClient.invalidateQueries({ queryKey: SUBJECTS_QUERY_KEY });
 
-      const newSubject = await response.json();
-      setSubjects((prev) => [...prev, newSubject]);
-      return { success: true, data: newSubject };
-    } catch (err) {
-      console.error("Error creating subject:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Unknown error",
-      };
+      // Additional delay untuk memastikan server sudah update
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: SUBJECTS_QUERY_KEY });
+      }, 200);
+    },
+  });
+};
+
+export const useUpdateSubject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateSubjectAPI,
+    onMutate: async ({ id, subject }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: SUBJECTS_QUERY_KEY });
+
+      // Snapshot previous value
+      const previousSubjects = queryClient.getQueryData(SUBJECTS_QUERY_KEY);
+
+      // Optimistically update to new value
+      queryClient.setQueryData(SUBJECTS_QUERY_KEY, (old: Subject[] = []) => {
+        return old.map((s) =>
+          s._id === id || s.id === id ? { ...s, ...subject } : s
+        );
+      });
+
+      return { previousSubjects };
+    },
+    onSuccess: (updatedSubject) => {
+      // Force update cache dengan data dari server
+      queryClient.setQueryData(SUBJECTS_QUERY_KEY, (old: Subject[] = []) => {
+        return old.map((subject) =>
+          subject._id === updatedSubject._id || subject.id === updatedSubject.id
+            ? updatedSubject
+            : subject
+        );
+      });
+
+      // Force refetch dengan bypass cache
+      queryClient.refetchQueries({
+        queryKey: SUBJECTS_QUERY_KEY,
+        type: "active",
+      });
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousSubjects) {
+        queryClient.setQueryData(SUBJECTS_QUERY_KEY, context.previousSubjects);
+      }
+    },
+    onSettled: () => {
+      // Force remove dari cache untuk fresh fetch
+      queryClient.removeQueries({ queryKey: SUBJECTS_QUERY_KEY, exact: false });
+
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: SUBJECTS_QUERY_KEY });
+
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: SUBJECTS_QUERY_KEY });
+      }, 100);
+    },
+  });
+};
+
+export const useDeleteAllSubjects = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteAllSubjectsAPI,
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: SUBJECTS_QUERY_KEY });
+
+      // Snapshot previous value
+      const previousSubjects = queryClient.getQueryData(SUBJECTS_QUERY_KEY);
+
+      // Optimistically clear all subjects
+      queryClient.setQueryData(SUBJECTS_QUERY_KEY, []);
+
+      return { previousSubjects };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousSubjects) {
+        queryClient.setQueryData(SUBJECTS_QUERY_KEY, context.previousSubjects);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: SUBJECTS_QUERY_KEY });
+    },
+  });
+};
+
+// Utility functions
+export const getSubjectsByDay = (
+  subjects: Subject[],
+  day: string
+): Subject[] => {
+  return subjects.filter((subject) => {
+    if (subject.specificDate) {
+      // For date-specific subjects, check if the specific date matches the target day
+      const subjectDate = new Date(subject.specificDate);
+      const dayName = subjectDate.toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+      return dayName.toLowerCase() === day.toLowerCase();
+    } else {
+      // For weekly recurring subjects
+      return subject.day.toLowerCase() === day.toLowerCase();
     }
-  };
+  });
+};
 
-  const updateSubject = async (
-    id: string,
-    subjectData: Omit<Subject, "_id">
-  ) => {
-    try {
+export const getSubjectsByDate = (
+  subjects: Subject[],
+  date: string
+): Subject[] => {
+  return subjects.filter((subject) => {
+    if (subject.specificDate) {
+      return subject.specificDate === date;
+    } else {
+      // For weekly recurring subjects, check day of week
+      const targetDate = new Date(date);
+      const dayName = targetDate.toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+      return subject.day.toLowerCase() === dayName.toLowerCase();
+    }
+  });
+};
+
+// Hook untuk mendapatkan single subject by ID
+export const useSubject = (id: string) => {
+  return useQuery({
+    queryKey: ["subject", id],
+    queryFn: async (): Promise<Subject> => {
       const response = await fetch(`/api/subjects/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // Include cookies for authentication
-        body: JSON.stringify(subjectData),
+        credentials: "include",
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Authentication required");
-        }
-        throw new Error("Failed to update subject");
+        throw new Error("Failed to fetch subject");
       }
 
-      const updatedSubject = await response.json();
-      setSubjects((prev) =>
-        prev.map((s) => (s.id === id ? updatedSubject : s))
-      );
-      return { success: true, data: updatedSubject };
-    } catch (err) {
-      console.error("Error updating subject:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Unknown error",
-      };
-    }
-  };
+      const data = await response.json();
+      return data.data;
+    },
+    enabled: !!id, // Hanya fetch jika id ada
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
 
-  const deleteSubject = async (id: string) => {
-    try {
-      const response = await fetch(`/api/subjects/${id}`, {
-        method: "DELETE",
-        credentials: "include", // Include cookies for authentication
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Authentication required");
-        }
-        throw new Error("Failed to delete subject");
-      }
-
-      setSubjects((prev) => prev.filter((s) => s.id !== id));
-      return { success: true };
-    } catch (err) {
-      console.error("Error deleting subject:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Unknown error",
-      };
-    }
-  };
-
-  const deleteAllSubjects = async () => {
-    try {
-      const response = await fetch("/api/subjects/delete-all", {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete all subjects");
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        setSubjects([]);
-        return { success: true, deletedCount: result.deletedCount };
-      } else {
-        throw new Error(result.error || "Failed to delete all subjects");
-      }
-    } catch (err) {
-      console.error("Error deleting all subjects:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Unknown error",
-      };
-    }
-  };
-
-  // Provide refresh function for manual updates
-  const refresh = useCallback(() => {
-    subjectsCache.data = null; // Clear cache
-    fetchSubjects();
-  }, [fetchSubjects]);
-
-  useEffect(() => {
-    fetchSubjects();
-
-    // Listen for custom refresh events
-    const handleSubjectsUpdated = () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Subjects updated event received, refetching...");
-      }
-      refresh();
-    };
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("subjectsUpdated", handleSubjectsUpdated);
-
-      // Also listen for storage changes
-      const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === "lastUpdateTime") {
-          if (process.env.NODE_ENV === "development") {
-            console.log("Storage update detected, refetching...");
-          }
-          refresh();
-        }
-      };
-
-      window.addEventListener("storage", handleStorageChange);
-
-      return () => {
-        window.removeEventListener("subjectsUpdated", handleSubjectsUpdated);
-        window.removeEventListener("storage", handleStorageChange);
-      };
-    }
-  }, [fetchSubjects, refresh]);
+// Legacy compatibility - untuk migration bertahap
+export const useSubjectsLegacy = () => {
+  const { data: subjects = [], isLoading: loading, error } = useSubjects();
 
   return {
     subjects,
     loading,
-    error,
-    refetch: refresh, // Use refresh instead of fetchSubjects
-    createSubject,
-    updateSubject,
-    deleteSubject,
-    deleteAllSubjects,
+    error: error?.message || null,
+    refetch: () => {
+      // Placeholder untuk compatibility
+    },
   };
-};
-
-export const useSubject = (id: string) => {
-  const [subject, setSubject] = useState<Subject | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSubject = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch(`/api/subjects/${id}`, {
-          credentials: "include", // Include cookies for authentication
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("Mata kuliah tidak ditemukan");
-          } else if (response.status === 401) {
-            setError("Authentication required");
-          } else {
-            setError("Gagal mengambil data mata kuliah");
-          }
-          setSubject(null);
-          return;
-        }
-
-        const result = await response.json();
-
-        if (result.success && result.data) {
-          // Ensure we use _id as the primary identifier
-          const subjectData = {
-            ...result.data,
-            id: result.data._id || result.data.id,
-          };
-          setSubject(subjectData);
-          setError(null);
-        } else {
-          setError("Data mata kuliah tidak valid");
-          setSubject(null);
-        }
-      } catch (err) {
-        console.error("Error fetching subject:", err);
-        setError("Terjadi kesalahan saat mengambil data");
-        setSubject(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchSubject();
-    }
-  }, [id]);
-
-  return { subject, loading, error };
 };

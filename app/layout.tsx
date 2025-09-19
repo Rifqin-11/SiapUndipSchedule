@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./(root)/globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import DynamicThemeColor from "@/components/DynamicThemeColor";
 
@@ -81,18 +82,20 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <DynamicThemeColor />
-            <div className="min-h-screen bg-background">{children}</div>
-            <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <DynamicThemeColor />
+              <div className="min-h-screen bg-background">{children}</div>
+              <Toaster />
+            </ThemeProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

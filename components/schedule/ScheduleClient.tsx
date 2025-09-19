@@ -11,7 +11,13 @@ import CalendarCard from "@/components/schedule/CalendarCard";
 import SubjectModal from "@/components/SubjectModal";
 import RescheduleModal from "@/components/reschedule/RescheduleModal";
 import Link from "next/link";
-import { useSubjects, Subject } from "@/hooks/useSubjects";
+import {
+  useSubjects,
+  useCreateSubject,
+  useUpdateSubject,
+  useDeleteSubject,
+  Subject,
+} from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -54,14 +60,15 @@ const ScheduleClient = () => {
   const [selectedDate, setSelectedDate] = useState<string>(); // Add selected date state
   const [weekOffset, setWeekOffset] = useState(0); // Add week offset state
   const {
-    subjects,
-    loading,
+    data: subjects = [],
+    isLoading: loading,
     error,
     refetch,
-    createSubject,
-    updateSubject,
-    deleteSubject,
   } = useSubjects();
+
+  const createSubjectMutation = useCreateSubject();
+  const updateSubjectMutation = useUpdateSubject();
+  const deleteSubjectMutation = useDeleteSubject();
 
   // Initialize auto notifications
   useAutoNotifications();
@@ -355,13 +362,15 @@ const ScheduleClient = () => {
       }
     } else {
       // Delete entire subject (only for selected day)
-      result = await deleteSubject(subjectToDelete.id);
-      if (result.success) {
+      try {
+        await deleteSubjectMutation.mutateAsync(subjectToDelete.id);
         toast.success(
           `Mata kuliah berhasil dihapus untuk hari ${selectedDay}!`
         );
-      } else {
-        toast.error(result.error || "Gagal menghapus mata kuliah");
+        result = { success: true };
+      } catch (error) {
+        toast.error("Gagal menghapus mata kuliah");
+        result = { success: false };
       }
     }
 
@@ -381,20 +390,21 @@ const ScheduleClient = () => {
           ...subjectData,
           day: selectedDay,
         };
-        const result = await createSubject(subjectWithSelectedDay);
-        if (result.success) {
-          refetch();
+        try {
+          await createSubjectMutation.mutateAsync(subjectWithSelectedDay);
           return { success: true };
-        } else {
-          return { success: false, error: result.error };
+        } catch (error) {
+          return { success: false, error: "Gagal menambah mata kuliah" };
         }
       } else if (modalMode === "edit" && selectedSubject) {
-        const result = await updateSubject(selectedSubject.id, subjectData);
-        if (result.success) {
-          refetch();
+        try {
+          await updateSubjectMutation.mutateAsync({
+            id: selectedSubject.id,
+            subject: subjectData,
+          });
           return { success: true };
-        } else {
-          return { success: false, error: result.error };
+        } catch (error) {
+          return { success: false, error: "Gagal mengupdate mata kuliah" };
         }
       }
       return { success: false, error: "Mode tidak valid" };
@@ -411,7 +421,7 @@ const ScheduleClient = () => {
     return (
       <div className="flex flex-col justify-center items-center mt-10">
         <h1 className="font-bold text-lg text-red-600">Error</h1>
-        <p className="text-xs text-red-500">{error}</p>
+        <p className="text-xs text-red-500">{error?.message}</p>
       </div>
     );
   }

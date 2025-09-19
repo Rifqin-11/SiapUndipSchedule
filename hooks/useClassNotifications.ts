@@ -4,7 +4,7 @@ import { useRef, useCallback } from "react";
 import { useSubjects, Subject } from "@/hooks/useSubjects";
 
 const useClassNotifications = () => {
-  const { subjects } = useSubjects();
+  const { data: subjects = [] } = useSubjects();
 
   // Prevent duplicate scheduling
   const scheduledNotifications = useRef(new Set<string>());

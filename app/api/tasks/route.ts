@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { verifyJWTToken } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import {
+  createCachedResponse,
+  createErrorResponse,
+  checkConditionalRequest,
+} from "@/lib/cache";
 
 // GET /api/tasks - Get all tasks for the authenticated user
 export async function GET(request: NextRequest) {
@@ -61,7 +66,16 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    return NextResponse.json({ success: true, data: tasksWithSubjects });
+    const responseData = { success: true, data: tasksWithSubjects };
+
+    // Check conditional request untuk 304 Not Modified
+    const conditionalResponse = checkConditionalRequest(request, responseData);
+    if (conditionalResponse) {
+      return conditionalResponse;
+    }
+
+    // Tasks berubah lebih sering, gunakan SHORT cache
+    return createCachedResponse(responseData, "SHORT");
   } catch (error) {
     console.error("Error fetching tasks:", error);
     return NextResponse.json(
@@ -206,10 +220,20 @@ export async function POST(request: NextRequest) {
       subject,
     };
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { success: true, data: taskResponse },
       { status: 201 }
     );
+
+    // Tambahkan no-cache headers untuk mutations
+    response.headers.set(
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+
+    return response;
   } catch (error) {
     console.error("Error creating task:", error);
     return NextResponse.json(

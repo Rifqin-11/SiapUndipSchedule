@@ -23,7 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useTasks } from "@/hooks/useTasks";
+import {
+  useTasks,
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+  type Task,
+} from "@/hooks/useTasks";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 import { TaskCard } from "@/components/tasks/TaskCard";
@@ -31,18 +37,16 @@ import { TaskDetailDrawer } from "@/components/tasks/TaskDetailDrawer";
 import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
 import { DeleteConfirmDialog } from "@/components/tasks/DeleteConfirmDialog";
 
-import type { Task } from "@/components/tasks/types";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import PageHeader from "@/components/PageHeader";
 
 export default function TasksPage() {
-  const {
-    tasks,
-    loading: tasksLoading,
-    createTask,
-    updateTask,
-    deleteTask,
-  } = useTasks();
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks();
+
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
+
   const { subjects, loading: subjectsLoading } = useSubjectsForTasks();
 
   // filter/search
@@ -70,33 +74,35 @@ export default function TasksPage() {
     return { total, inProgress, complete };
   }, [tasks]);
 
-const filteredTasks = useMemo(() => {
-  const q = searchTerm.toLowerCase();
-  const prioRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const getDueTime = (t: Task) => {
-    return t.dueDate ? new Date(t.dueDate).getTime() : Number.POSITIVE_INFINITY;
-  };
-  return tasks
-    .filter((t) => {
-      const matchesSearch =
-        t.title.toLowerCase().includes(q) ||
-        t.description?.toLowerCase().includes(q);
-      const matchesStatus = filterStatus === "all" || t.status === filterStatus;
-      const matchesPriority =
-        filterPriority === "all" || t.priority === filterPriority;
-      return matchesSearch && matchesStatus && matchesPriority;
-    })
-    .sort((a, b) => {
-      const at = getDueTime(a);
-      const bt = getDueTime(b);
-      if (at !== bt) return at - bt;
-      const ap = prioRank[a.priority ?? ""] ?? 99;
-      const bp = prioRank[b.priority ?? ""] ?? 99;
-      if (ap !== bp) return ap - bp;
-      return a.title.localeCompare(b.title);
-    });
-}, [tasks, searchTerm, filterStatus, filterPriority]);
-
+  const filteredTasks = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    const prioRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
+    const getDueTime = (t: Task) => {
+      return t.dueDate
+        ? new Date(t.dueDate).getTime()
+        : Number.POSITIVE_INFINITY;
+    };
+    return tasks
+      .filter((t) => {
+        const matchesSearch =
+          t.title.toLowerCase().includes(q) ||
+          t.description?.toLowerCase().includes(q);
+        const matchesStatus =
+          filterStatus === "all" || t.status === filterStatus;
+        const matchesPriority =
+          filterPriority === "all" || t.priority === filterPriority;
+        return matchesSearch && matchesStatus && matchesPriority;
+      })
+      .sort((a, b) => {
+        const at = getDueTime(a);
+        const bt = getDueTime(b);
+        if (at !== bt) return at - bt;
+        const ap = prioRank[a.priority ?? ""] ?? 99;
+        const bp = prioRank[b.priority ?? ""] ?? 99;
+        if (ap !== bp) return ap - bp;
+        return a.title.localeCompare(b.title);
+      });
+  }, [tasks, searchTerm, filterStatus, filterPriority]);
 
   const openCreate = () => {
     setEditingTask(null);
@@ -121,7 +127,7 @@ const filteredTasks = useMemo(() => {
   const confirmDelete = useCallback(async () => {
     if (!taskToDelete) return;
     try {
-      await deleteTask(taskToDelete._id || taskToDelete.id);
+      await deleteTaskMutation.mutateAsync(taskToDelete._id || taskToDelete.id);
       toast.success("Task deleted");
       setConfirmOpen(false);
       if (selectedTask?.id === taskToDelete.id) setDetailOpen(false);
@@ -130,24 +136,27 @@ const filteredTasks = useMemo(() => {
     } finally {
       setTaskToDelete(null);
     }
-  }, [deleteTask, taskToDelete, selectedTask]);
+  }, [deleteTaskMutation, taskToDelete, selectedTask]);
 
-const toggleStatus = useCallback(
-  async (task: Task) => {
-    const newStatus = task.status === "completed" ? "in-progress" : "completed";
-    try {
-      await updateTask(task._id || task.id, { status: newStatus });
-      toast.success("Task status updated");
-      setSelectedTask((prev) =>
-        prev?.id === task.id ? { ...prev, status: newStatus } : prev
-      );
-    } catch {
-      toast.error("Failed to update status");
-    }
-  },
-  [updateTask]
-);
-
+  const toggleStatus = useCallback(
+    async (task: Task) => {
+      const newStatus =
+        task.status === "completed" ? "in-progress" : "completed";
+      try {
+        await updateTaskMutation.mutateAsync({
+          id: task._id || task.id,
+          taskData: { status: newStatus },
+        });
+        toast.success("Task status updated");
+        setSelectedTask((prev) =>
+          prev?.id === task.id ? { ...prev, status: newStatus } : prev
+        );
+      } catch {
+        toast.error("Failed to update status");
+      }
+    },
+    [updateTaskMutation]
+  );
 
   const submitForm = useCallback(
     async (
@@ -158,10 +167,13 @@ const toggleStatus = useCallback(
       setSubmitting(true);
       try {
         if (editingTask) {
-          await updateTask(editingTask._id || editingTask.id, data);
+          await updateTaskMutation.mutateAsync({
+            id: editingTask._id || editingTask.id,
+            taskData: data,
+          });
           toast.success("Task updated");
         } else {
-          await createTask(data);
+          await createTaskMutation.mutateAsync(data);
           toast.success("Task created");
         }
         setFormOpen(false);
@@ -173,7 +185,7 @@ const toggleStatus = useCallback(
         setSubmitting(false);
       }
     },
-    [editingTask, updateTask, createTask]
+    [editingTask, updateTaskMutation, createTaskMutation]
   );
 
   return (
