@@ -78,38 +78,48 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
       const weekDates = getWeekDatesWithOffset(weekOffset);
       const weekStartDate = weekDates[0].fullDate;
       const weekEndDate = weekDates[6].fullDate;
-      
+
       const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
       ];
-      
+
       // Alternative: Indonesian month names
       // const monthNames = [
       //   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
       //   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
       // ];
-      
+
       // If week spans across two months, show the month that has more days in the week
       if (weekStartDate.getMonth() !== weekEndDate.getMonth()) {
         // Count days in each month for this week
         const startMonth = weekStartDate.getMonth();
         const endMonth = weekEndDate.getMonth();
-        
+
         let startMonthDays = 0;
         let endMonthDays = 0;
-        
-        weekDates.forEach(day => {
+
+        weekDates.forEach((day) => {
           if (day.fullDate.getMonth() === startMonth) {
             startMonthDays++;
           } else if (day.fullDate.getMonth() === endMonth) {
             endMonthDays++;
           }
         });
-        
+
         // Return the month with more days
-        return startMonthDays >= endMonthDays 
-          ? monthNames[startMonth] 
+        return startMonthDays >= endMonthDays
+          ? monthNames[startMonth]
           : monthNames[endMonth];
       } else {
         // Same month for the entire week

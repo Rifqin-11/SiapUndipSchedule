@@ -23,7 +23,24 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
+
+const days = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 interface ParsedSubject {
   id: string;
@@ -382,7 +399,7 @@ const UploadKRSPage = () => {
                   <div className="space-y-4">
                     {/* Image Preview */}
                     {imagePreview && (
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <div className="bg-gray-50 dark:bg-background/50 rounded-lg p-4">
                         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                           KRS Image Preview:
                         </h3>
@@ -468,7 +485,7 @@ const UploadKRSPage = () => {
                 <Button
                   onClick={resetUpload}
                   variant="outline"
-                  className="text-gray-600 w-full sm:w-auto"
+                  className="text-gray-600 w-full sm:w-auto dark:text-gray-200"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Upload Again
@@ -483,7 +500,7 @@ const UploadKRSPage = () => {
                 {parsedData.map((subject, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600"
+                    className="bg-gray-50 dark:bg-background/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600"
                   >
                     {editingIndex === index ? (
                       /* Edit Mode */
@@ -507,13 +524,26 @@ const UploadKRSPage = () => {
                           <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
                             Day
                           </label>
-                          <Input
+                          <Select
                             value={editForm?.day || ""}
-                            onChange={(e) =>
-                              handleEditFormChange("day", e.target.value)
+                            onValueChange={(value) =>
+                              handleEditFormChange("day", value)
                             }
-                            className="w-full"
-                          />
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select day" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="no-schedule">
+                                No Schedule
+                              </SelectItem>
+                              {days.map((day) => (
+                                <SelectItem key={day} value={day}>
+                                  {day}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         {/* Time */}
@@ -523,6 +553,7 @@ const UploadKRSPage = () => {
                               Start Time
                             </label>
                             <Input
+                              type="time"
                               value={editForm?.startTime || ""}
                               onChange={(e) =>
                                 handleEditFormChange(
@@ -531,6 +562,7 @@ const UploadKRSPage = () => {
                                 )
                               }
                               className="w-full"
+                              disabled={editForm?.day === "no-schedule"}
                             />
                           </div>
                           <div className="space-y-2">
@@ -538,11 +570,13 @@ const UploadKRSPage = () => {
                               End Time
                             </label>
                             <Input
+                              type="time"
                               value={editForm?.endTime || ""}
                               onChange={(e) =>
                                 handleEditFormChange("endTime", e.target.value)
                               }
                               className="w-full"
+                              disabled={editForm?.day === "no-schedule"}
                             />
                           </div>
                         </div>
@@ -558,6 +592,12 @@ const UploadKRSPage = () => {
                               handleEditFormChange("room", e.target.value)
                             }
                             className="w-full"
+                            disabled={editForm?.day === "no-schedule"}
+                            placeholder={
+                              editForm?.day === "no-schedule"
+                                ? "No room needed"
+                                : "Room"
+                            }
                           />
                         </div>
 
@@ -676,8 +716,8 @@ const UploadKRSPage = () => {
 
               {/* Desktop Table Layout */}
               <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-background/50">
+                  <thead className="bg-gray-50 dark:bg-background/50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Subject
@@ -697,61 +737,202 @@ const UploadKRSPage = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Status
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-background/50">
                     {parsedData.map((subject, index) => (
                       <tr
                         key={index}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="hover:bg-gray-50 dark:hover:bg-background/30 transition-colors"
                       >
-                        <td className="px-4 py-4">
-                          <div className="max-w-xs">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white break-words">
-                              {subject.name}
-                            </div>
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-1 ${
-                                subject.category === "High"
-                                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                                  : subject.category === "Medium"
-                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                                  : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                              }`}
-                            >
-                              {subject.category}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            {subject.day}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {subject.startTime} - {subject.endTime}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
-                          <div className="max-w-xs break-words">
-                            {subject.room}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="text-sm text-gray-900 dark:text-white max-w-xs">
-                            {subject.lecturer.map((lect, idx) => (
-                              <div key={idx} className="break-words">
-                                {lect}
+                        {editingIndex === index ? (
+                          /* Edit Mode Row */
+                          <>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <Input
+                                  value={editForm?.name || ""}
+                                  onChange={(e) =>
+                                    handleEditFormChange("name", e.target.value)
+                                  }
+                                  placeholder="Subject name"
+                                  className="w-full"
+                                />
                               </div>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                            <Check className="w-3 h-3 mr-1" />
-                            Ready to Import
-                          </span>
-                        </td>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <Select
+                                  value={editForm?.day || ""}
+                                  onValueChange={(value) =>
+                                    handleEditFormChange("day", value)
+                                  }
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select day" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="no-schedule">
+                                      No Schedule
+                                    </SelectItem>
+                                    {days.map((day) => (
+                                      <SelectItem key={day} value={day}>
+                                        {day}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <Input
+                                    type="time"
+                                    value={editForm?.startTime || ""}
+                                    onChange={(e) =>
+                                      handleEditFormChange(
+                                        "startTime",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Start time"
+                                    className="w-full"
+                                    disabled={editForm?.day === "no-schedule"}
+                                  />
+                                  <Input
+                                    type="time"
+                                    value={editForm?.endTime || ""}
+                                    onChange={(e) =>
+                                      handleEditFormChange(
+                                        "endTime",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="End time"
+                                    className="w-full"
+                                    disabled={editForm?.day === "no-schedule"}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <Input
+                                value={editForm?.room || ""}
+                                onChange={(e) =>
+                                  handleEditFormChange("room", e.target.value)
+                                }
+                                placeholder={
+                                  editForm?.day === "no-schedule"
+                                    ? "No room needed"
+                                    : "Room"
+                                }
+                                className="w-full"
+                                disabled={editForm?.day === "no-schedule"}
+                              />
+                            </td>
+                            <td className="px-4 py-4">
+                              <Input
+                                value={(editForm?.lecturer || []).join(", ")}
+                                onChange={(e) =>
+                                  handleEditFormChange(
+                                    "lecturer",
+                                    e.target.value
+                                      .split(",")
+                                      .map((s) => s.trim())
+                                      .filter((s) => s.length > 0)
+                                  )
+                                }
+                                placeholder="Lecturer (separate with comma)"
+                                className="w-full"
+                              />
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                <Edit2 className="w-3 h-3 mr-1" />
+                                Editing
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={saveEdit}
+                                  size="sm"
+                                  className="bg-green-600 text-white hover:bg-green-700"
+                                >
+                                  <Save className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  onClick={cancelEdit}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </>
+                        ) : (
+                          /* Display Mode Row */
+                          <>
+                            <td className="px-4 py-4">
+                              <div className="max-w-xs">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white break-words">
+                                  {subject.name}
+                                </div>
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-1 ${
+                                    subject.category === "High"
+                                      ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                      : subject.category === "Medium"
+                                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                      : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                  }`}
+                                >
+                                  {subject.category}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="text-sm text-gray-900 dark:text-white">
+                                {subject.day}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {subject.startTime} - {subject.endTime}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
+                              <div className="max-w-xs break-words">
+                                {subject.room}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="text-sm text-gray-900 dark:text-white max-w-xs">
+                                {subject.lecturer.map((lect, idx) => (
+                                  <div key={idx} className="break-words">
+                                    {lect}
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                <Check className="w-3 h-3 mr-1" />
+                                Ready to Import
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <Button
+                                onClick={() => startEdit(index)}
+                                size="sm"
+                                variant="outline"
+                                className="p-2"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))}
                   </tbody>
