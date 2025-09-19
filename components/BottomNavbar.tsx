@@ -10,14 +10,26 @@ import { useAuth } from "@/hooks/useAuth";
 const BottomNavbar = () => {
   const pathname = usePathname();
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
   const { user } = useAuth();
 
-  // iOS Safari standalone detection (for data attribute)
+  // Detect if app is running as PWA
   useEffect(() => {
-    const isIOSStandalone = (window.navigator as any).standalone === true;
-    if (isIOSStandalone) {
-      document.documentElement.setAttribute('data-standalone', 'true');
-    }
+    const checkPWA = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isInAppBrowser = (window.navigator as any).standalone === true;
+      setIsPWA(isStandalone || isInAppBrowser);
+    };
+
+    checkPWA();
+
+    // Listen for display mode changes
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', checkPWA);
+
+    return () => {
+      mediaQuery.removeEventListener('change', checkPWA);
+    };
   }, []);
 
   // Don't show navbar on auth pages or when user is not logged in
@@ -36,10 +48,7 @@ const BottomNavbar = () => {
 
   return (
     <>
-      <div 
-        className="fixed left-1/2 transform -translate-x-1/2 z-50 lg:hidden"
-        style={{ bottom: 'var(--bottom-navbar-spacing)' }}
-      >
+      <div className={`fixed left-1/2 transform -translate-x-1/2 z-50 lg:hidden ${isPWA ? 'bottom-6' : 'bottom-4'}`}>
         <div
           className="w-[360px] h-[70px] px-6 rounded-full flex justify-between items-center
           shadow-xl relative border border-white/20
