@@ -40,7 +40,7 @@ function DialogOverlay({
       className={cn(
         // Only allow pointer-events when overlay is open. When closed, keep it non-interactive so it can't
         // accidentally block underlying UI during the close animation or if cleanup happened late.
-        "fixed inset-0 bg-black/50 data-[state=open]:pointer-events-auto data-[state=closed]:pointer-events-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-40",
+        "fixed inset-0 bg-black/50 data-[state=open]:pointer-events-auto data-[state=closed]:pointer-events-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-50",
         className
       )}
       {...props}
