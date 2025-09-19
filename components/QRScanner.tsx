@@ -1198,7 +1198,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
             onClick={onClose}
             variant="ghost"
             size="sm"
-            className="p-1 rounded-xl text-gray-200 bg-white/50"
+            className="p-1 rounded-xl text-gray-200 bg-background/30 hover:bg-background/50"
           >
             <X className="w-5 h-5" />
           </Button>
