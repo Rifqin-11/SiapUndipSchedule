@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Calendar, ArrowRight, Clock, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import EditRescheduleModal from "./EditRescheduleModal";
+import RescheduleModal from "./RescheduleModal";
 
 interface RescheduleItem {
   subjectId: string;
@@ -18,12 +18,14 @@ interface RescheduleItem {
 interface RescheduleHistoryProps {
   reschedules: RescheduleItem[];
   subjectId: string;
+  subjectName: string;
   onRescheduleUpdated: () => void;
 }
 
 const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
   reschedules,
   subjectId,
+  subjectName,
   onRescheduleUpdated,
 }) => {
   const [editingReschedule, setEditingReschedule] =
@@ -155,12 +157,14 @@ const RescheduleHistory: React.FC<RescheduleHistoryProps> = ({
       ))}
 
       {/* Edit Modal */}
-      <EditRescheduleModal
+      <RescheduleModal
         isOpen={!!editingReschedule}
         onClose={() => setEditingReschedule(null)}
         subjectId={subjectId}
-        reschedule={editingReschedule}
-        onRescheduleUpdated={onRescheduleUpdated}
+        subjectName={subjectName}
+        mode="edit"
+        existingReschedule={editingReschedule}
+        onRescheduleAdded={onRescheduleUpdated}
       />
     </div>
   );

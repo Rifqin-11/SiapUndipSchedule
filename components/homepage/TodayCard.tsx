@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { getTodayMeeting, getMeetingStats } from "@/utils/meeting-calculator";
 
 interface Subject {
   _id: string;
@@ -20,6 +21,7 @@ interface Subject {
   day: string;
   specificDate?: string; // For date-specific subjects
   meeting: number;
+  meetingDates?: string[]; // Array of 14 meeting dates
   attendanceDates?: string[];
   reschedules?: Array<{
     originalDate: Date;
@@ -61,9 +63,58 @@ const TodayCard: React.FC<TodayCardProps> = ({
     textColor,
     day,
     meeting,
+    meetingDates,
+    attendanceDates = [],
   } = subject;
 
   const [currentMeeting, setCurrentMeeting] = useState(meeting);
+
+  // Sync currentMeeting state with meeting prop when it changes
+  useEffect(() => {
+    setCurrentMeeting(meeting);
+  }, [meeting]);
+
+  // Calculate current meeting number and attendance stats from meetingDates
+  const meetingInfo = useMemo(() => {
+    if (meetingDates && Array.isArray(meetingDates)) {
+      const today = new Date().toISOString().split("T")[0];
+      const todayMeeting = getTodayMeeting(meetingDates, today);
+      const stats = getMeetingStats(meetingDates, attendanceDates, today);
+
+      if (todayMeeting) {
+        return {
+          currentMeeting: todayMeeting.meetingNumber,
+          totalMeetings: meetingDates.length,
+          hasScheduledMeetings: true,
+          attendedMeetings: stats.attendedMeetings,
+          passedMeetings: stats.passedMeetings,
+          attendanceRate: stats.attendanceRate,
+        };
+      } else {
+        // If no meeting today, still calculate stats
+        return {
+          currentMeeting: stats.passedMeetings + 1, // Next meeting number
+          totalMeetings: meetingDates.length,
+          hasScheduledMeetings: true,
+          attendedMeetings: stats.attendedMeetings,
+          passedMeetings: stats.passedMeetings,
+          attendanceRate: stats.attendanceRate,
+        };
+      }
+    }
+    // Fallback to legacy system - use database meeting count
+    return {
+      currentMeeting: meeting, // Use database meeting count directly
+      totalMeetings: 14,
+      hasScheduledMeetings: false,
+      attendedMeetings: attendanceDates?.length || 0,
+      passedMeetings: meeting - 1,
+      attendanceRate:
+        meeting > 1
+          ? Math.round(((attendanceDates?.length || 0) / (meeting - 1)) * 100)
+          : 0,
+    };
+  }, [meetingDates, attendanceDates, meeting]); // Use meeting instead of currentMeeting
 
   // Check localStorage for attendance status
   const getAttendanceKey = () => {
@@ -145,7 +196,7 @@ const TodayCard: React.FC<TodayCardProps> = ({
     setIsAttending(true);
     try {
       await onAttendance(id, rescheduleDate);
-      setCurrentMeeting((prev: number) => prev + 1);
+      // Remove manual state increment - let the data refetch handle it
       setHasAttended(true); // Mark as attended
       localStorage.setItem(getAttendanceKey(), "true"); // Save to localStorage
 
@@ -161,8 +212,12 @@ const TodayCard: React.FC<TodayCardProps> = ({
           attendanceDate: attendanceDate.toISOString(),
           location: room,
           notes: rescheduleDate
-            ? `Reschedule class - Meeting ${currentMeeting + 1}/14`
-            : `Regular class - Meeting ${currentMeeting + 1}/14`,
+            ? `Reschedule class - Attendance ${
+                meetingInfo.attendedMeetings + 1
+              }/14`
+            : `Regular class - Attendance ${
+                meetingInfo.attendedMeetings + 1
+              }/14`,
         };
 
         const historyResponse = await fetch("/api/attendance-history", {
@@ -187,8 +242,8 @@ const TodayCard: React.FC<TodayCardProps> = ({
         ? "reschedule class"
         : "regular class";
       toast.success(
-        `Attendance recorded for ${name} (${attendanceType})! Meeting ${
-          currentMeeting + 1
+        `Attendance recorded for ${name} (${attendanceType})! Total attended: ${
+          meetingInfo.attendedMeetings + 1
         }/14`
       );
     } catch (error) {
@@ -255,13 +310,20 @@ const TodayCard: React.FC<TodayCardProps> = ({
             <div className={`flex items-center gap-1 ${textColor}`}>
               <Users className="w-4 h-4" />
               <span className="text-xs font-medium">
-                Meeting {currentMeeting}/14
+                Attendance {meetingInfo.attendedMeetings}/14
+                {meetingInfo.hasScheduledMeetings && (
+                  <span className="ml-1 text-xs opacity-75">
+                    ({Math.round((meetingInfo.attendedMeetings / 14) * 100)}%)
+                  </span>
+                )}
               </span>
             </div>
             <div className="w-20 bg-gray-200 rounded-full h-1.5 dark:bg-secondary">
               <div
                 className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${(currentMeeting / 14) * 100}%` }}
+                style={{
+                  width: `${(meetingInfo.attendedMeetings / 14) * 100}%`,
+                }}
               ></div>
             </div>
           </div>

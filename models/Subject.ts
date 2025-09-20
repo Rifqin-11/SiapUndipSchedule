@@ -11,6 +11,8 @@ export interface ISubject extends Document {
   endTime: string;
   lecturer: string[];
   meeting: number;
+  startDate?: string; // Tanggal mulai kuliah (YYYY-MM-DD format)
+  meetingDates?: string[]; // Array of 14 meeting dates calculated from startDate
   attendanceDates?: string[];
   reschedules?: {
     subjectId: string;
@@ -82,6 +84,16 @@ const SubjectSchema = new Schema<ISubject>(
       min: 0,
       max: 14,
     },
+    startDate: {
+      type: String, // Store as YYYY-MM-DD format
+      required: false,
+      trim: true,
+    },
+    meetingDates: [
+      {
+        type: String, // Store as YYYY-MM-DD format for each of 14 meetings
+      },
+    ],
     attendanceDates: [
       {
         type: String, // Store as ISO date strings

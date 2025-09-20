@@ -170,9 +170,13 @@ const EditRescheduleModal: React.FC<EditRescheduleModalProps> = ({
                 onChange={(e) =>
                   handleInputChange("originalDate", e.target.value)
                 }
-                className="w-full"
+                className="w-full bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                disabled
                 required
               />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Original date cannot be changed when editing
+              </p>
             </div>
 
             <div className="space-y-2">

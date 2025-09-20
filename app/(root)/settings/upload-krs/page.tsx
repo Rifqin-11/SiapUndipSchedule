@@ -63,6 +63,7 @@ const UploadKRSPage = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<ParsedSubject | null>(null);
+  const [startDate, setStartDate] = useState<string>("");
 
   // Cleanup object URL on component unmount
   useEffect(() => {
@@ -203,6 +204,11 @@ const UploadKRSPage = () => {
   };
 
   const submitSchedule = async () => {
+    if (!startDate) {
+      toast.error("Please select the semester start date first");
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const response = await fetch("/api/subjects", {
@@ -210,7 +216,10 @@ const UploadKRSPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ subjects: parsedData }),
+        body: JSON.stringify({
+          subjects: parsedData,
+          startDate: startDate,
+        }),
       });
 
       const result = await response.json();
@@ -947,6 +956,41 @@ const UploadKRSPage = () => {
                   Total {parsedData.length} subjects will be added to your
                   schedule.
                 </p>
+
+                {/* Semester Start Date Input */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <h3 className="font-medium text-blue-900 dark:text-blue-200">
+                        Semester Start Date
+                      </h3>
+                    </div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Select when your semester starts. This will be used to
+                      calculate 14 meeting dates for each subject.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                      <label className="text-sm font-medium text-blue-900 dark:text-blue-200 min-w-fit">
+                        Start Date:
+                      </label>
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="flex-1 max-w-xs border-blue-300 dark:border-blue-600 focus:border-blue-500 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+                    {!startDate && (
+                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Please select the semester start date before saving
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex flex-col sm:flex-row gap-3 w-full">
                   <Button
                     onClick={resetUpload}
@@ -958,7 +1002,7 @@ const UploadKRSPage = () => {
                   </Button>
                   <Button
                     onClick={submitSchedule}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !startDate}
                     className="bg-green-600 text-white hover:bg-green-700 w-full sm:w-auto sm:flex-1 order-1 sm:order-2"
                   >
                     {isProcessing ? (

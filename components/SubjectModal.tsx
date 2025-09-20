@@ -211,13 +211,20 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
         }
       };
 
+      // Get today's date as startDate for weekly repeating subjects
+      const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+
       const subjectData = {
         ...formData,
         lecturer: filteredLecturers,
         day: formData.day === "no-schedule" ? "" : formData.day, // Convert back to empty string
+        startDate:
+          repeatWeekly && formData.day !== "no-schedule"
+            ? todayDate
+            : undefined, // Use today's date for weekly repeating subjects
         specificDate:
           mode === "add" && formData.day !== "no-schedule" && !repeatWeekly
-            ? selectedDate || new Date().toISOString().split("T")[0] // Use current date if no selectedDate
+            ? selectedDate || todayDate // Use current date if no selectedDate
             : undefined, // Use selectedDate only if not repeating weekly and a day is selected
         category: getAutoCategory(formData.meeting), // Auto-generated category
         id: mode === "edit" && subject ? subject.id : "", // Backend will generate for new subjects
@@ -331,7 +338,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
             {mode === "add" && formData.day !== "no-schedule" && (
               <p className="text-xs text-blue-600 font-medium">
                 {repeatWeekly
-                  ? `This subject will occur on ${formData.day} and repeat every week.`
+                  ? `This subject will occur on ${formData.day} and repeat every week for 14 meetings starting from today.`
                   : `This subject will only occur once on ${formData.day} and will not repeat weekly.`}
               </p>
             )}

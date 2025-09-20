@@ -8,6 +8,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  getMeetingNumberByDate,
+  getMeetingStats,
+} from "@/utils/meeting-calculator";
 
 interface CalendarCardProps {
   _id?: string;
@@ -19,10 +23,13 @@ interface CalendarCardProps {
   endTime: string;
   lecturer: string[];
   meeting: number;
+  meetingDates?: string[]; // Array of 14 meeting dates
+  attendanceDates?: string[]; // Array of attendance dates
   category?: string;
   bgColor: string;
   textColor: string;
   bgRoomColor: string;
+  selectedDate?: string; // Current selected date to calculate meeting number
   onEdit?: () => void;
   onDelete?: () => void;
   onReschedule?: () => void;
@@ -46,6 +53,9 @@ export default function CalendarCard({
   endTime,
   lecturer,
   meeting,
+  meetingDates,
+  attendanceDates = [],
+  selectedDate,
   bgColor,
   textColor,
   onEdit,
@@ -55,7 +65,40 @@ export default function CalendarCard({
   isReschedule,
   rescheduleInfo,
 }: CalendarCardProps) {
-  const proggressMeeting = (meeting / 14) * 100;
+  const progressMeeting = (meeting / 14) * 100;
+  // Calculate current meeting number and attendance stats from meetingDates
+  const currentMeetingInfo = React.useMemo(() => {
+    if (meetingDates && Array.isArray(meetingDates) && selectedDate) {
+      const meetingNumber = getMeetingNumberByDate(selectedDate, meetingDates);
+      const stats = getMeetingStats(
+        meetingDates,
+        attendanceDates,
+        selectedDate
+      );
+
+      if (meetingNumber) {
+        return {
+          currentMeeting: meetingNumber,
+          totalMeetings: meetingDates.length,
+          hasScheduledMeetings: true,
+          attendedMeetings: stats.attendedMeetings,
+          passedMeetings: stats.passedMeetings,
+          attendanceRate: stats.attendanceRate,
+        };
+      }
+    }
+    // Fallback to legacy system
+    return {
+      currentMeeting: meeting,
+      totalMeetings: 14,
+      hasScheduledMeetings: false,
+      attendedMeetings: meeting, // Use meeting count instead of attendanceDates.length
+      passedMeetings: meeting,
+      attendanceRate: meeting > 0 ? Math.round((meeting / 14) * 100) : 0,
+    };
+  }, [meetingDates, attendanceDates, selectedDate, meeting]);
+
+  const progress = (currentMeetingInfo.attendedMeetings / 14) * 100;
 
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -181,10 +224,10 @@ export default function CalendarCard({
 
           <div className="flex flex-col mt-3 gap-1">
             <div className="flex flex-row justify-between items-center">
-              <h1 className="text-xs text-gray-500">Progress</h1>
+              <h1 className="text-xs text-gray-500">Attendance</h1>
               <p className="text-xs text-gray-500">{meeting}/14</p>
             </div>
-            <Progress value={proggressMeeting} className="bg-blue-200" />
+            <Progress value={progressMeeting} className="bg-blue-200" />
           </div>
         </div>
       </div>

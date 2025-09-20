@@ -6,6 +6,7 @@ import {
   createErrorResponse,
   checkConditionalRequest,
 } from "@/lib/cache";
+import { calculateMeetingDates } from "@/utils/meeting-calculator";
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,8 +47,16 @@ export async function GET(request: NextRequest) {
       return conditionalResponse;
     }
 
-    // Return cached response - subjects jarang berubah jadi gunakan LONG cache
-    return createCachedResponse(responseData, "LONG");
+    // Return response without cache untuk testing attendance updates
+    return NextResponse.json(responseData, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+        "X-Timestamp": Date.now().toString(),
+      },
+    });
   } catch (error) {
     console.error("Error fetching subjects:", error);
     return createErrorResponse("Failed to fetch subjects", 500);
@@ -81,13 +90,44 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a batch insert (array of subjects)
     if (body.subjects && Array.isArray(body.subjects)) {
-      const subjectsToInsert = body.subjects.map(
-        (subject: Record<string, unknown>) => ({
-          ...subject,
-          userId: decoded.userId, // Add userId to each subject
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+      const { subjects, startDate } = body;
+
+      if (!startDate) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Start date is required for calculating meeting dates",
+          },
+          { status: 400 }
+        );
+      }
+
+      const subjectsToInsert = subjects.map(
+        (subject: Record<string, unknown>) => {
+          let meetingDates: string[] = [];
+
+          // Calculate meeting dates if day is provided
+          if (subject.day && typeof subject.day === "string") {
+            try {
+              meetingDates = calculateMeetingDates(startDate, subject.day);
+            } catch (error) {
+              console.error(
+                `Failed to calculate meeting dates for subject ${subject.name}:`,
+                error
+              );
+              // Continue without meetingDates if calculation fails
+            }
+          }
+
+          return {
+            ...subject,
+            userId: decoded.userId, // Add userId to each subject
+            startDate: startDate, // Add start date
+            meetingDates: meetingDates, // Add calculated meeting dates
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+        }
       );
 
       const result = await db
@@ -115,9 +155,50 @@ export async function POST(request: NextRequest) {
       return response;
     } else {
       // Single subject insert (existing functionality)
+      let meetingDates: string[] = [];
+      let startDate = body.startDate;
+
+      // If no startDate provided, try to get it from existing subjects
+      if (!startDate && body.day && typeof body.day === "string") {
+        try {
+          // Find any existing subject for this user that has a startDate
+          const existingSubject = await db.collection("subjects").findOne({
+            userId: decoded.userId,
+            startDate: { $exists: true, $ne: null },
+          });
+
+          if (existingSubject && existingSubject.startDate) {
+            startDate = existingSubject.startDate;
+            console.log(
+              `Using existing startDate: ${startDate} for new subject: ${body.name}`
+            );
+          }
+        } catch (error) {
+          console.error("Error finding existing startDate:", error);
+        }
+      }
+
+      // Calculate meeting dates if day and startDate are available
+      if (body.day && startDate && typeof body.day === "string") {
+        try {
+          meetingDates = calculateMeetingDates(startDate, body.day);
+          console.log(
+            `Calculated ${meetingDates.length} meeting dates for ${body.name}`
+          );
+        } catch (error) {
+          console.error(
+            `Failed to calculate meeting dates for subject ${body.name}:`,
+            error
+          );
+          // Continue without meetingDates if calculation fails
+        }
+      }
+
       const subject = {
         ...body,
         userId: decoded.userId, // Add userId to subject
+        startDate: startDate, // Add startDate (from body or existing)
+        meetingDates: meetingDates, // Add calculated meeting dates
         createdAt: new Date(),
         updatedAt: new Date(),
       };

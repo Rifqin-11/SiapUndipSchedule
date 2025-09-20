@@ -16,10 +16,13 @@ import RescheduleModal from "@/components/reschedule/RescheduleModal";
 import RescheduleHistory from "@/components/reschedule/RescheduleHistory";
 import { Button } from "@/components/ui/button";
 import { useSubject } from "@/hooks/useSubjects";
+import { getWeeklyTimeline, getMeetingStats } from "@/utils/meeting-calculator";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const { data: subject, isLoading: loading, error } = useSubject(id);
+  const queryClient = useQueryClient();
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [showAllMeetings, setShowAllMeetings] = useState(false);
   const [reschedules, setReschedules] = useState<
@@ -34,6 +37,85 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
       createdAt: Date;
     }[]
   >([]);
+
+  // Handle attendance toggle from Timeline
+  const handleAttendanceToggle = async (
+    attendanceDate: string,
+    currentStatus?: string
+  ) => {
+    try {
+      // Determine action based on current status
+      const action = currentStatus === "attended" ? "remove" : "add";
+
+      const response = await fetch(`/api/subjects/${id}/attendance`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rescheduleDate: attendanceDate,
+          action: action,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update attendance");
+      }
+
+      // Invalidate and refetch subject data
+      await queryClient.invalidateQueries({ queryKey: ["subject", id] });
+      await queryClient.invalidateQueries({ queryKey: ["subjects"] });
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+      throw error;
+    }
+  };
+
+  // Calculate attendance stats using meetingDates and attendanceDates
+  const attendanceStats = React.useMemo(() => {
+    console.log("🔍 Subject Detail - calculating attendance stats:", {
+      subject: subject?.name,
+      meetingDates: subject?.meetingDates?.length,
+      attendanceDates: subject?.attendanceDates?.length,
+      meeting: subject?.meeting,
+    });
+
+    if (subject?.meetingDates && subject?.attendanceDates) {
+      const stats = getMeetingStats(
+        subject.meetingDates,
+        subject.attendanceDates
+      );
+      console.log("📊 Using getMeetingStats result:", stats);
+      return stats;
+    }
+    // Fallback for legacy subjects - use subject.meeting as attendedMeetings
+    const attendedCount = subject?.meeting || 0; // Use subject.meeting instead of attendanceDates.length
+    const totalMeetingsCount = subject?.meeting || 0;
+
+    const fallbackStats = {
+      totalMeetings: 14,
+      attendedMeetings: attendedCount, // This should match subject.meeting
+      passedMeetings: totalMeetingsCount,
+      attendanceRate:
+        attendedCount > 0
+          ? Math.round((attendedCount / 14) * 100) // Calculate percentage based on 14 total meetings
+          : 0,
+    };
+    console.log("📊 Using fallback stats:", fallbackStats);
+    return fallbackStats;
+  }, [subject]);
+
+  // Calculate weekly timeline if we have startDate and meetingDates
+  const weeklyTimeline = React.useMemo(() => {
+    if (subject?.startDate && subject?.meetingDates) {
+      return getWeeklyTimeline(
+        subject.startDate,
+        subject.meetingDates,
+        subject.attendanceDates || []
+      );
+    }
+    return null;
+  }, [subject?.startDate, subject?.meetingDates, subject?.attendanceDates]);
 
   // Fetch reschedules when component mounts
   const fetchReschedules = React.useCallback(async () => {
@@ -272,9 +354,11 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
             </h3>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Meetings</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Attendance
+            </p>
             <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {subject.meeting}/14
+              {subject.meeting}/{attendanceStats.totalMeetings}
             </p>
           </div>
         </div>
@@ -296,84 +380,103 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         {/* Timeline */}
         <div className="space-y-3">
           <h4 className="font-medium text-gray-900 dark:text-white mb-4">
-            Meeting History
+            Weekly Progress
           </h4>
           <div className="relative">
             <div className="space-y-2">
-              {(() => {
-                // Determine the actual number of meetings to display
-                const actualMeetingCount = Math.max(
-                  subject.attendanceDates?.length || 0,
-                  subject.meeting || 0
-                );
+              {weeklyTimeline ? (
+                // New weekly timeline
+                (() => {
+                  const displayCount = showAllMeetings
+                    ? weeklyTimeline.totalWeeks
+                    : Math.min(4, weeklyTimeline.totalWeeks);
 
-                const displayCount = showAllMeetings ? actualMeetingCount : 3;
+                  return weeklyTimeline.timeline
+                    .slice(0, displayCount)
+                    .map((week, index) => {
+                      // Fade the 4th item (index 3) when there are more than 3 meetings
+                      const isPartiallyVisible =
+                        !showAllMeetings &&
+                        index === 3 &&
+                        weeklyTimeline.totalWeeks > 3;
 
-                // Generate meetings array combining real dates and fallback dates
-                const meetings = Array.from(
-                  { length: actualMeetingCount },
-                  (_, index) => {
-                    const meetingNumber = index + 1;
+                      // Adjust status
+                      let adjustedStatus = week.status;
+                      if (week.meetings && week.meetings.length > 0) {
+                        const today = new Date().toISOString().split("T")[0];
+                        const isCurrentWeek =
+                          week.startDate <= today && today <= week.endDate;
+                        const isPastWeek = week.endDate < today;
+                        const isFutureWeek = week.startDate > today;
 
-                    return {
-                      meetingNumber,
-                      date:
-                        subject.attendanceDates?.[index] ||
-                        `Meeting ${meetingNumber}`,
-                      isCompleted: true,
-                    };
-                  }
-                );
+                        if (isFutureWeek) {
+                          adjustedStatus = "upcoming";
+                        } else if (isCurrentWeek || isPastWeek) {
+                          const hasAttendanceThisWeek =
+                            subject.attendanceDates?.some((date) => {
+                              let attendanceDate = date;
+                              if (date.includes(",")) {
+                                try {
+                                  attendanceDate = new Date(date)
+                                    .toISOString()
+                                    .split("T")[0];
+                                } catch {}
+                              }
+                              return (
+                                attendanceDate >= week.startDate &&
+                                attendanceDate <= week.endDate
+                              );
+                            });
+                          adjustedStatus = hasAttendanceThisWeek
+                            ? "attended"
+                            : "not-attended";
+                        }
+                      }
 
-                return meetings.slice(0, displayCount).map((meeting, index) => {
-                  const isPartiallyVisible =
-                    !showAllMeetings && index === 2 && actualMeetingCount > 3;
-
-                  return (
-                    <div
-                      key={index}
-                      className={`relative ${
-                        isPartiallyVisible ? "overflow-hidden" : ""
-                      }`}
-                    >
-                      <Timeline
-                        meetingNumber={meeting.meetingNumber}
-                        date={meeting.date}
-                        isCompleted={meeting.isCompleted}
-                      />
-                      {/* Fade overlay for 3rd item when there are more than 3 meetings */}
-                      {isPartiallyVisible && (
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none"></div>
-                      )}
-                    </div>
-                  );
-                });
-              })()}
+                      return (
+                        <div
+                          key={week.week}
+                          className={`relative ${
+                            isPartiallyVisible ? "overflow-hidden" : ""
+                          }`}
+                        >
+                          <Timeline
+                            weekNumber={week.week}
+                            startDate={week.startDate}
+                            endDate={week.endDate}
+                            status={adjustedStatus}
+                            isCurrentWeek={week.isCurrentWeek}
+                            meetings={week.meetings}
+                            attendance={week.attendance}
+                            onAttendanceToggle={handleAttendanceToggle}
+                            subjectId={id}
+                          />
+                          {isPartiallyVisible && (
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-white/70 via-60% to-white dark:via-card/70 dark:to-card pointer-events-none" />
+                          )}
+                        </div>
+                      );
+                    });
+                })()
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  No weekly timeline data available
+                </div>
+              )}
             </div>
           </div>
 
           {/* Show More/Less Button */}
-          {(() => {
-            const actualMeetingCount = Math.max(
-              subject.attendanceDates?.length || 0,
-              subject.meeting || 0
-            );
-
-            return (
-              actualMeetingCount > 3 && (
-                <button
-                  onClick={() => setShowAllMeetings(!showAllMeetings)}
-                  className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
-                >
-                  {showAllMeetings ? (
-                    "Show less"
-                  ) : (
-                    <>View all meetings ({actualMeetingCount - 3} more)</>
-                  )}
-                </button>
-              )
-            );
-          })()}
+          {weeklyTimeline && weeklyTimeline.totalWeeks > 3 && (
+            <button
+              onClick={() => setShowAllMeetings(!showAllMeetings)}
+              className="text-blue-600 dark:text-blue-400 text-sm hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors duration-200 mt-4"
+            >
+              {showAllMeetings
+                ? "Show less"
+                : `View all weeks (${weeklyTimeline.totalWeeks - 4} more)`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -402,6 +505,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         <RescheduleHistory
           reschedules={reschedules}
           subjectId={id}
+          subjectName={subject.name}
           onRescheduleUpdated={fetchReschedules}
         />
       </div>

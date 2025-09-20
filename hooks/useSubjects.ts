@@ -16,6 +16,8 @@ export interface Subject {
   endTime: string;
   lecturer: string[];
   meeting: number;
+  startDate?: string; // Tanggal mulai kuliah (YYYY-MM-DD format)
+  meetingDates?: string[]; // Array of 14 meeting dates calculated from startDate
   attendanceDates?: string[];
   reschedules?: {
     originalDate: Date;
@@ -353,7 +355,7 @@ export const useSubject = (id: string) => {
   return useQuery({
     queryKey: ["subject", id],
     queryFn: async (): Promise<Subject> => {
-      const response = await fetch(`/api/subjects/${id}`, {
+      const response = await fetchWithCacheBusting(`/api/subjects/${id}`, {
         credentials: "include",
       });
 
@@ -365,8 +367,11 @@ export const useSubject = (id: string) => {
       return data.data;
     },
     enabled: !!id, // Hanya fetch jika id ada
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 0, // Always fresh untuk testing
+    gcTime: 1 * 60 * 1000, // 1 minute cache
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    refetchOnMount: "always",
   });
 };
 

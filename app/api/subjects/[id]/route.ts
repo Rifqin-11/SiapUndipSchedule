@@ -51,7 +51,18 @@ export async function GET(
       id: subject._id.toString(), // Ensure id is the string version of _id
     };
 
-    return NextResponse.json({ success: true, data: mappedSubject });
+    return NextResponse.json(
+      { success: true, data: mappedSubject },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+          "X-Timestamp": Date.now().toString(),
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching subject:", error);
     return NextResponse.json(

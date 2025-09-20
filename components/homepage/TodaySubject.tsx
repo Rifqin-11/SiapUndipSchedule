@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useMemo, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   colorPairs,
   getCurrentDayAndDate,
   normalizeDayName,
 } from "@/utils/date";
 import TodayCard from "@/components/homepage/TodayCard";
-import { useSubjects, Subject } from "@/hooks/useSubjects";
+import { useSubjects, Subject, SUBJECTS_QUERY_KEY } from "@/hooks/useSubjects";
+import { getTodayMeeting, isClassDay } from "@/utils/meeting-calculator";
 
 interface SubjectWithReschedule extends Subject {
   rescheduleDate?: string;
@@ -25,6 +27,7 @@ interface SubjectWithReschedule extends Subject {
 
 const TodaySubject = () => {
   const { currentDay } = getCurrentDayAndDate();
+  const queryClient = useQueryClient();
   const {
     data: subjects = [],
     isLoading: loading,
@@ -74,6 +77,13 @@ const TodaySubject = () => {
         return subject.specificDate === todayString;
       }
 
+      // Use meetingDates array if available (new system)
+      if (subject.meetingDates && Array.isArray(subject.meetingDates)) {
+        const todayMeeting = getTodayMeeting(subject.meetingDates, todayString);
+        return todayMeeting !== null; // Returns true if today is a class day
+      }
+
+      // Fallback to legacy system for older subjects
       // For recurring subjects, check day match
       // Skip subjects without a valid day property
       if (!subject.day || typeof subject.day !== "string") {
@@ -216,16 +226,29 @@ const TodaySubject = () => {
           throw new Error(result.error || "Failed to record attendance");
         }
 
-        // Refresh subjects data to get updated meeting count
+        // Force invalidate ALL subject-related cache and refetch fresh data
+        await queryClient.invalidateQueries({ queryKey: SUBJECTS_QUERY_KEY });
+        await queryClient.invalidateQueries({ queryKey: ["subject"] }); // All single subject queries
+
+        // Clear all caches and force complete refresh
+        await queryClient.clear();
+
+        // Add delay to ensure cache is fully cleared
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Force refetch all subject-related queries
+        await queryClient.refetchQueries({ queryKey: SUBJECTS_QUERY_KEY });
+        await queryClient.refetchQueries({ queryKey: ["subject"] });
+
         await refetch();
 
         return result;
       } catch (error) {
-        console.error("Error recording attendance:", error);
+        console.error("❌ Error recording attendance:", error);
         throw error;
       }
     },
-    [refetch]
+    [refetch, queryClient]
   );
 
   // Memoize render to prevent unnecessary re-renders

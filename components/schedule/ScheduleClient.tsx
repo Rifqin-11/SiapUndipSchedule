@@ -35,6 +35,7 @@ import QRScanner from "../QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import PageHeader from "../PageHeader";
+import { isClassDay, getMeetingNumberByDate } from "@/utils/meeting-calculator";
 
 interface SubjectWithReschedule extends Subject {
   isReschedule?: boolean;
@@ -87,6 +88,8 @@ const ScheduleClient = () => {
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [subjectToReschedule, setSubjectToReschedule] =
     useState<Subject | null>(null);
+  const [rescheduleOriginalDate, setRescheduleOriginalDate] =
+    useState<string>("");
 
   // Track which subject has active actions (to hide dropdown)
   const [activeActionSubjectId, setActiveActionSubjectId] = useState<
@@ -217,6 +220,11 @@ const ScheduleClient = () => {
       return subject.specificDate === selectedDayDate;
     }
 
+    // Use meetingDates array if available (new system)
+    if (subject.meetingDates && Array.isArray(subject.meetingDates)) {
+      return isClassDay(selectedDayDate, subject.meetingDates);
+    }
+
     // For recurring subjects (legacy), check day match and valid schedule
     // Only show subjects that have a valid schedule (day and time)
     if (!hasValidSchedule(subject)) {
@@ -331,6 +339,9 @@ const ScheduleClient = () => {
   const handleRescheduleSubject = (subject: Subject) => {
     setActiveActionSubjectId(subject.id);
     setSubjectToReschedule(subject);
+    // Set the original date to the currently selected date
+    const currentSelectedDate = getSelectedDayDate();
+    setRescheduleOriginalDate(currentSelectedDate);
     setIsRescheduleModalOpen(true);
   };
 
@@ -498,6 +509,7 @@ const ScheduleClient = () => {
                   bgColor={finalColor.bg}
                   textColor={finalColor.text}
                   bgRoomColor={finalColor.roomBg}
+                  selectedDate={getSelectedDayDate()}
                   showActions={activeActionSubjectId !== subject.id}
                   onEdit={() => handleEditSubject(subject)}
                   onDelete={() => handleDeleteSubject(subject)}
@@ -578,13 +590,16 @@ const ScheduleClient = () => {
         onClose={() => {
           setIsRescheduleModalOpen(false);
           setActiveActionSubjectId(null);
+          setRescheduleOriginalDate("");
         }}
         subjectId={subjectToReschedule?.id || ""}
         subjectName={subjectToReschedule?.name || ""}
+        originalDate={rescheduleOriginalDate}
         onRescheduleAdded={() => {
           refetch();
           setIsRescheduleModalOpen(false);
           setActiveActionSubjectId(null);
+          setRescheduleOriginalDate("");
           toast.success("Jadwal berhasil direscheduled");
         }}
       />

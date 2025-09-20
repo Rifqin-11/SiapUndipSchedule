@@ -235,6 +235,8 @@ const Page = () => {
           name={subject.name}
           meeting={subject.meeting}
           specificDate={subject.specificDate}
+          meetingDates={subject.meetingDates}
+          attendanceDates={subject.attendanceDates}
         />
       </div>
     ));

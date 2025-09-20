@@ -16,11 +16,25 @@ import { Calendar, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { forceModalCleanup, useModalCleanup } from "@/lib/modal-utils";
 
+interface RescheduleItem {
+  subjectId: string;
+  originalDate: string;
+  newDate: string;
+  reason: string;
+  startTime?: string;
+  endTime?: string;
+  room?: string;
+  createdAt: Date;
+}
+
 interface RescheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
   subjectId: string;
   subjectName: string;
+  originalDate?: string;
+  mode?: "create" | "edit";
+  existingReschedule?: RescheduleItem | null;
   onRescheduleAdded: () => void;
 }
 
@@ -29,6 +43,9 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
   onClose,
   subjectId,
   subjectName,
+  originalDate = "",
+  mode = "create",
+  existingReschedule = null,
   onRescheduleAdded,
 }) => {
   const [formData, setFormData] = useState({
@@ -43,6 +60,40 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
 
   // Auto-cleanup saat modal ditutup & saat komponen unmount
   useModalCleanup(isOpen);
+
+  // Set form data based on mode when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (mode === "edit" && existingReschedule) {
+        // Edit mode: populate with existing reschedule data
+        setFormData({
+          originalDate: existingReschedule.originalDate,
+          newDate: existingReschedule.newDate,
+          reason: existingReschedule.reason || "",
+          startTime: existingReschedule.startTime || "",
+          endTime: existingReschedule.endTime || "",
+          room: existingReschedule.room || "",
+        });
+      } else if (mode === "create" && originalDate) {
+        // Create mode: auto-fill originalDate only
+        setFormData((prev) => ({ ...prev, originalDate }));
+      }
+    }
+  }, [isOpen, mode, originalDate, existingReschedule]);
+
+  // Reset form when modal is closed
+  React.useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        originalDate: "",
+        newDate: "",
+        reason: "",
+        startTime: "",
+        endTime: "",
+        room: "",
+      });
+    }
+  }, [isOpen]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -64,6 +115,35 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
 
     setIsLoading(true);
     try {
+      if (mode === "edit" && existingReschedule) {
+        // Edit mode: Delete old reschedule then create new one
+        const oldDate = existingReschedule.newDate;
+        const dateToSend = oldDate
+          ? typeof oldDate === "string"
+            ? oldDate
+            : new Date(oldDate).toISOString()
+          : "";
+
+        // First delete the old reschedule
+        const deleteResponse = await fetch(
+          `/api/subjects/${subjectId}/reschedule`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              rescheduleDate: dateToSend,
+            }),
+          }
+        );
+
+        if (!deleteResponse.ok) {
+          throw new Error("Failed to delete old reschedule");
+        }
+      }
+
+      // Create new reschedule (for both create and edit modes)
       const response = await fetch(`/api/subjects/${subjectId}/reschedule`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,7 +153,11 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
       const result = await response.json();
 
       if (result.success) {
-        toast.success("Class reschedule recorded successfully!");
+        const successMessage =
+          mode === "edit"
+            ? "Class reschedule updated successfully!"
+            : "Class reschedule recorded successfully!";
+        toast.success(successMessage);
         onRescheduleAdded();
         // Tutup + cleanup
         hardClose();
@@ -87,7 +171,7 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
           room: "",
         });
       } else {
-        toast.error(result.error || "Failed to record reschedule");
+        toast.error(result.error || `Failed to ${mode} reschedule`);
       }
     } catch (error) {
       console.error("Error recording reschedule:", error);
@@ -121,10 +205,11 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
-            Reschedule Class
+            {mode === "edit" ? "Edit Reschedule" : "Reschedule Class"}
           </DialogTitle>
           <DialogDescription>
-            Record a class reschedule for <strong>{subjectName}</strong>
+            {mode === "edit" ? "Update the" : "Record a"} class reschedule for{" "}
+            <strong>{subjectName}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -142,9 +227,19 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
                 onChange={(e) =>
                   handleInputChange("originalDate", e.target.value)
                 }
-                className="w-full"
+                className={`w-full ${
+                  mode === "create"
+                    ? "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                    : ""
+                }`}
+                disabled={mode === "create"}
                 required
               />
+              {mode === "create" && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Automatically filled based on selected date
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
