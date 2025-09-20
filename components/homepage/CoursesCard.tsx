@@ -17,6 +17,7 @@ const CoursesCard = ({
   meetingDates = [],
   attendanceDates = [],
 }: Subject) => {
+  const progressMeeting = (meeting / 14) * 100;
   // Calculate attendance-based progress
   const attendanceStats = React.useMemo(() => {
     if (specificDate) {
@@ -51,7 +52,7 @@ const CoursesCard = ({
       <div className="bg-blue-100 dark:bg-blue-900 dark:text-blue-100 text-blue-900 px-2 py-0.5 rounded-full text-xs font-semibold w-fit">
         {specificDate ? (
           "One-time"
-        ) : progressPercentage < 75 ? (
+        ) : progressMeeting < 75 ? (
           "High"
         ) : (
           <span className="text-green-900">Low</span>
@@ -66,11 +67,11 @@ const CoursesCard = ({
         <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300">
           <span>Attendance</span>
           <span className="text-blue-900 dark:text-blue-400">
-            {meeting}/{attendanceStats.totalMeetings}
+            {meeting}/14
           </span>
         </div>
         <Progress
-          value={progressPercentage}
+          value={progressMeeting}
           className="bg-blue-100 dark:bg-gray-800"
         />
       </div>
