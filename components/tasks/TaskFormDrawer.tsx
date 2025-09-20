@@ -22,6 +22,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { SubjectCombobox } from "@/components/ui/subject-combobox";
 import type { Task, Subject } from "./types";
+import { Textarea } from "../ui/textarea";
 
 /** Simple media query hook: true kalau >= 1280px (xl) */
 function useMediaQuery(query: string) {
@@ -243,7 +244,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Input
+                <Textarea
                   id="description"
                   value={values.description}
                   onChange={(e) =>
@@ -297,7 +298,7 @@ export const TaskFormDrawer: React.FC<Props> = ({
               Details & schedule
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <Select

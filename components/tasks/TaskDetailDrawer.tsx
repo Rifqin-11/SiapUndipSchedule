@@ -144,7 +144,7 @@ export const TaskDetailDrawer: React.FC<Props> = ({
             )}
 
             {/* due date */}
-            <span className="px-3 py-1 rounded-full text-sm font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
+            {/* <span className="px-3 py-1 rounded-full text-sm font-medium bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300">
               {new Date(task.dueDate).toLocaleDateString(undefined, {
                 weekday: "short",
                 day: "2-digit",
@@ -152,7 +152,7 @@ export const TaskDetailDrawer: React.FC<Props> = ({
               })}
               {task.dueTime &&
                 ` • ${task.dueTime.split(":").slice(0, 2).join(":")}`}
-            </span>
+            </span> */}
 
             {/* subject (opsional) */}
             {task.subject?.name && (
@@ -161,13 +161,15 @@ export const TaskDetailDrawer: React.FC<Props> = ({
               </span>
             )}
           </div>
-
-          <SheetDescription className="mt-3 text-gray-600 dark:text-gray-400">
-            {task.description || "No description provided."}
-          </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-4 overflow-y-auto pr-1 flex-1">
+          {/* Description - sekarang dalam scrollable area */}
+          <div className="mt-3">
+            <SheetDescription className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words leading-relaxed">
+              {task.description || "No description provided."}
+            </SheetDescription>
+          </div>
           {/* Link */}
           <div className="flex items-center justify-between rounded-3xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 px-4 py-4">
             <div className="flex items-center gap-3 min-w-0">
