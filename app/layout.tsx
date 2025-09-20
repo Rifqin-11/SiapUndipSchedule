@@ -43,6 +43,32 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+    {/* Minimal critical CSS for above-the-fold to reduce LCP render-blocking impact.
+            Keep it tiny and safe: basic background, container sizing, and simple utility fallbacks. */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          /* Critical minimal styles (inlined) */
+          html,body{height:100%;margin:0}
+          body{min-height:100vh;background:#ffffff;color:#0f172a}
+          .min-h-screen{min-height:100vh}
+          .bg-background{background:#f8fafc}
+          /* Basic layout fallback for header / main container */
+          .site-header{height:64px}
+          .container{max-width:1024px;margin-left:auto;margin-right:auto;padding:0 16px}
+        ` }} />
+
+        {/* Preload built Next CSS assets as non-blocking (preload-as-style + onload -> rel=stylesheet)
+            This ensures CSS starts downloading early while avoiding blocking the rendering critical path. */}
+        <link rel="preload" href="/_next/static/css/579ef732daa8f3fd.css" as="style" />
+        <link rel="preload" href="/_next/static/css/7e7d96b1e6991756.css" as="style" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try{document.querySelectorAll('link[rel="preload"][as="style"]').forEach(function(l){l.onload=function(){l.rel='stylesheet'};});}catch(e){}
+          })();
+        `}} />
+        <noscript>
+          <link rel="stylesheet" href="/_next/static/css/579ef732daa8f3fd.css" />
+          <link rel="stylesheet" href="/_next/static/css/7e7d96b1e6991756.css" />
+        </noscript>
         {/* Make Next-injected chunk CSS non-blocking to avoid render-blocking CSS chains reported by Lighthouse.
             This script converts <link rel="stylesheet" href="/_next/static/chunks/..."> into
             preload-as-style + onload -> rel=stylesheet. It also observes mutations so late-inserted links
@@ -50,10 +76,17 @@ export default function RootLayout({
             critical CSS if that's a problem. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){function makeNonBlocking(l){try{if(l.rel==='stylesheet'&&l.href&&l.href.indexOf('/_next/static/chunks/')!==-1){l.rel='preload';l.as='style';l.onload=function(){this.rel='stylesheet'} }}catch(e){} }
-            try{Array.prototype.slice.call(document.querySelectorAll('link[rel="stylesheet"][href^="/_next/static/chunks/"]')).forEach(makeNonBlocking)}catch(e){}
-            var mo=new MutationObserver(function(records){records.forEach(function(r){r.addedNodes&&r.addedNodes.forEach(function(n){if(n&&n.tagName==='LINK'&&n.rel==='stylesheet'&&n.href&&n.href.indexOf('/_next/static/chunks/')!==-1) makeNonBlocking(n)})})});
-            try{mo.observe(document.head||document.getElementsByTagName('head')[0],{childList:true,subtree:false})}catch(e){}
+            __html: `(function(){
+              function shouldHandleHref(h){try{if(!h) return false; var loc = window.location; if(h.indexOf('/_next/static/')!==-1) return true; // Next generated css
+                // handle same-origin css files (absolute or relative)
+                if(h.indexOf(loc.origin)===0 && h.endsWith('.css')) return true;
+                if(h.indexOf('/')===0 && h.endsWith('.css')) return true;
+                return false;}catch(e){return false}}
+              function makeNonBlocking(l){try{if(l.rel==='stylesheet'&&shouldHandleHref(l.href)){l.rel='preload';l.as='style';l.onload=function(){this.rel='stylesheet'};l.setAttribute('data-nonblocking','true')}catch(e){}
+              }
+              try{Array.prototype.slice.call(document.querySelectorAll('link[rel="stylesheet"]')).forEach(function(l){ if(shouldHandleHref(l.href)) makeNonBlocking(l) }); }catch(e){}
+              var mo=new MutationObserver(function(records){records.forEach(function(r){r.addedNodes&&r.addedNodes.forEach(function(n){try{if(n&&n.tagName==='LINK'&&n.rel==='stylesheet'&&shouldHandleHref(n.href)) makeNonBlocking(n)}catch(e){} })})});
+              try{mo.observe(document.head||document.getElementsByTagName('head')[0],{childList:true,subtree:false})}catch(e){}
             })();`,
           }}
         />
