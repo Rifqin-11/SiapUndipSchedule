@@ -44,6 +44,15 @@ export default function RootLayout({
     <html lang="id" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
+        
+        {/* Performance optimizations */}
+        <link rel="preload" href="/api/auth/me" as="fetch" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        
+        {/* Critical CSS hint */}
+        <link rel="preload" href="/_next/static/css/app/layout.css" as="style" />
+        
         {/* HAPUS ketiga baris berikut dari versi kamu:
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

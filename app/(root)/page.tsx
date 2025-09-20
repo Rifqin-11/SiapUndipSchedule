@@ -1,20 +1,41 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
-import CoursesCard from "@/components/homepage/CoursesCard";
-import TodaySubject from "@/components/homepage/TodaySubject";
+
+// Critical components - load immediately
 import CurrentDayDate from "@/components/homepage/CurrentDayDate";
-import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { BookOpen, Plus } from "lucide-react";
-import HomeSkeleton from "@/components/homepage/HomeSkeleton";
 import FastLoadingSkeleton from "@/components/homepage/FastLoadingSkeleton";
-import useAutoNotifications from "@/hooks/useAutoNotifications";
-import { formatLocalDate } from "@/utils/date";
-import Link from "next/link";
-import Image from "next/image";
-// Defer these heavier client-only pieces so the initial bundle is smaller.
+
+// Semi-critical components - lazy but prioritized
+const TodaySubject = dynamic(() => import("@/components/homepage/TodaySubject"), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-border">
+      <div className="animate-pulse space-y-3">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+      </div>
+    </div>
+  )
+});
+
+const CoursesCard = dynamic(() => import("@/components/homepage/CoursesCard"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex-shrink-0 w-64">
+      <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-border">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full w-full"></div>
+        </div>
+      </div>
+    </div>
+  )
+});
+
+// Non-critical components - defer loading
 const FloatingActionButton = dynamic(
   () => import("@/components/homepage/FloatingActionButton"),
   { ssr: false, loading: () => <div /> }
@@ -29,18 +50,8 @@ const NotifIcon = dynamic(() => import("@/components/homepage/NotifIcon"), {
   ssr: false,
   loading: () => <div />,
 });
-import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 
-/** ⬇️ Tambahan: tasks & TaskCard */
-import {
-  useTasks,
-  useCreateTask,
-  useUpdateTask,
-  useDeleteTask,
-} from "@/hooks/useTasks";
-import { TaskCard } from "@/components/tasks/TaskCard";
-import { getDaysUntilDue } from "@/components/tasks/utils";
-import type { Task } from "@/components/tasks/types";
+// Task components - defer completely
 const TaskFormDrawer = dynamic(
   () => import("@/components/tasks").then((m) => m.TaskFormDrawer),
   { ssr: false, loading: () => <div /> }
@@ -55,6 +66,27 @@ const TaskDetailDrawer = dynamic(
   () => import("@/components/tasks").then((m) => m.TaskDetailDrawer),
   { ssr: false, loading: () => <div /> }
 );
+
+
+// Imports for hooks and utilities
+import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { BookOpen, Plus } from "lucide-react";
+import HomeSkeleton from "@/components/homepage/HomeSkeleton";
+import useAutoNotifications from "@/hooks/useAutoNotifications";
+import { formatLocalDate } from "@/utils/date";
+import Link from "next/link";
+import Image from "next/image";
+import { useScrollOpacity } from "@/hooks/useScrollOpacity";
+import {
+  useTasks,
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+} from "@/hooks/useTasks";
+import { TaskCard } from "@/components/tasks/TaskCard";
+import { getDaysUntilDue } from "@/components/tasks/utils";
+import type { Task } from "@/components/tasks/types";
 import { toast } from "sonner";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
@@ -62,33 +94,56 @@ const Page = () => {
   // State for instant loading UI
   const [showInstantLoading, setShowInstantLoading] = useState(true);
 
+  // Critical data loading - load in parallel
   const {
     data: subjects = [],
     isLoading: loading,
     error,
     refetch,
   } = useSubjects();
-  const createSubjectMutation = useCreateSubject();
+
   const { user } = useUserProfile();
+  const createSubjectMutation = useCreateSubject();
 
-  // Defer non-critical data loading to avoid blocking initial render
+  // Non-critical data loading - defer and lazy load
+  const [enableNonCriticalLoading, setEnableNonCriticalLoading] = useState(false);
+
+  // Only load tasks and other data after critical data is ready
   const { loading: subjectsLoading } = useSubjectsForTasks();
-  const { data: tasks = [], isLoading: tasksLoading } = useTasks();
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading
+  } = useTasks({
+    enabled: enableNonCriticalLoading, // Only fetch when enabled
+  });
 
-  // Hide instant loading after 300ms or when critical data is ready
+  // Progressive loading strategy
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Phase 1: Show instant loading immediately
+    const timer1 = setTimeout(() => {
       setShowInstantLoading(false);
-    }, 300); // Reduced from 500ms for faster transition
+    }, 200); // Reduced to 200ms for faster perceived performance
 
-    // Hide instantly if critical data is already loaded (user and subjects)
+    // Phase 2: Enable non-critical data loading after main content is ready
+    const timer2 = setTimeout(() => {
+      if (!loading && user) {
+        setEnableNonCriticalLoading(true);
+      }
+    }, 500); // Load tasks and other data after 500ms
+
+    // Early exit if critical data is ready
     if (!loading && user) {
       setShowInstantLoading(false);
-      clearTimeout(timer);
+      setEnableNonCriticalLoading(true);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
     }
 
-    return () => clearTimeout(timer);
-  }, [loading, user]); // Removed tasksLoading from dependency as it's not critical
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [loading, user]);
 
   // Hook untuk scroll opacity effect pada mobile header
   const scrollOpacity = useScrollOpacity({
@@ -198,8 +253,8 @@ const Page = () => {
     }
   }, [deleteTaskMutation, taskToDelete, selectedTask]);
 
-  // Initialize auto notifications
-  useAutoNotifications();
+  // Initialize auto notifications with defer for better performance
+  useAutoNotifications({ defer: true });
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -245,6 +300,21 @@ const Page = () => {
 
   // Courses carousel content
   const coursesContent = useMemo(() => {
+    // Show loading state while subjects are being fetched
+    if (loading) {
+      return [...Array(3)].map((_, i) => (
+        <div key={i} className="flex-shrink-0 w-64">
+          <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-border">
+            <div className="animate-pulse space-y-3">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full w-full"></div>
+            </div>
+          </div>
+        </div>
+      ));
+    }
+
     if (subjects.length === 0) {
       return (
         <div className="w-full max-w-xs mx-auto">
@@ -283,7 +353,7 @@ const Page = () => {
         />
       </div>
     ));
-  }, [subjects, handleAddSubject]);
+  }, [subjects, loading, handleAddSubject]);
 
   // ⬇️ Helper: cek “hari ini” (tanpa mempedulikan jam/zonanya)
   const isSameDate = (isoDate: string, ref: Date) => {
@@ -326,9 +396,10 @@ const Page = () => {
     return <FastLoadingSkeleton />;
   }
 
-  if (loading) {
-    return <HomeSkeleton />;
-  }
+  // Don't show HomeSkeleton as it's redundant with the course loading states
+  // if (loading) {
+  //   return <HomeSkeleton />;
+  // }
 
   return (
     <main className="animate-fadeIn">

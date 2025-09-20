@@ -104,10 +104,11 @@ const deleteTaskAPI = async (id: string): Promise<void> => {
 };
 
 // React Query hooks
-export const useTasks = () => {
+export const useTasks = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: TASKS_QUERY_KEY,
     queryFn: fetchTasks,
+    enabled: options?.enabled ?? true, // Allow conditional fetching
     staleTime: 30 * 1000, // 30 seconds - allow using cached data for faster loading
     gcTime: 5 * 60 * 1000, // 5 minutes cache time
     refetchOnWindowFocus: false,

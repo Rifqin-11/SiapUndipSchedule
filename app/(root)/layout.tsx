@@ -1,23 +1,44 @@
 "use client";
 
 import React, { ReactNode } from "react";
+import dynamic from "next/dynamic";
 import ProtectedRoute from "@/components/ProtectedRoute";
+
+// Critical components - load immediately
 import BottomNavbar from "@/components/BottomNavbar";
-import Sidebar from "@/components/Sidebar";
-import OfflineIndicator from "@/components/OfflineIndicator";
-import { useTaskNotifications } from "@/hooks/useTaskNotifications";
+
+// Non-critical components - lazy load
+const Sidebar = dynamic(() => import("@/components/Sidebar"), {
+  ssr: false,
+  loading: () => <div /> // No loading state for sidebar
+});
+
+const OfflineIndicator = dynamic(() => import("@/components/OfflineIndicator"), {
+  ssr: false,
+  loading: () => <div />
+});
+
+// Defer task notifications initialization
+const TaskNotificationInitializer = dynamic(
+  () => import("@/hooks/useTaskNotifications").then(mod => {
+    // Create a component wrapper for the hook
+    const Component = () => {
+      mod.useTaskNotifications();
+      return null;
+    };
+    return { default: Component };
+  }),
+  { ssr: false }
+);
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  // Initialize task notifications
-  useTaskNotifications();
-
   return (
     <ProtectedRoute>
-      {/* Offline indicator */}
+      {/* Offline indicator - deferred */}
       <OfflineIndicator position="top" showConnectionInfo={true} />
 
       <div className="flex min-h-screen pwa-safe-area">
-        {/* Sidebar for desktop */}
+        {/* Sidebar for desktop - deferred */}
         <Sidebar />
 
         {/* Main content area */}
@@ -25,9 +46,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <div className="mb-25 lg:mb-0 min-h-screen w-full">{children}</div>
         </div>
 
-        {/* Bottom navbar for mobile */}
+        {/* Bottom navbar for mobile - critical */}
         <BottomNavbar />
       </div>
+
+      {/* Initialize task notifications - deferred */}
+      <TaskNotificationInitializer />
     </ProtectedRoute>
   );
 };

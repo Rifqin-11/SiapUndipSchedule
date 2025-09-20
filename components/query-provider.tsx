@@ -64,8 +64,8 @@ export function QueryProvider({ children }: QueryProviderProps) {
         }),
         defaultOptions: {
           queries: {
-            // Optimized stale time based on data type
-            staleTime: 5 * 60 * 1000, // 5 minutes - good balance for most data
+            // Optimized stale time based on data type - reduced for critical data
+            staleTime: 30 * 1000, // 30 seconds for faster updates
 
             // Longer garbage collection time to improve performance
             gcTime: 10 * 60 * 1000, // 10 minutes - keep data longer for better UX
@@ -76,10 +76,10 @@ export function QueryProvider({ children }: QueryProviderProps) {
             // Refetch on reconnect to get fresh data after connection restored
             refetchOnReconnect: true,
 
-            // Only refetch on mount if data is stale
-            refetchOnMount: true,
+            // Disable refetch on mount for faster initial load
+            refetchOnMount: false, // Changed to false for faster loading
 
-            // Retry configuration for better reliability
+            // Retry configuration for better reliability - reduced for faster failure
             retry: (failureCount, error) => {
               // Don't retry for certain errors
               if (error instanceof Error) {
@@ -91,12 +91,12 @@ export function QueryProvider({ children }: QueryProviderProps) {
                   return false;
                 }
               }
-              return failureCount < 3;
+              return failureCount < 2; // Reduced retry count for faster failure
             },
 
-            // Progressive retry delay
+            // Progressive retry delay - reduced for faster retries
             retryDelay: (attemptIndex) =>
-              Math.min(1000 * 2 ** attemptIndex, 30000),
+              Math.min(500 * 2 ** attemptIndex, 5000), // Faster retry delays
 
             // Enable background updates for better UX
             refetchInterval: false, // Disable automatic polling by default
