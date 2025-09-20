@@ -59,7 +59,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         />
 
         {/* Content Area */}
-        <div className="pt-18 lg:pt-6 pb-12">{children}</div>
+        <div className="pt-20 lg:pt-6 pb-12">{children}</div>
       </div>
 
       {/* Edit Subject Modal */}

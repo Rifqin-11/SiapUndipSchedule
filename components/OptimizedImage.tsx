@@ -36,7 +36,7 @@ const useIntersectionObserver = () => {
         }
       },
       {
-        rootMargin: '50px', // Start loading when image is 50px away from viewport
+        rootMargin: "50px", // Start loading when image is 50px away from viewport
         threshold: 0.1,
       }
     );
@@ -59,8 +59,8 @@ export function OptimizedImage({
   className,
   priority = false,
   fill = false,
-  sizes,
-  quality = 85,
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+  quality = 75, // Reduced for better performance
   placeholder = "blur",
   blurDataURL,
   onLoad,
@@ -76,7 +76,7 @@ export function OptimizedImage({
   // Don't use lazy loading if priority is true
   const shouldLoad = !lazy || priority || isVisible;
 
-  // Generate blur data URL jika tidak disediakan
+  // Generate optimized blur data URL untuk modern browsers
   const defaultBlurDataURL =
     "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkbHB0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==";
 
@@ -107,17 +107,17 @@ export function OptimizedImage({
         style={{ width, height }}
       >
         <div className="text-center">
-          <svg 
-            className="w-8 h-8 mx-auto mb-2" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="w-8 h-8 mx-auto mb-2"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
           <p className="text-xs">Failed to load</p>

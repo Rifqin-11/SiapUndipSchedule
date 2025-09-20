@@ -1,16 +1,16 @@
-import React from 'react';
+import React from "react";
 
 // Performance monitoring utilities
 interface PerformanceMetrics {
   name: string;
   duration: number;
   timestamp: number;
-  type: 'navigation' | 'resource' | 'measure' | 'mark';
+  type: "navigation" | "resource" | "measure" | "mark";
   details?: Record<string, any>;
 }
 
 interface UserInteraction {
-  type: 'click' | 'scroll' | 'input' | 'error';
+  type: "click" | "scroll" | "input" | "error";
   element?: string;
   timestamp: number;
   data?: Record<string, any>;
@@ -22,14 +22,14 @@ class PerformanceMonitor {
   private observer: PerformanceObserver | null = null;
 
   constructor() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.initializeObserver();
       this.trackCoreWebVitals();
     }
   }
 
   private initializeObserver() {
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       this.observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
@@ -42,92 +42,103 @@ class PerformanceMonitor {
               startTime: entry.startTime,
               transferSize: (entry as any).transferSize,
               decodedBodySize: (entry as any).decodedBodySize,
-            }
+            },
           });
         });
       });
 
       // Observe different types of performance entries
       try {
-        this.observer.observe({ entryTypes: ['navigation', 'resource', 'measure', 'mark'] });
+        this.observer.observe({
+          entryTypes: ["navigation", "resource", "measure", "mark"],
+        });
       } catch (e) {
-        console.warn('Performance Observer not fully supported');
+        console.warn("Performance Observer not fully supported");
       }
     }
   }
 
   private trackCoreWebVitals() {
     // Track Largest Contentful Paint (LCP)
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        
+
         this.addMetric({
-          name: 'LCP',
+          name: "LCP",
           duration: lastEntry.startTime,
           timestamp: Date.now(),
-          type: 'measure',
-          details: { 
+          type: "measure",
+          details: {
             value: lastEntry.startTime,
-            rating: lastEntry.startTime > 4000 ? 'poor' : lastEntry.startTime > 2500 ? 'needs-improvement' : 'good'
-          }
+            rating:
+              lastEntry.startTime > 4000
+                ? "poor"
+                : lastEntry.startTime > 2500
+                ? "needs-improvement"
+                : "good",
+          },
         });
       });
 
       try {
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+        lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
       } catch (e) {
-        console.warn('LCP tracking not supported');
+        console.warn("LCP tracking not supported");
       }
     }
 
     // Track First Input Delay (FID)
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
           const fidEntry = entry as any; // Type assertion for FID entry
           this.addMetric({
-            name: 'FID',
+            name: "FID",
             duration: fidEntry.processingStart - fidEntry.startTime,
             timestamp: Date.now(),
-            type: 'measure',
-            details: { 
+            type: "measure",
+            details: {
               value: fidEntry.processingStart - fidEntry.startTime,
-              rating: (fidEntry.processingStart - fidEntry.startTime) > 300 ? 'poor' : 
-                     (fidEntry.processingStart - fidEntry.startTime) > 100 ? 'needs-improvement' : 'good'
-            }
+              rating:
+                fidEntry.processingStart - fidEntry.startTime > 300
+                  ? "poor"
+                  : fidEntry.processingStart - fidEntry.startTime > 100
+                  ? "needs-improvement"
+                  : "good",
+            },
           });
         });
       });
 
       try {
-        fidObserver.observe({ entryTypes: ['first-input'] });
+        fidObserver.observe({ entryTypes: ["first-input"] });
       } catch (e) {
-        console.warn('FID tracking not supported');
+        console.warn("FID tracking not supported");
       }
     }
   }
 
   addMetric(metric: PerformanceMetrics) {
     this.metrics.push(metric);
-    
+
     // Keep only last 100 metrics to prevent memory issues
     if (this.metrics.length > 100) {
       this.metrics = this.metrics.slice(-100);
     }
 
     // Log important metrics in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Performance Metric:', metric);
+    if (process.env.NODE_ENV === "development") {
+      console.log("Performance Metric:", metric);
     }
   }
 
   trackUserInteraction(interaction: UserInteraction) {
     this.interactions.push({
       ...interaction,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Keep only last 50 interactions
@@ -137,13 +148,13 @@ class PerformanceMonitor {
   }
 
   markStart(name: string) {
-    if (typeof window !== 'undefined' && 'performance' in window) {
+    if (typeof window !== "undefined" && "performance" in window) {
       performance.mark(`${name}-start`);
     }
   }
 
   markEnd(name: string) {
-    if (typeof window !== 'undefined' && 'performance' in window) {
+    if (typeof window !== "undefined" && "performance" in window) {
       performance.mark(`${name}-end`);
       performance.measure(name, `${name}-start`, `${name}-end`);
     }
@@ -158,54 +169,58 @@ class PerformanceMonitor {
   }
 
   getWebVitals() {
-    return this.metrics.filter(metric => 
-      ['LCP', 'FID', 'CLS'].includes(metric.name)
+    return this.metrics.filter((metric) =>
+      ["LCP", "FID", "CLS"].includes(metric.name)
     );
   }
 
   // Get performance summary
   getSummary() {
     const webVitals = this.getWebVitals();
-    const resourceMetrics = this.metrics.filter(m => m.type === 'resource');
-    const navigationMetrics = this.metrics.filter(m => m.type === 'navigation');
+    const resourceMetrics = this.metrics.filter((m) => m.type === "resource");
+    const navigationMetrics = this.metrics.filter(
+      (m) => m.type === "navigation"
+    );
 
     return {
       webVitals: webVitals.reduce((acc, vital) => {
         acc[vital.name] = vital.details;
         return acc;
       }, {} as Record<string, any>),
-      
+
       resourceCount: resourceMetrics.length,
-      averageResourceLoadTime: resourceMetrics.length > 0 
-        ? resourceMetrics.reduce((sum, m) => sum + m.duration, 0) / resourceMetrics.length 
-        : 0,
-      
+      averageResourceLoadTime:
+        resourceMetrics.length > 0
+          ? resourceMetrics.reduce((sum, m) => sum + m.duration, 0) /
+            resourceMetrics.length
+          : 0,
+
       navigationCount: navigationMetrics.length,
       totalInteractions: this.interactions.length,
-      
+
       slowResources: resourceMetrics
-        .filter(m => m.duration > 1000)
-        .map(m => ({ name: m.name, duration: m.duration })),
+        .filter((m) => m.duration > 1000)
+        .map((m) => ({ name: m.name, duration: m.duration })),
     };
   }
 
   // Send metrics to analytics service (implement based on your needs)
   async sendMetrics() {
     const summary = this.getSummary();
-    
+
     // Example: Send to your analytics endpoint
     try {
-      if (process.env.NODE_ENV === 'production') {
-        await fetch('/api/analytics/performance', {
-          method: 'POST',
+      if (process.env.NODE_ENV === "production") {
+        await fetch("/api/analytics/performance", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(summary),
         });
       }
     } catch (error) {
-      console.warn('Failed to send performance metrics:', error);
+      console.warn("Failed to send performance metrics:", error);
     }
   }
 
@@ -223,7 +238,7 @@ export const performanceMonitor = new PerformanceMonitor();
 export function usePerformanceMonitoring() {
   const trackComponentMount = (componentName: string) => {
     performanceMonitor.markStart(`component-${componentName}`);
-    
+
     return () => {
       performanceMonitor.markEnd(`component-${componentName}`);
     };
@@ -231,7 +246,7 @@ export function usePerformanceMonitoring() {
 
   const trackUserAction = (action: string, details?: Record<string, any>) => {
     performanceMonitor.trackUserInteraction({
-      type: 'click',
+      type: "click",
       element: action,
       timestamp: Date.now(),
       data: details,
@@ -240,8 +255,8 @@ export function usePerformanceMonitoring() {
 
   const trackError = (error: Error, context?: string) => {
     performanceMonitor.trackUserInteraction({
-      type: 'error',
-      element: context || 'unknown',
+      type: "error",
+      element: context || "unknown",
       timestamp: Date.now(),
       data: {
         message: error.message,
@@ -266,7 +281,7 @@ export function withPerformanceTracking<P extends {}>(
 ) {
   return function PerformanceTrackedComponent(props: P) {
     const name = componentName || Component.displayName || Component.name;
-    
+
     React.useEffect(() => {
       performanceMonitor.markStart(`component-${name}`);
       return () => {

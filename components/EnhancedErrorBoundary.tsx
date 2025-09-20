@@ -1,8 +1,8 @@
 "use client";
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import Link from 'next/link';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   children: ReactNode;
@@ -47,9 +47,9 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     this.props.onError?.(error, errorInfo);
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error caught by boundary:', error);
-      console.error('Error info:', errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error caught by boundary:", error);
+      console.error("Error info:", errorInfo);
     }
 
     // TODO: In production, send to error reporting service
@@ -58,7 +58,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
   handleRetry = () => {
     if (this.state.retryCount < 3) {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         hasError: false,
         error: null,
         errorInfo: null,
@@ -106,12 +106,13 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
                 Oops! Something went wrong
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                We're sorry, but something unexpected happened. Please try again.
+                We're sorry, but something unexpected happened. Please try
+                again.
               </p>
             </div>
 
             {/* Error details in development */}
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="mb-4 text-left">
                 <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Error Details (Development)
@@ -177,8 +178,8 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 // Hook for functional component error handling
 export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    console.error('Error caught by hook:', error);
-    
+    console.error("Error caught by hook:", error);
+
     // TODO: Send to error reporting service
     // Example: Sentry.captureException(error, { extra: errorInfo });
   };

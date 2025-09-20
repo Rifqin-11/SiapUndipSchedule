@@ -1,20 +1,25 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, Suspense } from "react";
+import dynamic from "next/dynamic";
 import CoursesCard from "@/components/homepage/CoursesCard";
 import TodaySubject from "@/components/homepage/TodaySubject";
 import CurrentDayDate from "@/components/homepage/CurrentDayDate";
 import FloatingActionButton from "@/components/homepage/FloatingActionButton";
-import SubjectModal from "@/components/SubjectModal";
 import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus } from "@/lib/icons";
 import HomeSkeleton from "@/components/homepage/HomeSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import Link from "next/link";
 import Image from "next/image";
 import NotifIcon from "@/components/homepage/NotifIcon";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
+
+// Dynamic imports untuk komponen berat
+const SubjectModal = dynamic(() => import("@/components/SubjectModal"), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded h-32" />,
+});
 
 /** ⬇️ Tambahan: tasks & TaskCard */
 import {
@@ -26,11 +31,34 @@ import {
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import type { Task } from "@/components/tasks/types";
-import {
-  DeleteConfirmDialog,
-  TaskDetailDrawer,
-  TaskFormDrawer,
-} from "@/components/tasks";
+
+// Dynamic imports untuk komponen tasks berat
+const DeleteConfirmDialog = dynamic(
+  () =>
+    import("@/components/tasks").then((m) => ({
+      default: m.DeleteConfirmDialog,
+    })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 rounded h-32" />,
+  }
+);
+
+const TaskDetailDrawer = dynamic(
+  () =>
+    import("@/components/tasks").then((m) => ({ default: m.TaskDetailDrawer })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 rounded h-32" />,
+  }
+);
+
+const TaskFormDrawer = dynamic(
+  () =>
+    import("@/components/tasks").then((m) => ({ default: m.TaskFormDrawer })),
+  {
+    loading: () => <div className="animate-pulse bg-gray-200 rounded h-32" />,
+  }
+);
+
 import { toast } from "sonner";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 

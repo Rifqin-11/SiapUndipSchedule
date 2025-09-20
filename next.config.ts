@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Optimasi untuk performance
+  compress: true, // Enable gzip compression
+  poweredByHeader: false, // Remove X-Powered-By header
+
   // Optimasi caching
   experimental: {
     // Waktu staleness untuk static dan dynamic content
@@ -20,6 +24,10 @@ const nextConfig: NextConfig = {
       dynamic: 30, // 30 detik untuk dynamic content
       static: 300, // 5 menit untuk static content
     },
+    // Enable optimistic client cache
+    optimisticClientCache: true,
+    // Optimasi package imports
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
 
   // Optimasi images
@@ -44,11 +52,59 @@ const nextConfig: NextConfig = {
   compiler: {
     // Remove console.log di production
     removeConsole: process.env.NODE_ENV === "production",
+    // Remove unused imports
+    reactRemoveProperties: process.env.NODE_ENV === "production",
   },
 
-  // Headers untuk caching
+  // Webpack optimizations
+  webpack: (config, { dev, isServer }) => {
+    // Production optimizations
+    if (!dev && !isServer) {
+      // Tree shaking optimization
+      config.optimization.sideEffects = false;
+
+      // Split chunks untuk better caching
+      config.optimization.splitChunks = {
+        chunks: "all",
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: "vendors",
+            chunks: "all",
+          },
+          common: {
+            name: "common",
+            minChunks: 2,
+            chunks: "all",
+            enforce: true,
+          },
+        },
+      };
+    }
+
+    return config;
+  },
+
+  // Headers untuk caching dan performance
   async headers() {
     return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+        ],
+      },
       {
         source: "/favicon.ico",
         headers: [
@@ -59,7 +115,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/(.*).png",
+        source: "/_next/static/(.*)",
         headers: [
           {
             key: "Cache-Control",
@@ -68,7 +124,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/(.*).jpg",
+        source: "/static/(.*)",
         headers: [
           {
             key: "Cache-Control",
@@ -77,11 +133,11 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/(.*).svg",
+        source: "/sw.js",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
+            value: "public, max-age=0, must-revalidate",
           },
         ],
       },

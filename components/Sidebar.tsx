@@ -13,10 +13,16 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useState } from "react";
-import QRScanner from "./QRScanner";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import Image from "next/image";
+
+// Dynamic import untuk QRScanner karena ini komponen berat
+const QRScanner = dynamic(() => import("./QRScanner"), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded h-32" />,
+  ssr: false, // QR Scanner tidak perlu SSR
+});
 
 const Sidebar = () => {
   const pathname = usePathname();

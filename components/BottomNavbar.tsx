@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Home, CheckCircle, UserRound, QrCode } from "lucide-react";
+import { Calendar, Home, CheckCircle, UserRound, QrCode } from "@/lib/icons";
 import { useState, useEffect } from "react";
-import QRScanner from "./QRScanner";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/useAuth";
+
+// Dynamic import untuk QRScanner karena ini komponen berat
+const QRScanner = dynamic(() => import("./QRScanner"), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded h-32" />,
+  ssr: false, // QR Scanner tidak perlu SSR
+});
 
 const BottomNavbar = () => {
   const pathname = usePathname();

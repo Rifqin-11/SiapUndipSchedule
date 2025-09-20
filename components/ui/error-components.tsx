@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { AlertCircle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import React from "react";
+import { AlertCircle, RefreshCw, Wifi, WifiOff } from "lucide-react";
 
 interface ApiErrorProps {
   error: Error | string;
@@ -16,9 +16,10 @@ export const ApiError: React.FC<ApiErrorProps> = ({
   retryLabel = "Try Again",
   showRetry = true,
 }) => {
-  const errorMessage = typeof error === 'string' ? error : error.message;
-  const isNetworkError = errorMessage.toLowerCase().includes('network') || 
-                        errorMessage.toLowerCase().includes('fetch');
+  const errorMessage = typeof error === "string" ? error : error.message;
+  const isNetworkError =
+    errorMessage.toLowerCase().includes("network") ||
+    errorMessage.toLowerCase().includes("fetch");
 
   return (
     <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -29,18 +30,17 @@ export const ApiError: React.FC<ApiErrorProps> = ({
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
         )}
       </div>
-      
+
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        {isNetworkError ? 'Connection Problem' : 'Something went wrong'}
+        {isNetworkError ? "Connection Problem" : "Something went wrong"}
       </h3>
-      
+
       <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-        {isNetworkError 
-          ? 'Please check your internet connection and try again.'
-          : errorMessage || 'An unexpected error occurred. Please try again.'
-        }
+        {isNetworkError
+          ? "Please check your internet connection and try again."
+          : errorMessage || "An unexpected error occurred. Please try again."}
       </p>
-      
+
       {showRetry && onRetry && (
         <button
           onClick={onRetry}
@@ -73,15 +73,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
       {icon && <div className="mb-4">{icon}</div>}
-      
+
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
         {title}
       </h3>
-      
+
       <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
         {description}
       </p>
-      
+
       {action && (
         <button
           onClick={action.onClick}
@@ -109,16 +109,14 @@ export const LoadingError: React.FC<LoadingErrorProps> = ({
     <div className="flex flex-col items-center justify-center p-6 text-center space-y-4">
       <AlertCircle className="w-10 h-10 text-red-500" />
       <div>
-        <h4 className="font-medium text-gray-900 dark:text-white">
-          {message}
-        </h4>
+        <h4 className="font-medium text-gray-900 dark:text-white">{message}</h4>
         {onRetry && (
           <button
             onClick={onRetry}
             disabled={isLoading}
             className="mt-2 text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Loading...' : 'Retry'}
+            {isLoading ? "Loading..." : "Retry"}
           </button>
         )}
       </div>

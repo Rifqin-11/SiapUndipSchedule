@@ -232,14 +232,14 @@ const UserPage = () => {
               color="text-blue-600 dark:text-blue-400"
               isLoading={subjectsLoading}
             />
-            
+
             <StatsCard
               value={`${attendancePercentage}%`}
               label="Attendance"
               color="text-green-600 dark:text-green-400"
               isLoading={attendanceLoading}
             />
-            
+
             <StatsCard
               value={user?.angkatan || "-"}
               label="Class Year"
