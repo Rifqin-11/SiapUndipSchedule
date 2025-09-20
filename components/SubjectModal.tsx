@@ -36,6 +36,7 @@ interface SubjectModalProps {
   mode: "add" | "edit";
   preselectedDay?: string; // Hari yang sudah dipilih dari ScheduleClient (legacy)
   selectedDate?: string; // Tanggal spesifik (YYYY-MM-DD format)
+  showMeetingCount?: boolean; // Flag untuk menampilkan meeting count (hanya di manage-subject)
 }
 
 const days = [
@@ -56,6 +57,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
   mode,
   preselectedDay,
   selectedDate,
+  showMeetingCount = false,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -413,8 +415,8 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
             </Button>
           </div>
 
-          {/* Meeting Count - Only show in edit mode */}
-          {mode === "edit" && (
+          {/* Meeting Count - Only show in edit mode and when showMeetingCount is true */}
+          {mode === "edit" && showMeetingCount && (
             <div className="space-y-2">
               <Label htmlFor="meeting">Meeting Count</Label>
               <Input

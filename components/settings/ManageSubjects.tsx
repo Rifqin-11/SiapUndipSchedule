@@ -391,6 +391,7 @@ const ManageSubjects = () => {
         onSave={handleSaveSubject}
         subject={editingSubject}
         mode={modalMode}
+        showMeetingCount={true}
       />
 
       {/* Delete Confirmation Dialog */}
