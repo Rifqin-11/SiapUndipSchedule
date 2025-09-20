@@ -19,6 +19,7 @@ import {
   Info,
   BookOpen,
   History,
+  Edit3,
 } from "lucide-react";
 import BackButton from "./Back-Button";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
@@ -41,6 +42,7 @@ const iconMap: Record<string, LucideIcon> = {
   Info,
   BookOpen,
   History,
+  Edit3,
 };
 
 interface SimplePageHeaderProps {
@@ -52,6 +54,8 @@ interface SimplePageHeaderProps {
   iconColor?: string;
   /** Custom className untuk section */
   className?: string;
+  /** Action button (optional) */
+  actionButton?: React.ReactNode;
 }
 
 const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
@@ -59,6 +63,7 @@ const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
   icon,
   iconColor = "text-green-600",
   className = "",
+  actionButton,
 }) => {
   // Hook untuk scroll opacity effect
   const scrollOpacity = useScrollOpacity({
@@ -102,8 +107,8 @@ const SimplePageHeader: React.FC<SimplePageHeaderProps> = ({
         </div>
       </div>
 
-      {/* Spacer untuk menyeimbangkan - lebar yang sama dengan back button */}
-      <div className="w-10"></div>
+      {/* Spacer untuk menyeimbangkan - lebar yang sama dengan back button, atau action button */}
+      <div className="w-10">{actionButton && actionButton}</div>
     </section>
   );
 };

@@ -1,9 +1,9 @@
 "use client";
 
-import BackButton from "@/components/Back-Button";
+import SimplePageHeader from "@/components/SimplePageHeader";
 import SubjectModal from "@/components/SubjectModal";
 import { Edit3 } from "lucide-react";
-import React, { ReactNode, useState, useEffect } from "react";
+import React, { ReactNode, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSubject, useUpdateSubject, Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
@@ -15,27 +15,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const updateSubjectMutation = useUpdateSubject();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const [prevScrollY, setPrevScrollY] = useState(0);
-  const [hideHeader, setHideHeader] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > prevScrollY && currentScrollY > 50) {
-        setHideHeader(true);
-      } else {
-        setHideHeader(false);
-      }
-
-      setPrevScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [prevScrollY]);
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -63,40 +42,24 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <div className="min-h-screen bg-gray-50 dark:bg-background">
-        {/* Header yang bisa disembunyikan */}
-        <section
-          className={`bg-white dark:bg-card border-b border-gray-200 dark:border-border sticky top-0 z-10 transition-transform duration-300 ${
-            hideHeader ? "-translate-y-full" : "translate-y-0"
-          }`}
-        >
-          <div className="max-full mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <BackButton />
-                <div>
-                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Subject Detail
-                  </h1>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Complete information about the subject
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={handleEdit}
-                className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm"
-                title="Edit Subject"
-              >
-                <Edit3 className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">Edit</span>
-              </button>
-            </div>
-          </div>
-        </section>
+        {/* Simple Page Header with Edit Button */}
+        <SimplePageHeader
+          title="Subject Detail"
+          icon="BookOpen"
+          iconColor="text-blue-600"
+          actionButton={
+            <button
+              onClick={handleEdit}
+              className="flex items-center p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-sm"
+              title="Edit Subject"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          }
+        />
 
         {/* Content Area */}
-        <div className="pt-6 pb-12">{children}</div>
+        <div className="pt-15 lg:pt-6 pb-12">{children}</div>
       </div>
 
       {/* Edit Subject Modal */}
