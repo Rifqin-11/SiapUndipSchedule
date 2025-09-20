@@ -43,16 +43,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Make Next-injected chunk CSS non-blocking to avoid render-blocking CSS chains reported by Lighthouse.
+            This script converts <link rel="stylesheet" href="/_next/static/chunks/..."> into
+            preload-as-style + onload -> rel=stylesheet. It also observes mutations so late-inserted links
+            are handled. Tradeoff: may cause a brief unstyled flash for very early content; consider inlining
+            critical CSS if that's a problem. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){function makeNonBlocking(l){try{if(l.rel==='stylesheet'&&l.href&&l.href.indexOf('/_next/static/chunks/')!==-1){l.rel='preload';l.as='style';l.onload=function(){this.rel='stylesheet'} }}catch(e){} }
+            try{Array.prototype.slice.call(document.querySelectorAll('link[rel="stylesheet"][href^="/_next/static/chunks/"]')).forEach(makeNonBlocking)}catch(e){}
+            var mo=new MutationObserver(function(records){records.forEach(function(r){r.addedNodes&&r.addedNodes.forEach(function(n){if(n&&n.tagName==='LINK'&&n.rel==='stylesheet'&&n.href&&n.href.indexOf('/_next/static/chunks/')!==-1) makeNonBlocking(n)})})});
+            try{mo.observe(document.head||document.getElementsByTagName('head')[0],{childList:true,subtree:false})}catch(e){}
+            })();`,
+          }}
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Preconnect to Google fonts and prefetch critical font resources to improve LCP */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* If you self-host fonts, replace with preload to local woff2 files instead */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-        />
+        {/* Fonts loaded via next/font (Inter) - avoid external render-blocking requests to fonts.googleapis.com */}
         <link rel="icon" type="image/png" sizes="196x196" href="/icon.png" />
 
         {/* PWA Meta Tags */}
