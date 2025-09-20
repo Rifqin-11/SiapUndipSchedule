@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Mail, Lock, ArrowRight, Chrome, Eye, EyeOff } from "lucide-react";
+import "../auth.css";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

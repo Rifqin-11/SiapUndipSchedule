@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import "./splash.css";
 
 export default function SplashScreen() {
   const router = useRouter();
