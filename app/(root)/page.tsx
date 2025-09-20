@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect, Suspense } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  Suspense,
+} from "react";
 import dynamic from "next/dynamic";
 
 // Critical components - load immediately
@@ -8,31 +14,21 @@ import CurrentDayDate from "@/components/homepage/CurrentDayDate";
 import FastLoadingSkeleton from "@/components/homepage/FastLoadingSkeleton";
 
 // Semi-critical components - lazy but prioritized
-const TodaySubject = dynamic(() => import("@/components/homepage/TodaySubject"), {
-  ssr: false,
-  loading: () => (
-    <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-border">
-      <div className="animate-pulse space-y-3">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-      </div>
-    </div>
-  )
-});
+const TodaySubject = dynamic(
+  () => import("@/components/homepage/TodaySubject"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+    ),
+  }
+);
 
 const CoursesCard = dynamic(() => import("@/components/homepage/CoursesCard"), {
   ssr: false,
   loading: () => (
-    <div className="flex-shrink-0 w-64">
-      <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-border">
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full w-full"></div>
-        </div>
-      </div>
-    </div>
-  )
+    <div className="flex-shrink-0 w-64 h-24 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+  ),
 });
 
 // Non-critical components - defer loading
@@ -66,7 +62,6 @@ const TaskDetailDrawer = dynamic(
   () => import("@/components/tasks").then((m) => m.TaskDetailDrawer),
   { ssr: false, loading: () => <div /> }
 );
-
 
 // Imports for hooks and utilities
 import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
@@ -106,32 +101,28 @@ const Page = () => {
   const createSubjectMutation = useCreateSubject();
 
   // Non-critical data loading - defer and lazy load
-  const [enableNonCriticalLoading, setEnableNonCriticalLoading] = useState(false);
+  const [enableNonCriticalLoading, setEnableNonCriticalLoading] =
+    useState(false);
 
   // Only load tasks and other data after critical data is ready
   const { loading: subjectsLoading } = useSubjectsForTasks();
-  const {
-    data: tasks = [],
-    isLoading: tasksLoading
-  } = useTasks({
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks({
     enabled: enableNonCriticalLoading, // Only fetch when enabled
   });
 
   // Progressive loading strategy
   useEffect(() => {
-    // Phase 1: Show instant loading immediately
+    // Phase 1: Show instant loading for very short time
     const timer1 = setTimeout(() => {
       setShowInstantLoading(false);
-    }, 200); // Reduced to 200ms for faster perceived performance
+    }, 100); // Reduced to 100ms for minimal skeleton flash
 
-    // Phase 2: Enable non-critical data loading after main content is ready
+    // Phase 2: Enable non-critical data loading quickly
     const timer2 = setTimeout(() => {
-      if (!loading && user) {
-        setEnableNonCriticalLoading(true);
-      }
-    }, 500); // Load tasks and other data after 500ms
+      setEnableNonCriticalLoading(true);
+    }, 250); // Load non-critical data after 250ms
 
-    // Early exit if critical data is ready
+    // Early exit if critical data is already ready
     if (!loading && user) {
       setShowInstantLoading(false);
       setEnableNonCriticalLoading(true);
@@ -391,15 +382,30 @@ const Page = () => {
       .sort((a, b) => dueTimestamp(a) - dueTimestamp(b));
   }, [tasks]);
 
-  // Loading state - Show fast skeleton immediately, then progressive loading
-  if (showInstantLoading) {
+  // Loading state - Show minimal skeleton only if really needed
+  if (showInstantLoading && !user) {
     return <FastLoadingSkeleton />;
   }
 
-  // Don't show HomeSkeleton as it's redundant with the course loading states
-  // if (loading) {
-  //   return <HomeSkeleton />;
-  // }
+  // If we have user but still loading critical data, show a lighter loading state
+  if (loading && user) {
+    return (
+      <main className="animate-fadeIn">
+        {/* Header Section - Show immediately with real data */}
+        <section className="flex flex-col mt-6 mx-6 text-lg dark:text-white space-y-1">
+          <h1 className="text-xl font-extrabold tracking-tight">
+            Hi {user?.name?.split(" ")[0] || "there"}, here&apos;s your schedule
+          </h1>
+          <CurrentDayDate />
+        </section>
+
+        {/* Minimal loading indication */}
+        <section className="mt-6 mx-6">
+          <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="animate-fadeIn">

@@ -44,15 +44,37 @@ export default function RootLayout({
     <html lang="id" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        
-        {/* Performance optimizations */}
-        <link rel="preload" href="/api/auth/me" as="fetch" crossOrigin="anonymous" />
+
+        {/* Critical Performance optimizations */}
+        <link
+          rel="preload"
+          href="/api/auth/me"
+          as="fetch"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/api/warmup"
+          as="fetch"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-        
+
+        {/* Early resource hints for faster loading */}
+        <link rel="preconnect" href="/" />
+        <link rel="preconnect" href="/api" />
+
         {/* Critical CSS hint */}
-        <link rel="preload" href="/_next/static/css/app/layout.css" as="style" />
-        
+        <link
+          rel="preload"
+          href="/_next/static/css/app/layout.css"
+          as="style"
+        />
+
+        {/* Service Worker hint */}
+        <link rel="preload" href="/sw.js" as="script" />
+
         {/* HAPUS ketiga baris berikut dari versi kamu:
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -93,13 +115,21 @@ export default function RootLayout({
           content="#141414"
         />
       </head>
-      <body>
+      <body
+        className="min-h-screen bg-background text-foreground"
+        suppressHydrationWarning
+      >
         <QueryProvider>
           <AuthProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
               <DynamicThemeColor />
               <div className="min-h-screen bg-background">{children}</div>
-              <Toaster />
+              <Toaster position="bottom-center" richColors />
             </ThemeProvider>
           </AuthProvider>
         </QueryProvider>

@@ -8,9 +8,9 @@ async function warmupCriticalEndpoints() {
   const warmupPromises = WARMUP_ENDPOINTS.map(async (endpoint) => {
     try {
       const response = await fetch(endpoint, {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-cache'
+        method: "GET",
+        credentials: "include",
+        cache: "no-cache",
       });
 
       if (response.ok) {
@@ -61,14 +61,11 @@ const CACHEABLE_API_ROUTES = [
   "/api/user/profile",
   "/api/settings",
   "/api/warmup",
+  "/api/auth/me", // Cache auth checks for faster loading
 ];
 
-// API endpoints for immediate warmup
-const WARMUP_ENDPOINTS = [
-  "/api/warmup",
-  "/api/subjects",
-  "/api/auth/me",
-];
+// Critical endpoints for immediate warmup on service worker install
+const WARMUP_ENDPOINTS = ["/api/warmup", "/api/subjects", "/api/auth/me"];
 
 // API endpoints that should trigger background sync
 const SYNC_API_ROUTES = [

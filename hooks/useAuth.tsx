@@ -24,6 +24,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isInitialLoad: boolean;
   login: (
     email: string,
     password: string,
@@ -51,9 +52,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Check authentication status on mount
+  // Optimistic loading: Check localStorage first
   useEffect(() => {
+    const cachedUser = localStorage.getItem("auth_user");
+    const cachedExpiry = localStorage.getItem("auth_expiry");
+
+    if (cachedUser && cachedExpiry) {
+      const now = Date.now();
+      const expiry = parseInt(cachedExpiry);
+
+      // If cache is still valid (less than 30 minutes old)
+      if (now < expiry) {
+        try {
+          const parsedUser = JSON.parse(cachedUser);
+          setUser(parsedUser);
+          setLoading(false);
+          setIsInitialLoad(false);
+
+          // Still verify in background
+          setTimeout(() => checkAuth(), 100);
+          return;
+        } catch (error) {
+          // If parsing fails, clear cache and continue with normal flow
+          localStorage.removeItem("auth_user");
+          localStorage.removeItem("auth_expiry");
+        }
+      } else {
+        // Cache expired, clear it
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("auth_expiry");
+      }
+    }
+
+    // Normal auth check if no valid cache
     checkAuth();
   }, []);
 
@@ -61,18 +94,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch("/api/auth/me", {
         credentials: "include",
+        // Add cache headers for production optimization
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
           setUser(data.user);
+
+          // Cache the user data for 30 minutes
+          const expiry = Date.now() + 30 * 60 * 1000;
+          localStorage.setItem("auth_user", JSON.stringify(data.user));
+          localStorage.setItem("auth_expiry", expiry.toString());
+        } else {
+          setUser(null);
+          // Clear cache on auth failure
+          localStorage.removeItem("auth_user");
+          localStorage.removeItem("auth_expiry");
         }
+      } else {
+        setUser(null);
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("auth_expiry");
       }
     } catch (error) {
       console.error("Auth check failed:", error);
+      // On network error, don't clear cache if we have valid cached user
+      if (!user) {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
@@ -95,6 +152,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data.success) {
         setUser(data.user);
+
+        // Cache the user data for 30 minutes after successful login
+        const expiry = Date.now() + 30 * 60 * 1000;
+        localStorage.setItem("auth_user", JSON.stringify(data.user));
+        localStorage.setItem("auth_expiry", expiry.toString());
+
         return { success: true };
       } else {
         return { success: false, error: data.error };
@@ -142,6 +205,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Logout error:", error);
     } finally {
       setUser(null);
+      // Clear cache on logout
+      localStorage.removeItem("auth_user");
+      localStorage.removeItem("auth_expiry");
     }
   };
 
@@ -152,6 +218,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value: AuthContextType = {
     user,
     loading,
+    isInitialLoad,
     login,
     register,
     logout,

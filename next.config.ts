@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
 
   // Performance optimizations
   swcMinify: true, // Use SWC for faster minification
-  
+
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Optimize bundle size
@@ -59,17 +59,17 @@ const nextConfig: NextConfig = {
         sideEffects: false,
         // Split large vendor chunks
         splitChunks: {
-          chunks: 'all',
+          chunks: "all",
           cacheGroups: {
             vendor: {
               test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
+              name: "vendors",
+              chunks: "all",
             },
             common: {
-              name: 'common',
+              name: "common",
               minChunks: 2,
-              chunks: 'all',
+              chunks: "all",
               enforce: true,
             },
           },

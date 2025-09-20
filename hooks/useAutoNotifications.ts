@@ -60,7 +60,7 @@ const useAutoNotifications = (options?: { defer?: boolean }) => {
   useEffect(() => {
     // Defer initialization if requested (for performance)
     const delay = options?.defer ? 2000 : 0; // Defer by 2 seconds if requested
-    
+
     const timer = setTimeout(() => {
       // Only log once per state change in development
       if (process.env.NODE_ENV === "development") {
@@ -76,7 +76,14 @@ const useAutoNotifications = (options?: { defer?: boolean }) => {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [initializeOnce, loading, subjects?.length, permission, isClient, options?.defer]);
+  }, [
+    initializeOnce,
+    loading,
+    subjects?.length,
+    permission,
+    isClient,
+    options?.defer,
+  ]);
 
   // Reset on permission change
   useEffect(() => {
