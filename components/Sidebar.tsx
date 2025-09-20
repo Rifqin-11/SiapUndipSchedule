@@ -13,7 +13,12 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useState } from "react";
-import QRScanner from "./QRScanner";
+import dynamic from "next/dynamic";
+
+const QRScanner = dynamic(() => import("./QRScanner"), {
+  ssr: false,
+  loading: () => null,
+});
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import Image from "next/image";
@@ -157,6 +162,7 @@ const Sidebar = () => {
                     alt="Profile"
                     width={36}
                     height={36}
+                    priority={true}
                     className="size-9 rounded-full object-cover"
                   />
                 ) : (

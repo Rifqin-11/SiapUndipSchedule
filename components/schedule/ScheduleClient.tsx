@@ -1,15 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   getCurrentDayAndDate,
   colorPairs,
   normalizeDayName,
 } from "@/utils/date";
-import HorizonalCalendar from "@/components/schedule/HorizonalCalendar";
-import CalendarCard from "@/components/schedule/CalendarCard";
-import SubjectModal from "@/components/SubjectModal";
-import RescheduleModal from "@/components/reschedule/RescheduleModal";
+const HorizonalCalendar = dynamic(
+  () => import("@/components/schedule/HorizonalCalendar"),
+  { ssr: false, loading: () => <div /> }
+);
+
+const CalendarCard = dynamic(
+  () => import("@/components/schedule/CalendarCard"),
+  { ssr: false, loading: () => <div /> }
+);
+
+const SubjectModal = dynamic(() => import("@/components/SubjectModal"), {
+  ssr: false,
+  loading: () => <div />,
+});
+
+const RescheduleModal = dynamic(
+  () => import("@/components/reschedule/RescheduleModal"),
+  { ssr: false, loading: () => <div /> }
+);
 import Link from "next/link";
 import {
   useSubjects,
@@ -31,7 +47,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import QRScanner from "../QRScanner";
+const QRScanner = dynamic(() => import("../QRScanner"), {
+  ssr: false,
+  loading: () => <div />,
+});
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import PageHeader from "../PageHeader";

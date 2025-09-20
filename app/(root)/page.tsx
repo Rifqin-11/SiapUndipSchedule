@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import CoursesCard from "@/components/homepage/CoursesCard";
 import TodaySubject from "@/components/homepage/TodaySubject";
 import CurrentDayDate from "@/components/homepage/CurrentDayDate";
-import FloatingActionButton from "@/components/homepage/FloatingActionButton";
-import SubjectModal from "@/components/SubjectModal";
 import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
@@ -13,7 +12,21 @@ import HomeSkeleton from "@/components/homepage/HomeSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import Link from "next/link";
 import Image from "next/image";
-import NotifIcon from "@/components/homepage/NotifIcon";
+// Defer these heavier client-only pieces so the initial bundle is smaller.
+const FloatingActionButton = dynamic(
+  () => import("@/components/homepage/FloatingActionButton"),
+  { ssr: false, loading: () => <div /> }
+);
+
+const SubjectModal = dynamic(() => import("@/components/SubjectModal"), {
+  ssr: false,
+  loading: () => <div />,
+});
+
+const NotifIcon = dynamic(() => import("@/components/homepage/NotifIcon"), {
+  ssr: false,
+  loading: () => <div />,
+});
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 
 /** ⬇️ Tambahan: tasks & TaskCard */
@@ -26,11 +39,20 @@ import {
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import type { Task } from "@/components/tasks/types";
-import {
-  DeleteConfirmDialog,
-  TaskDetailDrawer,
-  TaskFormDrawer,
-} from "@/components/tasks";
+const TaskFormDrawer = dynamic(
+  () => import("@/components/tasks").then((m) => m.TaskFormDrawer),
+  { ssr: false, loading: () => <div /> }
+);
+
+const DeleteConfirmDialog = dynamic(
+  () => import("@/components/tasks").then((m) => m.DeleteConfirmDialog),
+  { ssr: false, loading: () => <div /> }
+);
+
+const TaskDetailDrawer = dynamic(
+  () => import("@/components/tasks").then((m) => m.TaskDetailDrawer),
+  { ssr: false, loading: () => <div /> }
+);
 import { toast } from "sonner";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
@@ -301,6 +323,7 @@ const Page = () => {
                 alt="Profile Picture"
                 width={40}
                 height={40}
+                priority={true}
                 className="rounded-full size-10 object-cover"
               />
             ) : (

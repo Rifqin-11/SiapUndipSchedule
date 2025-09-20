@@ -231,6 +231,7 @@ function HeaderFrame({
                 alt="Profile"
                 width={40}
                 height={40}
+                priority={true}
                 className="rounded-full object-cover size-10"
               />
             ) : (

@@ -45,6 +45,14 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Preconnect to Google fonts and prefetch critical font resources to improve LCP */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* If you self-host fonts, replace with preload to local woff2 files instead */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+        />
         <link rel="icon" type="image/png" sizes="196x196" href="/icon.png" />
 
         {/* PWA Meta Tags */}

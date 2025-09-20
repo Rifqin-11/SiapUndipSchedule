@@ -4,7 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Calendar, Home, CheckCircle, UserRound, QrCode } from "lucide-react";
 import { useState, useEffect } from "react";
-import QRScanner from "./QRScanner";
+import dynamic from "next/dynamic";
+
+const QRScanner = dynamic(() => import("./QRScanner"), {
+  ssr: false,
+  loading: () => null,
+});
 import { useAuth } from "@/hooks/useAuth";
 
 const BottomNavbar = () => {
