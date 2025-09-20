@@ -46,7 +46,6 @@ export const forceReload = (): void => {
 // Add cache busting headers to fetch requests (optimized for performance)
 export const createCacheBustingHeaders = () => ({
   "Cache-Control": "max-age=30", // Allow 30 seconds of caching for performance
-  "X-Requested-With": "XMLHttpRequest",
 });
 
 // Fetch with optimized caching (not aggressive cache busting)

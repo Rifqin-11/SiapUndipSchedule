@@ -31,7 +31,7 @@ export const TASKS_QUERY_KEY = ["tasks"] as const;
 
 // API functions
 const fetchTasks = async (): Promise<Task[]> => {
-  const response = await fetchWithCacheBusting("/api/tasks", {
+  const response = await fetch("/api/tasks", {
     credentials: "include",
   });
 
