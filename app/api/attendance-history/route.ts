@@ -99,17 +99,11 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db("schedule_undip");
 
-    // Get attendance history for last 7 days for the authenticated user
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
+    // Get ALL attendance history for the authenticated user (remove 7 days limit)
     const attendanceHistory = await db
       .collection("attendance_history")
       .find({
         userId: decoded.userId, // Filter by authenticated user
-        attendanceDate: {
-          $gte: sevenDaysAgo,
-        },
       })
       .sort({ attendanceDate: -1 })
       .toArray();

@@ -39,9 +39,8 @@ const UserPage = () => {
   const { logout } = useAuth();
   const router = useRouter();
 
-  // Get attendance data
-  const { calculateAttendancePercentage, loading: attendanceLoading } =
-    useAttendance();
+  // Get attendance data (masih dibutuhkan untuk data lain)
+  const { loading: attendanceLoading } = useAttendance();
 
   // State for logout loading
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -101,11 +100,40 @@ const UserPage = () => {
     },
   ];
 
-  // Calculate attendance percentage
-  const attendancePercentage =
-    subjects && subjects.length > 0
-      ? calculateAttendancePercentage(subjects.length)
-      : 0;
+  // Calculate attendance percentage using subjects data directly
+  const calculateTotalAttendancePercentage = () => {
+    if (!subjects || subjects.length === 0) {
+      return 0;
+    }
+
+    let totalAttendedMeetings = 0;
+    const totalPossibleMeetings = subjects.length * 14; // Each subject has 14 meetings max
+
+    // Sum up all attended meetings from all subjects
+    subjects.forEach((subject) => {
+      if (subject.attendanceDates && Array.isArray(subject.attendanceDates)) {
+        totalAttendedMeetings += subject.attendanceDates.length;
+      }
+    });
+
+    if (totalPossibleMeetings === 0) {
+      return 0;
+    }
+
+    // Formula: (total attendance across all subjects / (total subjects × 14)) × 100%
+    const percentage = (totalAttendedMeetings / totalPossibleMeetings) * 100;
+
+    console.log("New Attendance Calculation:", {
+      totalAttendedMeetings,
+      totalSubjects: subjects.length,
+      totalPossibleMeetings,
+      percentage: Math.round(percentage),
+    });
+
+    return Math.min(Math.round(percentage), 100);
+  };
+
+  const attendancePercentage = calculateTotalAttendancePercentage();
 
   // Get initials from user name
   const getInitials = (name: string) => {

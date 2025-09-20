@@ -65,7 +65,18 @@ export function useAttendance() {
       return 0;
     }
 
+    // Formula: (total attendance / (total subjects × 14)) × 100%
     const percentage = (totalAttendanceRecords / totalPossibleMeetings) * 100;
+
+    // Debug log
+    console.log("Attendance Calculation:", {
+      totalAttendanceRecords,
+      totalSubjects,
+      totalPossibleMeetings,
+      rawPercentage: percentage,
+      finalPercentage: Math.min(Math.round(percentage), 100),
+    });
+
     return Math.min(Math.round(percentage), 100); // Cap at 100%
   };
 
