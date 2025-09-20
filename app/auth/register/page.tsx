@@ -17,7 +17,6 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import "../auth.css";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({

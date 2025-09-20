@@ -280,6 +280,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
         // Cleanup previous stream first
         if (streamRef.current && streamRef.current !== stream) {
+          console.log("Cleaning up previous stream...");
           streamRef.current.getTracks().forEach((track) => {
             if (track.readyState === "live") {
               track.stop();
@@ -301,6 +302,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
         // Set video element source
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          console.log("Video element source set");
         }
 
         if ("getCapabilities" in track) {
@@ -309,6 +311,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
               string,
               unknown
             >;
+            console.log("Camera capabilities:", capabilities);
 
             const constraints: Record<string, unknown> = {};
 
@@ -356,6 +359,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
               track.readyState === "live" &&
               Object.keys(constraints).length > 0
             ) {
+              console.log("Applying constraints:", constraints);
               track.applyConstraints(constraints).catch((error) => {
                 console.warn("Failed to apply video constraints:", error);
               });
@@ -368,6 +372,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
           }
         }
 
+        console.log("Video stream enhanced successfully");
       } catch (error) {
         console.error("Failed to enhance video stream:", error);
         throw error;
@@ -601,26 +606,31 @@ const QRScanner: React.FC<QRScannerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     facingMode,
+    checkBrowserSupport,
+    checkCameraPermission,
+    checkDeviceAvailability,
+    enhanceVideoStream,
     retryCount,
-  ]); // Reduced dependencies to prevent constant re-creation
+  ]);
 
   const stopScanning = useCallback(() => {
-    // Early return if scanner is not running to prevent unnecessary calls
-    if (!streamRef.current && !codeReaderRef.current && !detectionIntervalRef.current) {
-      return;
-    }
+    console.log("Stopping scanner...");
 
     // Reset zoom level
-    setZoomLevel(1);    // Stop BarcodeDetector interval
+    setZoomLevel(1);
+
+    // Stop BarcodeDetector interval
     if (detectionIntervalRef.current) {
       clearInterval(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
+      console.log("BarcodeDetector interval stopped");
     }
 
     // Stop code reader first
     if (codeReaderRef.current) {
       try {
         codeReaderRef.current.reset();
+        console.log("Code reader stopped");
       } catch (error) {
         console.warn("Error stopping code reader:", error);
       } finally {
@@ -631,11 +641,16 @@ const QRScanner: React.FC<QRScannerProps> = ({
     // Stop video stream with more robust cleanup
     if (streamRef.current) {
       try {
+        console.log("Stopping video stream...");
         streamRef.current.getTracks().forEach((track) => {
+          console.log(
+            `Stopping track: ${track.kind}, state: ${track.readyState}`
+          );
           if (track.readyState === "live") {
             track.stop();
           }
         });
+        console.log("All tracks stopped");
       } catch (error) {
         console.warn("Error stopping video tracks:", error);
       } finally {
@@ -647,47 +662,39 @@ const QRScanner: React.FC<QRScannerProps> = ({
     if (videoRef.current) {
       try {
         videoRef.current.srcObject = null;
+        console.log("Video element cleared");
       } catch (error) {
         console.warn("Error clearing video element:", error);
       }
     }
 
     setIsScanning(false);
+    console.log("Scanner stopped successfully");
   }, []);
 
   // useEffect for handling scanner lifecycle
   useEffect(() => {
-    let isMounted = true;
-    
     const handleScanner = async () => {
-      if (!isMounted) return;
-      
       if (isOpen) {
         await initScanner();
       } else {
-        // Only call stopScanning if there's actually something to stop
-        if (streamRef.current || codeReaderRef.current || detectionIntervalRef.current || isScanning) {
-          stopScanning();
-          setLastScannedUrl(null);
-        }
+        stopScanning();
+        setLastScannedUrl(null);
       }
     };
 
     handleScanner();
-    
     return () => {
-      isMounted = false;
-      // Only cleanup if there's actually something to clean
-      if (streamRef.current || codeReaderRef.current || detectionIntervalRef.current) {
-        stopScanning();
-      }
+      stopScanning();
     };
-  }, [isOpen]); // Only depend on isOpen to prevent infinite loops
+  }, [isOpen, initScanner, stopScanning]);
 
   const startScanning = useCallback(
     async (deviceId: string) => {
       try {
         if (!videoRef.current) return;
+
+        console.log(`Starting scanner with device: ${deviceId}`);
 
         // Ensure any existing streams are completely stopped first
         stopScanning();
@@ -697,6 +704,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
         // Check if video element is still available after cleanup
         if (!videoRef.current) {
+          console.log("Video element not available after cleanup");
           return;
         }
 
@@ -738,18 +746,21 @@ const QRScanner: React.FC<QRScannerProps> = ({
 
         for (let i = 0; i < constraintStrategies.length; i++) {
           try {
+            console.log(`Trying constraint strategy ${i + 1}...`);
             stream = await navigator.mediaDevices.getUserMedia(
               constraintStrategies[i]
             );
 
             // Verify stream is active before proceeding
             if (stream && stream.active && stream.getVideoTracks().length > 0) {
+              console.log(`Strategy ${i + 1} successful`);
               break;
             } else {
               stream?.getTracks().forEach((track) => track.stop());
               stream = null;
             }
           } catch (error) {
+            console.log(`Strategy ${i + 1} failed:`, error);
             lastError = error as Error;
             // Wait a bit before trying next strategy
             await new Promise((resolve) => setTimeout(resolve, 200));

@@ -7,13 +7,7 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI;
-
-// Optimized MongoDB connection options for MongoClient
-const options = {
-  maxPoolSize: 10, // Maximum number of connections in the pool
-  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-  socketTimeoutMS: 45000, // Close connections after 45 seconds of inactivity
-};
+const options = {};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -32,23 +26,14 @@ if (process.env.NODE_ENV === "development") {
   clientPromise = client.connect();
 }
 
-// Optimized Mongoose connection with connection pooling
+// Mongoose connection function
 export const connectMongoDB = async () => {
   try {
-    // Check if already connected
-    if (mongoose.connections[0].readyState === 1) {
+    if (mongoose.connections[0].readyState) {
       return mongoose.connections[0];
     }
 
-    // Configure mongoose for better performance
-    mongoose.set('strictQuery', false);
-    
-    await mongoose.connect(uri, {
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close connections after 45 seconds of inactivity
-    });
-    
+    await mongoose.connect(uri);
     console.log("Connected to MongoDB with Mongoose");
     return mongoose.connections[0];
   } catch (error) {

@@ -1,31 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import {
   getCurrentDayAndDate,
   colorPairs,
   normalizeDayName,
 } from "@/utils/date";
-const HorizonalCalendar = dynamic(
-  () => import("@/components/schedule/HorizonalCalendar"),
-  { ssr: false, loading: () => <div /> }
-);
-
-const CalendarCard = dynamic(
-  () => import("@/components/schedule/CalendarCard"),
-  { ssr: false, loading: () => <div /> }
-);
-
-const SubjectModal = dynamic(() => import("@/components/SubjectModal"), {
-  ssr: false,
-  loading: () => <div />,
-});
-
-const RescheduleModal = dynamic(
-  () => import("@/components/reschedule/RescheduleModal"),
-  { ssr: false, loading: () => <div /> }
-);
+import HorizonalCalendar from "@/components/schedule/HorizonalCalendar";
+import CalendarCard from "@/components/schedule/CalendarCard";
+import SubjectModal from "@/components/SubjectModal";
+import RescheduleModal from "@/components/reschedule/RescheduleModal";
 import Link from "next/link";
 import {
   useSubjects,
@@ -47,10 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-const QRScanner = dynamic(() => import("../QRScanner"), {
-  ssr: false,
-  loading: () => <div />,
-});
+import QRScanner from "../QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import PageHeader from "../PageHeader";
@@ -75,9 +56,30 @@ interface SubjectToDelete extends SubjectWithReschedule {
 }
 
 const ScheduleClient = () => {
-  const { currentDay } = getCurrentDayAndDate();
-  const [selectedDay, setSelectedDay] = useState(currentDay);
-  const [selectedDate, setSelectedDate] = useState<string>(); // Add selected date state
+  // Get current day correctly
+  const today = new Date();
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const currentDayName = days[today.getDay()];
+
+  // Format today's date using local date to avoid timezone issues
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+  const todayString = formatLocalDate(today);
+
+  const [selectedDay, setSelectedDay] = useState(currentDayName); // Use actual current day
+  const [selectedDate, setSelectedDate] = useState<string>(todayString); // Initialize with today's date
   const [weekOffset, setWeekOffset] = useState(0); // Add week offset state
   const {
     data: subjects = [],
@@ -124,18 +126,11 @@ const ScheduleClient = () => {
     setIsClient(true);
   }, []);
 
-  // Initialize selectedDate to today when component mounts
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setSelectedDate(today);
-  }, []);
-
   // Handle week change from HorizonalCalendar
   const handleWeekChange = (weekOffset: number) => {
-    console.log("Week changed to offset:", weekOffset);
     setWeekOffset(weekOffset); // Update week offset state
-    // Reset selected date when week changes to avoid confusion
-    setSelectedDate(undefined);
+    // Reset selected date when week changes - use today's date as fallback
+    setSelectedDate(todayString);
   };
 
   // Handle day selection from HorizonalCalendar
@@ -167,7 +162,7 @@ const ScheduleClient = () => {
   // Ensure subjects is always an array
   const subjectsArray = Array.isArray(subjects) ? subjects : [];
 
-  // Check unique days in database
+  // Get unique days from subjects for debugging
   const uniqueDays = [
     ...new Set(
       subjectsArray
@@ -175,7 +170,6 @@ const ScheduleClient = () => {
         .filter((day) => day !== null && day !== undefined)
     ),
   ];
-  console.log("Unique days in database:", uniqueDays);
 
   // Check for subjects with invalid days
   const invalidDaySubjects = subjectsArray.filter(
@@ -186,9 +180,7 @@ const ScheduleClient = () => {
       "Found subjects with invalid day property:",
       invalidDaySubjects
     );
-  }
-
-  // Helper function to check if a subject has a valid schedule
+  } // Helper function to check if a subject has a valid schedule
   const hasValidSchedule = (subject: Subject) => {
     return (
       subject.day &&
@@ -205,12 +197,7 @@ const ScheduleClient = () => {
 
   // Get reschedule subjects for selected day
   const getSelectedDayDate = () => {
-    // Use selectedDate if available, otherwise calculate from selectedDay
-    if (selectedDate) {
-      return selectedDate;
-    }
-
-    // Fallback calculation (for backward compatibility)
+    // Always calculate based on selectedDay and weekOffset for consistency
     const days = [
       "Sunday",
       "Monday",
@@ -224,49 +211,59 @@ const ScheduleClient = () => {
     const currentDayIndex = today.getDay();
     const selectedDayIndex = days.indexOf(selectedDay);
 
-    const dayDifference = selectedDayIndex - currentDayIndex;
+    let dayDifference = selectedDayIndex - currentDayIndex;
+
+    // If we're looking for a day that would be in the past this week (negative difference),
+    // and weekOffset is 0, we should look for it in the next week
+    if (dayDifference < 0 && weekOffset === 0) {
+      dayDifference += 7;
+    }
+
     const selectedDateCalc = new Date(today);
     selectedDateCalc.setDate(today.getDate() + dayDifference + weekOffset * 7);
-    return selectedDateCalc.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const calculatedDate = selectedDateCalc.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+    return calculatedDate;
   };
-
   const filteredSubjects = subjectsArray.filter((subject) => {
-    const selectedDayDate = getSelectedDayDate();
+    // Use selectedDate (now always available) or fallback to calculation
+    const selectedDayDate = selectedDate;
 
-    // Check if subject is date-specific
+    // For date-specific subjects (like rescheduled subjects)
     if (subject.specificDate) {
       // For date-specific subjects, only show if it matches the selected date
-      return subject.specificDate === selectedDayDate;
+      const match = subject.specificDate === selectedDayDate;
+      return match;
     }
 
     // Use meetingDates array if available (new system)
-    if (subject.meetingDates && Array.isArray(subject.meetingDates)) {
-      return isClassDay(selectedDayDate, subject.meetingDates);
+    if (
+      subject.meetingDates &&
+      Array.isArray(subject.meetingDates) &&
+      subject.meetingDates.length > 0
+    ) {
+      const isClassDayResult = isClassDay(
+        selectedDayDate,
+        subject.meetingDates
+      );
+      return isClassDayResult;
     }
 
     // For recurring subjects (legacy), check day match and valid schedule
     // Only show subjects that have a valid schedule (day and time)
     if (!hasValidSchedule(subject)) {
-      console.log(
-        `Skipping subject without valid schedule: ${subject.name} - Day: ${subject.day}, StartTime: ${subject.startTime}, EndTime: ${subject.endTime}`
-      );
       return false;
     }
 
     const normalizedSubjectDay = normalizeDayName(subject.day);
     const normalizedSelectedDay = normalizeDayName(selectedDay);
-    console.log(
-      `Comparing normalized subject day "${normalizedSubjectDay}" with selected day "${normalizedSelectedDay}"`
-    );
-    console.log(
-      `Original subject day: "${subject.day}", selected day: "${selectedDay}"`
-    );
-    return normalizedSubjectDay === normalizedSelectedDay;
+
+    const dayMatch = normalizedSubjectDay === normalizedSelectedDay;
+
+    return dayMatch;
   });
 
-  const selectedDayString = getSelectedDayDate();
-
-  console.log("Selected day string (calculated date):", selectedDayString);
+  const selectedDayString = selectedDate;
 
   const rescheduleSubjects = subjectsArray
     .filter((subject) => {
@@ -512,10 +509,6 @@ const ScheduleClient = () => {
                 }
               : assignedColor;
 
-            console.log(
-              `Subject: ${subject.name}, ID: ${subject.id}, Index: ${index}, IsReschedule: ${subject.isReschedule}`
-            );
-
             return (
               <Link
                 href={`/subject-detail/${subject.id}`}
@@ -528,7 +521,7 @@ const ScheduleClient = () => {
                   bgColor={finalColor.bg}
                   textColor={finalColor.text}
                   bgRoomColor={finalColor.roomBg}
-                  selectedDate={getSelectedDayDate()}
+                  selectedDate={selectedDate}
                   showActions={activeActionSubjectId !== subject.id}
                   onEdit={() => handleEditSubject(subject)}
                   onDelete={() => handleDeleteSubject(subject)}

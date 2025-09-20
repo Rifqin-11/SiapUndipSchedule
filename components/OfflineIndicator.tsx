@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Wifi, WifiOff, RefreshCw, X } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineSync } from "@/hooks/useOfflineData";
-import "./ui/toast-mobile.css";
 
 interface OfflineIndicatorProps {
   position?: "top" | "bottom";

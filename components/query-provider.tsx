@@ -9,7 +9,6 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { toast } from "sonner";
-import "./ui/toast-mobile.css";
 
 interface QueryProviderProps {
   children: React.ReactNode;

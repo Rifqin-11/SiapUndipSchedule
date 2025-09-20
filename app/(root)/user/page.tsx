@@ -124,13 +124,6 @@ const UserPage = () => {
     // Formula: (total attendance across all subjects / (total subjects × 14)) × 100%
     const percentage = (totalAttendedMeetings / totalPossibleMeetings) * 100;
 
-    console.log("New Attendance Calculation:", {
-      totalAttendedMeetings,
-      totalSubjects: subjects.length,
-      totalPossibleMeetings,
-      percentage: Math.round(percentage),
-    });
-
     return Math.min(Math.round(percentage), 100);
   };
 

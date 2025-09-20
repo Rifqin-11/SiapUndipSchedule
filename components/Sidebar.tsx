@@ -22,7 +22,6 @@ const QRScanner = dynamic(() => import("./QRScanner"), {
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import Image from "next/image";
-import "./ui/z-index-fixes.css";
 
 const Sidebar = () => {
   const pathname = usePathname();

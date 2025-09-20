@@ -1,21 +1,15 @@
-// app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./(root)/globals.css";
-import "./layout-pwa.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import DynamicThemeColor from "@/components/DynamicThemeColor";
 import { QueryProvider } from "@/components/query-provider";
 
-// Batasi ke bobot yang benar-benar dipakai biar file font kecil
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "600", "700"], // samakan dengan kebutuhanmu
   display: "swap",
-  variable: "--font-inter",
-  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -25,6 +19,12 @@ export const metadata: Metadata = {
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#141414" },
   ],
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 };
 
 export const viewport: Viewport = {
@@ -41,14 +41,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        {/* HAPUS ketiga baris berikut dari versi kamu:
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
-        */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Preconnect to Google fonts and prefetch critical font resources to improve LCP */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        {/* If you self-host fonts, replace with preload to local woff2 files instead */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+        />
         <link rel="icon" type="image/png" sizes="196x196" href="/icon.png" />
 
         {/* PWA Meta Tags */}
@@ -74,7 +82,8 @@ export default function RootLayout({
           href="/manifest-icon-512.maskable.png"
         />
 
-        {/* Theme color */}
+        {/* Additional PWA Meta Tags */}
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="SIAP UNDIP" />
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="theme-color" content="#ffffff" />
@@ -84,10 +93,15 @@ export default function RootLayout({
           content="#141414"
         />
       </head>
-      <body>
+      <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange={false}
+            >
               <DynamicThemeColor />
               <div className="min-h-screen bg-background">{children}</div>
               <Toaster />

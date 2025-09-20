@@ -25,8 +25,6 @@ import { Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
 import { DialogPortal } from "@radix-ui/react-dialog";
 import { forceModalCleanup, useModalCleanup } from "@/lib/modal-utils";
-import "./ui/z-index-fixes.css";
-import "./ui/toast-mobile.css";
 
 interface SubjectModalProps {
   isOpen: boolean;
