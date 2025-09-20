@@ -1,5 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Service Worker for SIAP UNDIP Schedule
+// Service Worker for
+
+// Function to warmup critical endpoints
+async function warmupCriticalEndpoints() {
+  console.log("[ServiceWorker] Warming up critical endpoints");
+
+  const warmupPromises = WARMUP_ENDPOINTS.map(async (endpoint) => {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-cache'
+      });
+
+      if (response.ok) {
+        console.log(`[ServiceWorker] Warmed up: ${endpoint}`);
+
+        // Cache the warmup response if it's cacheable
+        if (CACHEABLE_API_ROUTES.includes(endpoint)) {
+          const cache = await caches.open(API_CACHE_NAME);
+          await cache.put(endpoint, response.clone());
+        }
+      }
+    } catch (error) {
+      console.warn(`[ServiceWorker] Warmup failed for ${endpoint}:`, error);
+    }
+  });
+
+  await Promise.allSettled(warmupPromises);
+}
 // Provides advanced offline support with smart caching strategies
 
 const CACHE_NAME = "siap-undip-v1";
@@ -31,6 +60,14 @@ const CACHEABLE_API_ROUTES = [
   "/api/schedule",
   "/api/user/profile",
   "/api/settings",
+  "/api/warmup",
+];
+
+// API endpoints for immediate warmup
+const WARMUP_ENDPOINTS = [
+  "/api/warmup",
+  "/api/subjects",
+  "/api/auth/me",
 ];
 
 // API endpoints that should trigger background sync

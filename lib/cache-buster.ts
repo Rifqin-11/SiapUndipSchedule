@@ -43,28 +43,26 @@ export const forceReload = (): void => {
   window.location.reload();
 };
 
-// Add cache busting headers to fetch requests
+// Add cache busting headers to fetch requests (optimized for performance)
 export const createCacheBustingHeaders = () => ({
-  "Cache-Control": "no-cache, no-store, must-revalidate",
-  Pragma: "no-cache",
-  Expires: "0",
+  "Cache-Control": "max-age=30", // Allow 30 seconds of caching for performance
   "X-Requested-With": "XMLHttpRequest",
-  "X-Cache-Buster": generateCacheBuster(),
-  "X-Timestamp": Date.now().toString(),
 });
 
-// Fetch with aggressive cache busting
+// Fetch with optimized caching (not aggressive cache busting)
 export const fetchWithCacheBusting = async (
   url: string,
   options: RequestInit = {}
 ) => {
-  const cacheBustingUrl = url.includes("?")
-    ? `${url}&_cb=${generateCacheBuster()}`
-    : `${url}?_cb=${generateCacheBuster()}`;
+  // Only add cache buster for mutations, not for read operations
+  const shouldCacheBust = options.method && options.method !== "GET";
+  const finalUrl = shouldCacheBust 
+    ? (url.includes("?") ? `${url}&_cb=${generateCacheBuster()}` : `${url}?_cb=${generateCacheBuster()}`)
+    : url;
 
-  return fetch(cacheBustingUrl, {
+  return fetch(finalUrl, {
     ...options,
-    cache: "no-store",
+    cache: shouldCacheBust ? "no-store" : "default", // Allow browser caching for GET requests
     headers: {
       ...createCacheBustingHeaders(),
       ...options.headers,
