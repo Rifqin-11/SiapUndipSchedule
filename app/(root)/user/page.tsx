@@ -1,5 +1,6 @@
 "use client";
 
+import { StatsCard } from "@/components/ui/reusable-components";
 import React, { useState } from "react";
 import {
   Edit,
@@ -225,34 +226,26 @@ const UserPage = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {subjectsError ? "?" : subjects?.length || 0}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Subjects
-              </div>
-            </div>
-            <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {attendanceLoading ? (
-                  <div className="w-6 h-6 mx-auto border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  `${attendancePercentage}%`
-                )}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Attendance
-              </div>
-            </div>
-            <div className="bg-white dark:bg-card rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {user?.angkatan || "-"}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Class Year
-              </div>
-            </div>
+            <StatsCard
+              value={subjectsError ? "?" : subjects?.length || 0}
+              label="Subjects"
+              color="text-blue-600 dark:text-blue-400"
+              isLoading={subjectsLoading}
+            />
+            
+            <StatsCard
+              value={`${attendancePercentage}%`}
+              label="Attendance"
+              color="text-green-600 dark:text-green-400"
+              isLoading={attendanceLoading}
+            />
+            
+            <StatsCard
+              value={user?.angkatan || "-"}
+              label="Class Year"
+              color="text-purple-600 dark:text-purple-400"
+              isLoading={userLoading}
+            />
           </div>
 
           {/* Account Settings */}

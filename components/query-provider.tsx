@@ -1,42 +1,119 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, MutationCache, QueryCache } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface QueryProviderProps {
   children: React.ReactNode;
 }
 
+// Custom error handler for queries
+const handleQueryError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : 'An error occurred';
+  
+  // Don't show toast for cancelled requests
+  if (message.includes('cancelled') || message.includes('aborted')) {
+    return;
+  }
+  
+  // Show user-friendly error messages
+  if (message.includes('Network Error') || message.includes('fetch')) {
+    toast.error('Connection problem. Please check your internet connection.');
+  } else {
+    toast.error('Something went wrong. Please try again.');
+  }
+  
+  console.error('Query Error:', error);
+};
+
+// Custom error handler for mutations
+const handleMutationError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : 'An error occurred';
+  
+  // Show appropriate error message
+  if (message.includes('Network Error') || message.includes('fetch')) {
+    toast.error('Connection problem. Please check your internet connection.');
+  } else if (message.includes('Unauthorized') || message.includes('401')) {
+    toast.error('Your session has expired. Please log in again.');
+  } else if (message.includes('Forbidden') || message.includes('403')) {
+    toast.error('You do not have permission to perform this action.');
+  } else {
+    toast.error('Failed to save changes. Please try again.');
+  }
+  
+  console.error('Mutation Error:', error);
+};
+
 export function QueryProvider({ children }: QueryProviderProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        queryCache: new QueryCache({
+          onError: handleQueryError,
+        }),
+        mutationCache: new MutationCache({
+          onError: handleMutationError,
+        }),
         defaultOptions: {
           queries: {
-            // Data akan dianggap fresh selama 30 detik untuk responsivitas yang sangat baik
-            staleTime: 30 * 1000, // 30 seconds (sangat dikurangi untuk menghindari stale cache)
-            // Data akan di-cache selama 2 menit saja
-            gcTime: 2 * 60 * 1000, // 2 minutes (dikurangi drastis)
-            // Tidak refetch saat window focus untuk mengurangi network requests
+            // Optimized stale time based on data type
+            staleTime: 5 * 60 * 1000, // 5 minutes - good balance for most data
+            
+            // Longer garbage collection time to improve performance
+            gcTime: 10 * 60 * 1000, // 10 minutes - keep data longer for better UX
+            
+            // Disable refetch on window focus for better performance
             refetchOnWindowFocus: false,
-            // Refetch saat reconnect untuk data terbaru
+            
+            // Refetch on reconnect to get fresh data after connection restored
             refetchOnReconnect: true,
-            // Refetch saat mount untuk memastikan data fresh
-            refetchOnMount: "always",
-            // Retry sekali jika ada error
-            retry: 1,
-            // Retry delay yang progressif
-            retryDelay: (attemptIndex) =>
-              Math.min(1000 * 2 ** attemptIndex, 30000),
+            
+            // Only refetch on mount if data is stale
+            refetchOnMount: true,
+            
+            // Retry configuration for better reliability
+            retry: (failureCount, error) => {
+              // Don't retry for certain errors
+              if (error instanceof Error) {
+                if (error.message.includes('401') || 
+                    error.message.includes('403') || 
+                    error.message.includes('404')) {
+                  return false;
+                }
+              }
+              return failureCount < 3;
+            },
+            
+            // Progressive retry delay
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+            
+            // Enable background updates for better UX
+            refetchInterval: false, // Disable automatic polling by default
+            
+            // Optimize for offline scenarios
+            networkMode: "online",
           },
           mutations: {
-            // Retry mutation sekali jika gagal
-            retry: 1,
-            // Tambahkan networkMode untuk handle offline scenarios
+            // Retry mutations with exponential backoff
+            retry: (failureCount, error) => {
+              // Don't retry for client errors
+              if (error instanceof Error) {
+                if (error.message.includes('400') || 
+                    error.message.includes('401') || 
+                    error.message.includes('403')) {
+                  return false;
+                }
+              }
+              return failureCount < 2;
+            },
+            
+            // Mutation retry delay
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+            
+            // Only run mutations when online
             networkMode: "online",
-            // Retry delay untuk mutations
-            retryDelay: 1000,
           },
         },
       })
@@ -47,7 +124,10 @@ export function QueryProvider({ children }: QueryProviderProps) {
       {children}
       {/* React Query DevTools hanya muncul di development */}
       {process.env.NODE_ENV === "development" && (
-        <ReactQueryDevtools initialIsOpen={false} />
+        <ReactQueryDevtools 
+          initialIsOpen={false}
+          buttonPosition="bottom-left"
+        />
       )}
     </QueryClientProvider>
   );
