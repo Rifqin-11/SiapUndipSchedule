@@ -59,8 +59,8 @@ export function OptimizedImage({
   className,
   priority = false,
   fill = false,
-  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
-  quality = 75, // Reduced for better performance
+  sizes,
+  quality = 85,
   placeholder = "blur",
   blurDataURL,
   onLoad,
@@ -76,7 +76,7 @@ export function OptimizedImage({
   // Don't use lazy loading if priority is true
   const shouldLoad = !lazy || priority || isVisible;
 
-  // Generate optimized blur data URL untuk modern browsers
+  // Generate blur data URL jika tidak disediakan
   const defaultBlurDataURL =
     "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkbHB0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==";
 
