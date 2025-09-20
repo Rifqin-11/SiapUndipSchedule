@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import dynamic from "next/dynamic";
 import CoursesCard from "@/components/homepage/CoursesCard";
 import TodaySubject from "@/components/homepage/TodaySubject";
 import CurrentDayDate from "@/components/homepage/CurrentDayDate";
 import FloatingActionButton from "@/components/homepage/FloatingActionButton";
+import SubjectModal from "@/components/SubjectModal";
 import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
@@ -15,11 +15,6 @@ import Link from "next/link";
 import Image from "next/image";
 import NotifIcon from "@/components/homepage/NotifIcon";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
-
-// Dynamic imports for non-critical components
-const SubjectModal = dynamic(() => import("@/components/SubjectModal"), {
-  ssr: false,
-});
 
 /** ⬇️ Tambahan: tasks & TaskCard */
 import {
@@ -306,7 +301,6 @@ const Page = () => {
                 alt="Profile Picture"
                 width={40}
                 height={40}
-                priority={true}
                 className="rounded-full size-10 object-cover"
               />
             ) : (

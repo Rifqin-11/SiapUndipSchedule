@@ -1,33 +1,3 @@
-/* Critical above-the-fold CSS - inline untuk LCP optimization */
-@layer base {
-  /* Essential layout untuk initial render */
-  body {
-    background-color: oklch(1 0 0);
-    color: oklch(0.145 0 0);
-    font-family: Inter, system-ui, arial, sans-serif;
-  }
-  
-  .dark body {
-    background-color: oklch(0.086 0.014 285.8);
-    color: oklch(0.98 0 0);
-  }
-  
-  /* Critical layout classes */
-  .main-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    background-color: oklch(1 0 0);
-    padding: 1rem 1.25rem;
-  }
-  
-  .dark .main-header {
-    background-color: oklch(0.086 0.014 285.8);
-  }
-}
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
