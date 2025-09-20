@@ -86,7 +86,7 @@ export default function CalendarCard({
           className={`flex flex-col justify-around ${bgColor} w-full rounded-xl px-4 py-2 relative`}
         >
           {showActions && (
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-2 right-2 z-10">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button

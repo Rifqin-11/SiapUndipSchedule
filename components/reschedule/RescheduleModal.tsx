@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { forceModalCleanup, useModalCleanup } from "@/lib/modal-utils";
 
 interface RescheduleModalProps {
   isOpen: boolean;
@@ -38,6 +41,19 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Auto-cleanup saat modal ditutup & saat komponen unmount
+  useModalCleanup(isOpen);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const hardClose = () => {
+    onClose();
+    // Paksa cleanup untuk mengatasi race animasi / scroll-lock yang telat rilis
+    forceModalCleanup();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -47,13 +63,10 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
     }
 
     setIsLoading(true);
-
     try {
       const response = await fetch(`/api/subjects/${subjectId}/reschedule`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -62,7 +75,9 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
       if (result.success) {
         toast.success("Class reschedule recorded successfully!");
         onRescheduleAdded();
-        onClose();
+        // Tutup + cleanup
+        hardClose();
+        // Reset form
         setFormData({
           originalDate: "",
           newDate: "",
@@ -82,16 +97,27 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        // Hanya close saat berubah ke false (dan tidak sedang loading)
+        if (!open && !isLoading) {
+          hardClose();
+        }
+      }}
+    >
+      <DialogContent
+        // Tambahkan guard pointer-events-none saat state closed sebagai safety net
+        className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto data-[state=closed]:pointer-events-none"
+        onPointerDownOutside={(e) => {
+          // Cegah close saat sedang submit
+          if (isLoading) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (isLoading) e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
@@ -197,7 +223,7 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={hardClose}
               disabled={isLoading}
             >
               Cancel

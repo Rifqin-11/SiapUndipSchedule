@@ -88,6 +88,11 @@ const ScheduleClient = () => {
   const [subjectToReschedule, setSubjectToReschedule] =
     useState<Subject | null>(null);
 
+  // Track which subject has active actions (to hide dropdown)
+  const [activeActionSubjectId, setActiveActionSubjectId] = useState<
+    string | null
+  >(null);
+
   // QR Scanner states
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -300,12 +305,14 @@ const ScheduleClient = () => {
   };
 
   const handleEditSubject = (subject: Subject) => {
+    setActiveActionSubjectId(subject.id);
     setSelectedSubject(subject);
     setModalMode("edit");
     setIsModalOpen(true);
   };
 
   const handleDeleteSubject = async (subject: SubjectWithReschedule) => {
+    setActiveActionSubjectId(subject.id);
     // If it's a reschedule subject, we need to delete the reschedule, not the subject
     if (subject.isReschedule) {
       setSubjectToDelete({
@@ -322,6 +329,7 @@ const ScheduleClient = () => {
   };
 
   const handleRescheduleSubject = (subject: Subject) => {
+    setActiveActionSubjectId(subject.id);
     setSubjectToReschedule(subject);
     setIsRescheduleModalOpen(true);
   };
@@ -380,6 +388,7 @@ const ScheduleClient = () => {
 
     setIsDeleteDialogOpen(false);
     setSubjectToDelete(null);
+    setActiveActionSubjectId(null);
   };
 
   const handleSaveSubject = async (subjectData: Omit<Subject, "_id">) => {
@@ -489,7 +498,7 @@ const ScheduleClient = () => {
                   bgColor={finalColor.bg}
                   textColor={finalColor.text}
                   bgRoomColor={finalColor.roomBg}
-                  showActions={true}
+                  showActions={activeActionSubjectId !== subject.id}
                   onEdit={() => handleEditSubject(subject)}
                   onDelete={() => handleDeleteSubject(subject)}
                   onReschedule={() => handleRescheduleSubject(subject)}
@@ -514,7 +523,10 @@ const ScheduleClient = () => {
       {/* Subject Modal */}
       <SubjectModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setActiveActionSubjectId(null);
+        }}
         onSave={handleSaveSubject}
         subject={selectedSubject}
         mode={modalMode}
@@ -527,7 +539,7 @@ const ScheduleClient = () => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-xs sm:max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
             <AlertDialogDescription>
@@ -547,7 +559,9 @@ const ScheduleClient = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setActiveActionSubjectId(null)}>
+              Batal
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteSubject}
               className="bg-red-600 hover:bg-red-700"
@@ -561,12 +575,16 @@ const ScheduleClient = () => {
       {/* Reschedule Modal */}
       <RescheduleModal
         isOpen={isRescheduleModalOpen}
-        onClose={() => setIsRescheduleModalOpen(false)}
+        onClose={() => {
+          setIsRescheduleModalOpen(false);
+          setActiveActionSubjectId(null);
+        }}
         subjectId={subjectToReschedule?.id || ""}
         subjectName={subjectToReschedule?.name || ""}
         onRescheduleAdded={() => {
           refetch();
           setIsRescheduleModalOpen(false);
+          setActiveActionSubjectId(null);
           toast.success("Jadwal berhasil direscheduled");
         }}
       />
