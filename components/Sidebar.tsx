@@ -70,7 +70,7 @@ const Sidebar = () => {
                 <div className="text-lg font-bold text-gray-900 dark:text-white">
                   SiapUndip
                 </div>
-                <div className="text-[10px] text-gray-500">
+                <div className="text-[10px] text-gray-700 dark:text-gray-400">
                   Easy Access Event Tickets
                 </div>
               </div>

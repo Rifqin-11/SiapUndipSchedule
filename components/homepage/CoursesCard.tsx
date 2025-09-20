@@ -49,7 +49,7 @@ const CoursesCard = ({
 
   return (
     <div className="flex flex-col bg-white dark:bg-card border rounded-xl shadow-md p-3 max-h-[150px] gap-4">
-      <div className="bg-blue-100 dark:bg-blue-900 dark:text-blue-100 text-blue-900 px-2 py-0.5 rounded-full text-xs font-semibold w-fit">
+      <div className="bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-0.5 rounded-full text-xs font-semibold w-fit">
         {specificDate ? (
           "One-time"
         ) : progressMeeting < 75 ? (
@@ -64,14 +64,15 @@ const CoursesCard = ({
       </div>
 
       <div className="flex flex-col gap-1 mt-1">
-        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300">
+        <div className="flex justify-between text-xs text-gray-700 dark:text-gray-300">
           <span>Attendance</span>
           <span className="text-blue-900 dark:text-blue-400">
             {meeting}/14
           </span>
         </div>
         <Progress
-          value={progressMeeting}
+          value={Math.round(progressMeeting)}
+          aria-label={`Attendance progress for ${name}`}
           className="bg-blue-100 dark:bg-gray-800"
         />
       </div>
