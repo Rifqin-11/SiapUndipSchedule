@@ -350,3 +350,13 @@
   --icon-fill-hover: hsl(210 15% 90%);
 }
 @media (hover: none) { .theme-toggle { --size: 48px; } }
+
+/* sembunyikan scrollbar tapi tetap bisa scroll */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE dan Edge */
+  scrollbar-width: none;     /* Firefox */
+}
