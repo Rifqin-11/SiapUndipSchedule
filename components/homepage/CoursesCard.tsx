@@ -66,9 +66,7 @@ const CoursesCard = ({
       <div className="flex flex-col gap-1 mt-1">
         <div className="flex justify-between text-xs text-gray-700 dark:text-gray-300">
           <span>Attendance</span>
-          <span className="text-blue-900 dark:text-blue-400">
-            {meeting}/14
-          </span>
+          <span className="text-blue-900 dark:text-blue-400">{meeting}/14</span>
         </div>
         <Progress
           value={Math.round(progressMeeting)}

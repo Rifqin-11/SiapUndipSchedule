@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as ProgressPrimitive from "@radix-ui/react-progress"
+import * as React from "react";
+import * as ProgressPrimitive from "@radix-ui/react-progress";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Progress({
   className,
@@ -11,10 +11,10 @@ function Progress({
   "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & {
-  "aria-label"?: string
-  value?: number
+  "aria-label"?: string;
+  value?: number;
 }) {
-  const numericValue = Math.max(0, Math.min(100, Number(value) || 0))
+  const numericValue = Math.max(0, Math.min(100, Number(value) || 0));
 
   return (
     <ProgressPrimitive.Root
@@ -36,7 +36,7 @@ function Progress({
         style={{ transform: `translateX(-${100 - numericValue}%)` }}
       />
     </ProgressPrimitive.Root>
-  )
+  );
 }
 
-export { Progress }
+export { Progress };

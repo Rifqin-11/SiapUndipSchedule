@@ -71,7 +71,7 @@ const Sidebar = () => {
                   SiapUndip
                 </div>
                 <div className="text-[10px] text-gray-700 dark:text-gray-400">
-                  Easy Access Event Tickets
+                  Manage Undip Schedule
                 </div>
               </div>
             </div>
