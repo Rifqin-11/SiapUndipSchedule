@@ -6,6 +6,7 @@ import {
   colorPairs,
   getCurrentDayAndDate,
   normalizeDayName,
+  formatLocalDate,
 } from "@/utils/date";
 import TodayCard from "@/components/homepage/TodayCard";
 import { useSubjects, Subject, SUBJECTS_QUERY_KEY } from "@/hooks/useSubjects";
@@ -70,7 +71,7 @@ const TodaySubject = () => {
 
     const todaySubject = subjectsArray.filter((subject) => {
       const today = new Date();
-      const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+      const todayString = formatLocalDate(today); // YYYY-MM-DD format
 
       // Check if subject is date-specific for today
       if (subject.specificDate) {
@@ -111,7 +112,7 @@ const TodaySubject = () => {
 
     // Get reschedule classes for today
     const today = new Date();
-    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const todayString = formatLocalDate(today); // YYYY-MM-DD format
 
     const rescheduleSubjects: SubjectWithReschedule[] = subjectsArray
       .filter((subject) => {
@@ -120,7 +121,7 @@ const TodaySubject = () => {
 
         return subject.reschedules.some((reschedule) => {
           const rescheduleDate = new Date(reschedule.newDate);
-          const rescheduleString = rescheduleDate.toISOString().split("T")[0];
+          const rescheduleString = formatLocalDate(rescheduleDate);
           return rescheduleString === todayString;
         });
       })
@@ -128,7 +129,7 @@ const TodaySubject = () => {
         // Find the reschedule for today
         const todayReschedule = subject.reschedules?.find((reschedule) => {
           const rescheduleDate = new Date(reschedule.newDate);
-          const rescheduleString = rescheduleDate.toISOString().split("T")[0];
+          const rescheduleString = formatLocalDate(rescheduleDate);
           return rescheduleString === todayString;
         });
 

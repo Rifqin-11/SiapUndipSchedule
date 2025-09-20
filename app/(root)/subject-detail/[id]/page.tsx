@@ -17,6 +17,7 @@ import RescheduleHistory from "@/components/reschedule/RescheduleHistory";
 import { Button } from "@/components/ui/button";
 import { useSubject } from "@/hooks/useSubjects";
 import { getWeeklyTimeline, getMeetingStats } from "@/utils/meeting-calculator";
+import { formatLocalDate } from "@/utils/date";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
@@ -403,7 +404,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                       // Adjust status
                       let adjustedStatus = week.status;
                       if (week.meetings && week.meetings.length > 0) {
-                        const today = new Date().toISOString().split("T")[0];
+                        const today = formatLocalDate(new Date());
                         const isCurrentWeek =
                           week.startDate <= today && today <= week.endDate;
                         const isPastWeek = week.endDate < today;

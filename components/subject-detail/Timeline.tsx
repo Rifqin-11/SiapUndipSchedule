@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { formatLocalDate } from "@/utils/date";
 import { Calendar, CheckCircle, X, Clock } from "lucide-react";
 import { useState } from "react";
 
@@ -43,8 +44,7 @@ const Timeline = ({
       setIsLoading(true);
       try {
         // Use the meeting date or current date for attendance
-        const attendanceDate =
-          meetings?.[0] || new Date().toISOString().split("T")[0];
+        const attendanceDate = meetings?.[0] || formatLocalDate(new Date());
         // Pass current status to determine action
         await onAttendanceToggle(attendanceDate, status);
       } catch (error) {

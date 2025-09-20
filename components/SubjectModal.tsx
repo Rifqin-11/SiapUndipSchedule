@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { formatLocalDate } from "@/utils/date";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -216,7 +217,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({
       };
 
       // Get today's date as startDate for weekly repeating subjects
-      const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+      const todayDate = formatLocalDate(new Date()); // YYYY-MM-DD format
 
       const subjectData = {
         ...formData,

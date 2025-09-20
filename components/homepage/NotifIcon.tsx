@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { useSubjects } from "@/hooks/useSubjects";
+import { formatLocalDate } from "@/utils/date";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +40,7 @@ const NotifIcon = () => {
 
     const checkMissedClasses = async () => {
       const now = new Date();
-      const today = now.toISOString().split("T")[0];
+      const today = formatLocalDate(now);
       const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
 
       try {
@@ -124,7 +125,7 @@ const NotifIcon = () => {
     // Fallback function that only uses localStorage (original logic)
     const checkMissedClassesLocal = () => {
       const now = new Date();
-      const today = now.toISOString().split("T")[0];
+      const today = formatLocalDate(now);
       const currentTime = now.getHours() * 60 + now.getMinutes();
 
       const missed: MissedClass[] = [];

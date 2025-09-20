@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubjects } from "./useSubjects";
 import { useTasks } from "./useTasks";
+import { formatLocalDate } from "@/utils/date";
 
 interface Task {
   _id?: string;
@@ -97,7 +98,7 @@ export const useWeeklyStats = () => {
 
           // Cek attendance dari attendanceDates array
           if (subject.attendanceDates && subject.attendanceDates.length > 0) {
-            const classDateStr = classDate.toISOString().split("T")[0];
+            const classDateStr = formatLocalDate(classDate);
             const hasAttended = subject.attendanceDates.includes(classDateStr);
 
             if (hasAttended) {

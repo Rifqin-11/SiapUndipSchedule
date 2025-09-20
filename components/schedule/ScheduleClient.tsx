@@ -77,9 +77,17 @@ interface SubjectToDelete extends SubjectWithReschedule {
 
 const ScheduleClient = () => {
   const today = new Date();
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
   const currentDayName = days[today.getDay()];
-  
+
   const todayString = formatLocalDate(today);
 
   const [selectedDay, setSelectedDay] = useState(currentDayName);

@@ -7,6 +7,7 @@ import { CheckCircle, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { getTodayMeeting, getMeetingStats } from "@/utils/meeting-calculator";
+import { formatLocalDate } from "@/utils/date";
 
 interface Subject {
   _id: string;
@@ -77,7 +78,7 @@ const TodayCard: React.FC<TodayCardProps> = ({
   // Calculate current meeting number and attendance stats from meetingDates
   const meetingInfo = useMemo(() => {
     if (meetingDates && Array.isArray(meetingDates)) {
-      const today = new Date().toISOString().split("T")[0];
+      const today = formatLocalDate(new Date());
       const todayMeeting = getTodayMeeting(meetingDates, today);
       const stats = getMeetingStats(meetingDates, attendanceDates, today);
 
@@ -119,8 +120,8 @@ const TodayCard: React.FC<TodayCardProps> = ({
   // Check localStorage for attendance status
   const getAttendanceKey = () => {
     const today = rescheduleDate
-      ? new Date(rescheduleDate).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0];
+      ? formatLocalDate(new Date(rescheduleDate))
+      : formatLocalDate(new Date());
     return `attended_${id}_${today}`;
   };
 
@@ -136,8 +137,8 @@ const TodayCard: React.FC<TodayCardProps> = ({
   const checkAttendanceStatus = useCallback(async () => {
     try {
       const today = rescheduleDate
-        ? new Date(rescheduleDate).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0];
+        ? formatLocalDate(new Date(rescheduleDate))
+        : formatLocalDate(new Date());
 
       // First, check database for attendance status
       const response = await fetch(

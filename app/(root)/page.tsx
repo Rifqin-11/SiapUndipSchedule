@@ -11,6 +11,7 @@ import { BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/homepage/HomeSkeleton";
 import FastLoadingSkeleton from "@/components/homepage/FastLoadingSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
+import { formatLocalDate } from "@/utils/date";
 import Link from "next/link";
 import Image from "next/image";
 // Defer these heavier client-only pieces so the initial bundle is smaller.
@@ -60,7 +61,7 @@ import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 const Page = () => {
   // State for instant loading UI
   const [showInstantLoading, setShowInstantLoading] = useState(true);
-  
+
   const {
     data: subjects = [],
     isLoading: loading,
@@ -69,7 +70,7 @@ const Page = () => {
   } = useSubjects();
   const createSubjectMutation = useCreateSubject();
   const { user } = useUserProfile();
-  
+
   // Defer non-critical data loading to avoid blocking initial render
   const { loading: subjectsLoading } = useSubjectsForTasks();
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
@@ -207,7 +208,7 @@ const Page = () => {
   const handleAddSubject = useCallback(() => {
     // Set today's date as the selectedDate when adding from homepage
     const today = new Date();
-    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+    const todayString = formatLocalDate(today); // YYYY-MM-DD format
     setSelectedDate(todayString);
     setIsModalOpen(true);
   }, []);
@@ -324,7 +325,7 @@ const Page = () => {
   if (showInstantLoading) {
     return <FastLoadingSkeleton />;
   }
-  
+
   if (loading) {
     return <HomeSkeleton />;
   }
