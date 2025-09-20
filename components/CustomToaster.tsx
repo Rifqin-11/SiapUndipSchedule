@@ -13,12 +13,12 @@ const CustomToaster = () => {
         className="lg:hidden"
         toastOptions={{
           style: {
-            background: '#000000',
-            color: '#ffffff',
-            border: '1px solid #333333',
-            marginTop: '3rem', // Space for mobile header
+            background: "#000000",
+            color: "#ffffff",
+            border: "1px solid #333333",
+            marginTop: "3rem", // Space for mobile header
           },
-          className: 'mobile-toast',
+          className: "mobile-toast",
           duration: 4000,
         }}
       />
@@ -31,11 +31,11 @@ const CustomToaster = () => {
         className="hidden lg:block desktop"
         toastOptions={{
           style: {
-            background: '#000000',
-            color: '#ffffff',
-            border: '1px solid #333333',
+            background: "#000000",
+            color: "#ffffff",
+            border: "1px solid #333333",
           },
-          className: 'desktop-toast',
+          className: "desktop-toast",
           duration: 4000,
         }}
       />

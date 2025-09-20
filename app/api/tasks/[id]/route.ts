@@ -118,8 +118,9 @@ export async function PUT(
     // Update task
     let result;
     try {
-      // First try as MongoDB ObjectId
+      // First try as MongoDB ObjectId (most common case)
       if (/^[0-9a-fA-F]{24}$/.test(params.id)) {
+        console.log(`Trying to update task with ObjectId: ${params.id}`);
         result = await db
           .collection("tasks")
           .updateOne(
@@ -128,6 +129,7 @@ export async function PUT(
           );
       } else {
         // Try as custom id field
+        console.log(`Trying to update task with custom id: ${params.id}`);
         result = await db
           .collection("tasks")
           .updateOne(
@@ -135,7 +137,8 @@ export async function PUT(
             { $set: updateData }
           );
       }
-    } catch {
+    } catch (error) {
+      console.log(`ObjectId failed, trying custom id for: ${params.id}`, error);
       // Fallback: try as custom id field
       result = await db
         .collection("tasks")
@@ -213,7 +216,8 @@ export async function PUT(
 
     const taskResponse = {
       ...updatedTask,
-      id: updatedTask?._id.toString(),
+      id: updatedTask?._id.toString(), // Use MongoDB _id as primary ID
+      _id: updatedTask?._id.toString(), // Keep _id for consistency
       subject,
     };
 
@@ -267,18 +271,21 @@ export async function DELETE(
     // Try to delete using both _id and custom id field
     let result;
     try {
-      // First try as MongoDB ObjectId
+      // First try as MongoDB ObjectId (most common case)
       if (/^[0-9a-fA-F]{24}$/.test(params.id)) {
+        console.log(`Trying to delete task with ObjectId: ${params.id}`);
         result = await db
           .collection("tasks")
           .deleteOne({ _id: new ObjectId(params.id), userId: decoded.userId });
       } else {
         // Try as custom id field
+        console.log(`Trying to delete task with custom id: ${params.id}`);
         result = await db
           .collection("tasks")
           .deleteOne({ id: params.id, userId: decoded.userId });
       }
-    } catch {
+    } catch (error) {
+      console.log(`ObjectId failed, trying custom id for: ${params.id}`);
       // Fallback: try as custom id field
       result = await db
         .collection("tasks")

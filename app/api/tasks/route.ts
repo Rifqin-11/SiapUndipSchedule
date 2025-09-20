@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
 
           return {
             ...task,
-            id: task._id.toString(),
+            id: task._id.toString(), // Use MongoDB _id as primary ID
+            _id: task._id.toString(), // Keep _id for consistency
             subject: subject
               ? {
                   id: subject.id,
@@ -61,7 +62,8 @@ export async function GET(request: NextRequest) {
         }
         return {
           ...task,
-          id: task._id.toString(),
+          id: task._id.toString(), // Use MongoDB _id as primary ID
+          _id: task._id.toString(), // Keep _id for consistency
         };
       })
     );
@@ -216,7 +218,8 @@ export async function POST(request: NextRequest) {
 
     const taskResponse = {
       ...newTask,
-      _id: result.insertedId,
+      id: result.insertedId.toString(), // Use MongoDB _id as primary ID
+      _id: result.insertedId.toString(), // Keep _id for consistency
       subject,
     };
 
