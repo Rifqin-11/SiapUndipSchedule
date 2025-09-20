@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import {
   BookOpen,
@@ -33,12 +34,21 @@ import {
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 import { TaskCard } from "@/components/tasks/TaskCard";
-import { TaskDetailDrawer } from "@/components/tasks/TaskDetailDrawer";
-import { TaskFormDrawer } from "@/components/tasks/TaskFormDrawer";
-import { DeleteConfirmDialog } from "@/components/tasks/DeleteConfirmDialog";
-
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import PageHeader from "@/components/PageHeader";
+
+// Dynamic imports untuk komponen yang tidak critical
+const TaskDetailDrawer = dynamic(() => import("@/components/tasks/TaskDetailDrawer").then(mod => ({ default: mod.TaskDetailDrawer })), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>,
+});
+
+const TaskFormDrawer = dynamic(() => import("@/components/tasks/TaskFormDrawer").then(mod => ({ default: mod.TaskFormDrawer })), {
+  loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>,
+});
+
+const DeleteConfirmDialog = dynamic(() => import("@/components/tasks/DeleteConfirmDialog").then(mod => ({ default: mod.DeleteConfirmDialog })), {
+  ssr: false,
+});
 
 export default function TasksPage() {
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();

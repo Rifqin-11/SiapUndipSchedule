@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   getCurrentDayAndDate,
   colorPairs,
@@ -8,8 +9,6 @@ import {
 } from "@/utils/date";
 import HorizonalCalendar from "@/components/schedule/HorizonalCalendar";
 import CalendarCard from "@/components/schedule/CalendarCard";
-import SubjectModal from "@/components/SubjectModal";
-import RescheduleModal from "@/components/reschedule/RescheduleModal";
 import Link from "next/link";
 import {
   useSubjects,
@@ -31,11 +30,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import QRScanner from "../QRScanner";
 import ScheduleSkeleton from "./ScheduleSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import PageHeader from "../PageHeader";
 import { isClassDay, getMeetingNumberByDate } from "@/utils/meeting-calculator";
+
+// Dynamic imports untuk komponen berat
+const SubjectModal = dynamic(() => import("@/components/SubjectModal"), {
+  ssr: false,
+});
+
+const RescheduleModal = dynamic(() => import("@/components/reschedule/RescheduleModal"), {
+  ssr: false,
+});
+
+const QRScanner = dynamic(() => import("../QRScanner"), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded-lg">Loading Scanner...</div>
+});
 
 interface SubjectWithReschedule extends Subject {
   isReschedule?: boolean;
