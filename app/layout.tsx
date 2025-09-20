@@ -5,7 +5,7 @@ import "./(root)/globals.css";
 import "./layout-pwa.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import CustomToaster from "@/components/CustomToaster";
 import DynamicThemeColor from "@/components/DynamicThemeColor";
 import { QueryProvider } from "@/components/query-provider";
 
@@ -129,7 +129,7 @@ export default function RootLayout({
             >
               <DynamicThemeColor />
               <div className="min-h-screen bg-background">{children}</div>
-              <Toaster position="bottom-center" richColors />
+              <CustomToaster />
             </ThemeProvider>
           </AuthProvider>
         </QueryProvider>
