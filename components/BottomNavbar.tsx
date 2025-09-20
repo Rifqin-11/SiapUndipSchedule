@@ -11,6 +11,7 @@ const QRScanner = dynamic(() => import("./QRScanner"), {
   loading: () => null,
 });
 import { useAuth } from "@/hooks/useAuth";
+import "./ui/z-index-fixes.css";
 
 const BottomNavbar = () => {
   const pathname = usePathname();

@@ -134,12 +134,20 @@ export const useSubjects = () => {
   return useQuery({
     queryKey: SUBJECTS_QUERY_KEY,
     queryFn: fetchSubjects,
-    staleTime: 0, // Always consider stale untuk fresh data setiap saat
-    gcTime: 2 * 60 * 1000, // 2 minutes cache time
+    staleTime: 30 * 1000, // 30 seconds - allow using cached data for faster loading
+    gcTime: 5 * 60 * 1000, // 5 minutes cache time
     refetchOnWindowFocus: false,
     refetchOnReconnect: true, // Refetch saat reconnect
-    refetchOnMount: "always", // Always refetch saat component mount
+    refetchOnMount: false, // Don't refetch on mount for faster loading
     refetchInterval: false, // Disable auto refetch interval
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors to avoid delay
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("401") || message.includes("403")) {
+        return false;
+      }
+      return failureCount < 2; // Reduce retry attempts for faster failure
+    },
   });
 };
 

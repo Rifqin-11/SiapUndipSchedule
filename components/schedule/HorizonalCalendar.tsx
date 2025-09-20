@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getCurrentDayAndDate } from "@/utils/date";
+import { getCurrentDayAndDate, formatLocalDate } from "@/utils/date";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,13 +16,8 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
 
   // Initialize selectedDate to today on component mount
   useEffect(() => {
-    // Use same local date formatting to avoid timezone issues
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    const todayString = `${year}-${month}-${day}`;
-    setSelectedDate(todayString);
+    const today = formatLocalDate(new Date());
+    setSelectedDate(today);
   }, []);
 
   // Function to get week dates with offset
@@ -33,14 +28,6 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
 
     const monday = new Date(today);
     monday.setDate(today.getDate() - daysSinceMonday + offset * 7);
-
-    // Function to format date as YYYY-MM-DD using local date
-    const formatLocalDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    };
 
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -53,7 +40,6 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
         date: date.getDate(),
         isToday: date.toDateString() === today.toDateString(),
         fullDate: date,
-        localDateString: formatLocalDate(date),
       };
     });
 
@@ -200,7 +186,7 @@ const HorizonalCalendar = ({ onDaySelect, onWeekChange }: Props) => {
         <div className="flex flex-row gap-2 justify-around items-center">
           {weekDates.map((day, index) => {
             const fullDay = dayNameMap[day.day];
-            const dateString = day.localDateString; // Use local date string instead of ISO
+            const dateString = formatLocalDate(day.fullDate); // YYYY-MM-DD format
 
             // Check if this specific date is selected (not just the day name)
             const isSelected = selectedDate === dateString;

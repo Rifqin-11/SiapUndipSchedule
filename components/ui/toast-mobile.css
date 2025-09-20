@@ -1,0 +1,22 @@
+/* Toast positioning for mobile devices */
+@media (max-width: 1023px) {
+  [data-sonner-toaster] {
+    top: 1rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 2rem) !important;
+    max-width: 400px !important;
+  }
+
+  [data-sonner-toast] {
+    margin: 0.5rem 0 !important;
+    border-radius: 0.75rem !important;
+  }
+}
+
+/* Ensure proper spacing from top on mobile */
+@media (max-width: 1023px) {
+  [data-sonner-toaster][data-position="top-center"] {
+    top: env(safe-area-inset-top, 1rem) !important;
+  }
+}

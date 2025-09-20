@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import CoursesCard from "@/components/homepage/CoursesCard";
 import TodaySubject from "@/components/homepage/TodaySubject";
@@ -9,6 +9,7 @@ import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/homepage/HomeSkeleton";
+import FastLoadingSkeleton from "@/components/homepage/FastLoadingSkeleton";
 import useAutoNotifications from "@/hooks/useAutoNotifications";
 import Link from "next/link";
 import Image from "next/image";
@@ -57,6 +58,9 @@ import { toast } from "sonner";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 const Page = () => {
+  // State for instant loading UI
+  const [showInstantLoading, setShowInstantLoading] = useState(true);
+  
   const {
     data: subjects = [],
     isLoading: loading,
@@ -65,9 +69,25 @@ const Page = () => {
   } = useSubjects();
   const createSubjectMutation = useCreateSubject();
   const { user } = useUserProfile();
+  
+  // Defer non-critical data loading to avoid blocking initial render
   const { loading: subjectsLoading } = useSubjectsForTasks();
-
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
+
+  // Hide instant loading after 300ms or when critical data is ready
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowInstantLoading(false);
+    }, 300); // Reduced from 500ms for faster transition
+
+    // Hide instantly if critical data is already loaded (user and subjects)
+    if (!loading && user) {
+      setShowInstantLoading(false);
+      clearTimeout(timer);
+    }
+
+    return () => clearTimeout(timer);
+  }, [loading, user]); // Removed tasksLoading from dependency as it's not critical
 
   // Hook untuk scroll opacity effect pada mobile header
   const scrollOpacity = useScrollOpacity({
@@ -300,7 +320,11 @@ const Page = () => {
       .sort((a, b) => dueTimestamp(a) - dueTimestamp(b));
   }, [tasks]);
 
-  // Loading state
+  // Loading state - Show fast skeleton immediately, then progressive loading
+  if (showInstantLoading) {
+    return <FastLoadingSkeleton />;
+  }
+  
   if (loading) {
     return <HomeSkeleton />;
   }
