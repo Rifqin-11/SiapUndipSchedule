@@ -2,6 +2,13 @@
   "name": "schedule_siap_undip",
   "version": "0.1.0",
   "private": true,
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.sass",
+    "./styles/**/*",
+    "./app/**/*.css"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

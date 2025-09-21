@@ -56,7 +56,8 @@ const nextConfig: NextConfig = {
       config.optimization = {
         ...config.optimization,
         usedExports: true,
-        sideEffects: false,
+        // Preserve CSS transitions and animations in production
+        sideEffects: ["**/*.css", "**/*.scss", "**/*.sass"],
         // Split large vendor chunks
         splitChunks: {
           chunks: "all",
