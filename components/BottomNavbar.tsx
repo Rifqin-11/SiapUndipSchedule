@@ -45,6 +45,12 @@ const BottomNavbar = () => {
     return null;
   }
 
+  // Hide bottom navbar when the app is on the dedicated QR scanner page
+  // (the QR scanner has its own full-screen page at /qr-scanner)
+  if (pathname.startsWith("/qr-scanner")) {
+    return null;
+  }
+
   // Show navbar optimistically during initial load, hide only if definitely no user
   if (!user && !isInitialLoad) {
     return null;
@@ -99,12 +105,18 @@ const BottomNavbar = () => {
 
           {/* Center Floating QR Button */}
           <div className="absolute left-1/2 top-[-30%] transform -translate-x-1/2  p-1 rounded-full shadow-xl">
-            <button
+            {/* <button
               onClick={() => setIsQRScannerOpen(true)}
               className="bg-gradient-to-r from-blue-700 to-sky-800 hover:brightness-110 transition-all duration-300 w-16 h-16 rounded-full flex items-center justify-center border-4 border-black/40"
             >
               <QrCode className="h-7 w-7 text-white" />
-            </button>
+            </button> */}
+            <Link
+              href="/qr-scanner"
+              className="bg-gradient-to-r from-blue-700 to-sky-800 hover:brightness-110 transition-all duration-300 w-16 h-16 rounded-full flex items-center justify-center border-4 border-black/40"
+            >
+              <QrCode className="h-7 w-7 text-white" />
+            </Link>
           </div>
 
           {/* Right Items */}
@@ -135,12 +147,14 @@ const BottomNavbar = () => {
         </div>
       </div>
 
-      {/* QR Scanner Modal */}
-      <QRScanner
-        isOpen={isQRScannerOpen}
-        onClose={() => setIsQRScannerOpen(false)}
-        onScanSuccess={(code) => console.log("QR Code scanned:", code)}
-      />
+      {/* QR Scanner Modal - only render as modal when not on the dedicated page */}
+      {!pathname.startsWith("/qr-scanner") && (
+        <QRScanner
+          isOpen={isQRScannerOpen}
+          onClose={() => setIsQRScannerOpen(false)}
+          onScanSuccess={(code) => console.log("QR Code scanned:", code)}
+        />
+      )}
     </>
   );
 };

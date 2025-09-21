@@ -17,28 +17,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// BarcodeDetector type declaration
-declare global {
-  interface BarcodeDetector {
-    detect(
-      source: HTMLVideoElement | HTMLCanvasElement | HTMLImageElement
-    ): Promise<DetectedBarcode[]>;
-  }
-
-  interface DetectedBarcode {
-    boundingBox: DOMRectReadOnly;
-    cornerPoints: { x: number; y: number }[];
-    format: string;
-    rawValue: string;
-  }
-
-  const BarcodeDetector: {
-    prototype: BarcodeDetector;
-    new (options?: { formats: string[] }): BarcodeDetector;
-    getSupportedFormats(): Promise<string[]>;
-  };
-}
-
 interface QRScannerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -658,10 +636,10 @@ const QRScanner: React.FC<QRScannerProps> = ({
   // useEffect for handling scanner lifecycle
   useEffect(() => {
     let isMounted = true;
-    
+
     const handleScanner = async () => {
       if (!isMounted) return;
-      
+
       if (isOpen) {
         await initScanner();
       } else {
@@ -674,7 +652,7 @@ const QRScanner: React.FC<QRScannerProps> = ({
     };
 
     handleScanner();
-    
+
     return () => {
       isMounted = false;
       // Only cleanup if there's actually something to clean

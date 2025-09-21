@@ -120,6 +120,14 @@ const Sidebar = () => {
                   <QrCode className="h-4 w-4" />
                   Scan QR
                 </button>
+                {/* <Link
+                  href="/qr-scanner"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold
+                             bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-colors"
+                >
+                  <QrCode className="h-4 w-4" />
+                  Scan QR
+                </Link> */}
               </li>
             </ul>
           </nav>
