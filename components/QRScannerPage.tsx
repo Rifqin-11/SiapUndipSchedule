@@ -218,11 +218,17 @@ export default function QRScannerClient() {
   }, [devices, selectedDeviceId, initScanner, stopScanning]);
 
   useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
-    initScanner();
+    (async () => {
+      const all = await navigator.mediaDevices.enumerateDevices();
+      const cams = all.filter((d) => d.kind === "videoinput");
+      setDevices(cams);
+      if (cams[0]) {
+        setSelectedDeviceId(cams[0].deviceId);
+        initScanner();
+      }
+    })();
     return () => stopScanning();
-  }, [initScanner, stopScanning]);
+  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
