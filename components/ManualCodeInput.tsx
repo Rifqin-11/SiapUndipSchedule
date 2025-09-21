@@ -63,7 +63,7 @@ export default function ManualCardClient() {
           bg-card/95 backdrop-blur-md
           shadow-[0_-10px_30px_rgba(0,0,0,0.25)]
           border-t border-border/60
-          px-5 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+2.5rem)]
+          px-5 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]
         "
       >
         {/* handle */}
@@ -74,14 +74,19 @@ export default function ManualCardClient() {
           <div className="grid h-8 w-8 place-items-center rounded-full bg-primary/10">
             <Camera className="h-4 w-4 text-primary" />
           </div>
-          <div className="text-sm font-semibold">Scan Attendance QR</div>
+          <div className="flex flex-col">
+            <div className="text-sm font-semibold">Scan Attendance QR</div>
+            <div className="ml-auto text-xs text-muted-foreground">
+              If scanner doesn't work, enter QR code (12 characters) manually:
+            </div>
+          </div>
         </div>
 
         {/* input + paste + send */}
         <div className="rounded-xl border bg-background/60 p-2 mx-1">
           <div className="flex items-center gap-2">
             <Input
-              placeholder="Masukkan kode (12 karakter)"
+              placeholder="Example: a1b2c3d4e5f6"
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
               onKeyDown={onKey}
@@ -108,6 +113,10 @@ export default function ManualCardClient() {
               <Send className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground mt-2">
+          Code must be 12 characters of letters and numbers
         </div>
 
         {lastUrl && (
