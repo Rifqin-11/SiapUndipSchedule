@@ -30,13 +30,13 @@ const Sidebar = () => {
   const { user: authUser } = useAuth();
   const { user } = useUserProfile();
 
-  // Sembunyikan sidebar saat belum login atau di halaman auth
+  // Hide sidebar if no user or on auth pages
   if (!authUser || pathname.startsWith("/auth")) return null;
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
-    { href: "/tasks", icon: ClipboardCheck, label: "Task" }, // optional: sesuaikan dengan rute kamu
+    { href: "/tasks", icon: ClipboardCheck, label: "Task" },
     {
       href: "/settings/manage-subjects",
       icon: Album,
