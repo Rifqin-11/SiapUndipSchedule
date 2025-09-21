@@ -33,7 +33,7 @@
 - **Progress Monitoring** - Track completion status and progress for all tasks
 - **Subject Integration** - Link tasks directly to specific courses
 
-### � **QR Code Attendance System**
+### 📷 **QR Code Attendance System**
 
 - **QR Scanner Integration** - Scan QR codes for quick attendance marking
 - **Attendance History** - Comprehensive attendance tracking and reporting
