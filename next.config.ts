@@ -46,9 +46,6 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // Performance optimizations
-  swcMinify: true, // Use SWC for faster minification
-
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Optimize bundle size
@@ -56,8 +53,7 @@ const nextConfig: NextConfig = {
       config.optimization = {
         ...config.optimization,
         usedExports: true,
-        // Preserve CSS transitions and animations in production
-        sideEffects: ["**/*.css", "**/*.scss", "**/*.sass"],
+        sideEffects: false,
         // Split large vendor chunks
         splitChunks: {
           chunks: "all",

@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./(root)/globals.css";
 import "./layout-pwa.css";
-import "../styles/theme-transitions.css"; // Critical CSS untuk production theme transitions
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme-provider";
 import CustomToaster from "@/components/CustomToaster";
@@ -117,12 +116,16 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`min-h-screen bg-background font-sans antialiased theme-transition ${inter.variable}`}
+        className="min-h-screen bg-background text-foreground"
         suppressHydrationWarning
       >
         <QueryProvider>
           <AuthProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+            >
               <DynamicThemeColor />
               <div className="min-h-screen bg-background">{children}</div>
               <CustomToaster />
