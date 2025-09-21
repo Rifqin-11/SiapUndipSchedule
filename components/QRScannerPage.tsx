@@ -283,60 +283,65 @@ export default function QRScannerClient() {
 
       {/* HEADER: Back | QR Scanner | (Upload, Switch) */}
       <div className="absolute top-0 inset-x-0 z-20 p-3">
-        <div className="mx-auto w-full max-w-xl flex items-center justify-between">
-          {/* Back */}
-          <Button
-            type="button"
-            size="icon"
-            variant="secondary"
-            onClick={() => router.back()}
-            className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+  <div className="mx-auto w-full max-w-xl grid grid-cols-3 items-center">
+    {/* Back (kiri) */}
+    <div className="justify-self-start">
+      <Button
+        type="button"
+        size="icon"
+        variant="secondary"
+        onClick={() => router.back()}
+        className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+    </div>
 
-          {/* Title */}
-          <div className="px-3 py-1 rounded-full bg-black/40 text-white text-sm font-semibold backdrop-blur-md">
-            QR Scanner
-          </div>
-
-          {/* Right actions: Upload + Switch */}
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              size="icon"
-              variant="secondary"
-              onClick={() => galleryInputRef.current?.click()}
-              className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-              title="Upload gambar QR"
-            >
-              <ImagePlus className="h-5 w-5" />
-            </Button>
-
-            {devices.length > 1 && (
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={switchCamera}
-                disabled={!isScanning}
-                className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-                title="Ganti kamera"
-              >
-                <RotateCcw className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
-
-          {/* Hidden file input */}
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </div>
+    {/* Title (selalu center) */}
+    <div className="justify-self-center">
+      <div className="px-3 py-1 rounded-full bg-black/40 text-white text-sm font-semibold backdrop-blur-md">
+        QR Scanner
       </div>
+    </div>
+
+    {/* Actions (kanan) */}
+    <div className="justify-self-end flex items-center gap-2">
+      <Button
+        type="button"
+        size="icon"
+        variant="secondary"
+        onClick={() => galleryInputRef.current?.click()}
+        className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+        title="Upload gambar QR"
+      >
+        <ImagePlus className="h-5 w-5" />
+      </Button>
+
+      {devices.length > 1 && (
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={switchCamera}
+          disabled={!isScanning}
+          className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+          title="Ganti kamera"
+        >
+          <RotateCcw className="h-5 w-5" />
+        </Button>
+      )}
+    </div>
+
+    {/* Hidden file input */}
+    <input
+      ref={galleryInputRef}
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleImageUpload}
+    />
+  </div>
+</div>
+
 
       {/* Frame */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
