@@ -121,12 +121,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
               <DynamicThemeColor />
               <div className="min-h-screen bg-background">{children}</div>
               <CustomToaster />
