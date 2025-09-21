@@ -84,7 +84,6 @@
 - **[React 19](https://react.dev/)** - Modern UI library with concurrent features
 - **[TypeScript 5.7.2](https://www.typescriptlang.org/)** - Type-safe development
 - **[Tailwind CSS 3.4.17](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Framer Motion 12.8.0](https://www.framer.com/motion/)** - Advanced animations
 
 ### **State Management & Data Fetching**
 
