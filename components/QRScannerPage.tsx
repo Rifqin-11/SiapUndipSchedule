@@ -26,12 +26,10 @@ declare global {
     new (options?: { formats: string[] }): BarcodeDetector;
     getSupportedFormats(): Promise<string[]>;
   };
+
+  // Tambahan agar TS kenal zoom capability
   interface MediaTrackCapabilities {
-    zoom?: {
-      min: number;
-      max: number;
-      step: number;
-    };
+    zoom?: { min: number; max: number; step: number };
   }
   interface MediaTrackConstraintSet {
     zoom?: number;
@@ -132,8 +130,7 @@ export default function QRScannerClient() {
       detectionIntervalRef.current = setInterval(loop, 80);
       setIsScanning(true);
       return true;
-    } catch (e) {
-      console.warn("BarcodeDetector unsupported/error, fallback ke ZXing", e);
+    } catch {
       return false;
     }
   }, [handleResult]);
@@ -164,8 +161,9 @@ export default function QRScannerClient() {
       if (videoRef.current) (videoRef.current as any).srcObject = stream;
 
       // Zoom capability
-      const track = stream.getVideoTracks()[0];
-      const caps = track?.getCapabilities?.();
+      const track: any = stream.getVideoTracks()[0];
+      const caps: MediaTrackCapabilities | undefined =
+        track?.getCapabilities?.();
       if (caps?.zoom) {
         const min = caps.zoom.min ?? 1;
         const max = caps.zoom.max ?? 3;
@@ -174,7 +172,7 @@ export default function QRScannerClient() {
         setUseCssZoom(false);
         setZoomLevel(Math.max(1, min));
       } else {
-        setZoomCaps({ min: 1, max: 3, step: 0.1 }); // fallback digital
+        setZoomCaps({ min: 1, max: 3, step: 0.1 });
         setUseCssZoom(true);
         setZoomLevel(1);
       }
@@ -193,8 +191,9 @@ export default function QRScannerClient() {
       const z = value[0];
       setZoomLevel(z);
       if (!useCssZoom) {
-        const track = streamRef.current?.getVideoTracks?.()[0];
-        const caps = track?.getCapabilities?.();
+        const track: any = streamRef.current?.getVideoTracks?.()[0];
+        const caps: MediaTrackCapabilities | undefined =
+          track?.getCapabilities?.();
         if (track && caps?.zoom) {
           try {
             await track.applyConstraints({ advanced: [{ zoom: z }] });
@@ -276,9 +275,9 @@ export default function QRScannerClient() {
         playsInline
       />
 
-      {/* HEADER BAR: Back / QR Scanner / Upload bulat */}
+      {/* HEADER: Back | QR Scanner | (Upload, Switch) */}
       <div className="absolute top-0 inset-x-0 z-20 p-3">
-        <div className="mx-auto w-full flex items-center justify-between">
+        <div className="mx-auto w-full max-w-xl flex items-center justify-between">
           {/* Back */}
           <Button
             type="button"
@@ -295,17 +294,32 @@ export default function QRScannerClient() {
             QR Scanner
           </div>
 
-          {/* Upload (ikon bulat) */}
-          <Button
-            type="button"
-            size="icon"
-            variant="secondary"
-            onClick={() => galleryInputRef.current?.click()}
-            className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-            title="Upload gambar QR"
-          >
-            <ImagePlus className="h-5 w-5" />
-          </Button>
+          {/* Right actions: Upload + Switch */}
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              onClick={() => galleryInputRef.current?.click()}
+              className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+              title="Upload gambar QR"
+            >
+              <ImagePlus className="h-5 w-5" />
+            </Button>
+
+            {devices.length > 1 && (
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={switchCamera}
+                disabled={!isScanning}
+                className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+                title="Ganti kamera"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
 
           {/* Hidden file input */}
           <input
@@ -332,24 +346,9 @@ export default function QRScannerClient() {
         </div>
       </div>
 
-      {/* Switch camera (opsional) */}
-      {devices.length > 1 && (
-        <div className="absolute right-4 top-1/2 -translate-y-[calc(50%+96px)] z-10">
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={switchCamera}
-            disabled={!isScanning}
-            className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-          >
-            <RotateCcw className="h-5 w-5" />
-          </Button>
-        </div>
-      )}
-
-      {/* Slider zoom center-right */}
+      {/* Slider zoom center-right (tidak tabrakan sheet) */}
       {zoomCaps && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 rounded-lg bg-black/60 p-3">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-lg bg-black/60 p-3">
           <Slider
             value={[zoomLevel]}
             onValueChange={handleZoomChange}

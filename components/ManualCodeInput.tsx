@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, Send } from "lucide-react";
+import { Camera, Send, ClipboardPaste } from "lucide-react";
 import { toast } from "sonner";
 
 const parseCode = (raw: string) =>
@@ -15,7 +15,6 @@ export default function ManualCardClient() {
   const [manualCode, setManualCode] = useState("");
   const [lastUrl, setLastUrl] = useState<string | null>(null);
 
-  // terima hasil dari scanner (event dari QRScannerClient)
   useEffect(() => {
     const onScanned = (e: Event) => {
       const raw = (e as CustomEvent).detail as string;
@@ -45,31 +44,41 @@ export default function ManualCardClient() {
     if (e.key === "Enter") submitManual();
   };
 
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) return toast.error("Clipboard kosong");
+      setManualCode(text.trim());
+    } catch {
+      toast.error("Tidak bisa akses clipboard");
+    }
+  };
+
   return (
-    <div className="pointer-events-auto w-full pb-[env(safe-area-inset-bottom)]">
+    <div className="pointer-events-auto w-screen">
       <div
         className="
-          mx-auto w-full max-w-xl
+          w-screen
           rounded-t-3xl
           bg-card/95 backdrop-blur-md
           shadow-[0_-10px_30px_rgba(0,0,0,0.25)]
-          border border-border/60
-          px-4 pt-3 pb-4
+          border-t border-border/60
+          px-5 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+2.5rem)]
         "
       >
-        {/* handle kecil */}
+        {/* handle */}
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-muted-foreground/40" />
 
-        {/* header sangat ringkas */}
-        <div className="mb-3 flex items-center gap-2">
+        {/* header ringkas */}
+        <div className="mb-3 flex items-center gap-2 px-1">
           <div className="grid h-8 w-8 place-items-center rounded-full bg-primary/10">
             <Camera className="h-4 w-4 text-primary" />
           </div>
           <div className="text-sm font-semibold">Scan Attendance QR</div>
         </div>
 
-        {/* input manual (selalu tampil, minimalis) */}
-        <div className="rounded-xl border bg-background/50 p-2">
+        {/* input + paste + send */}
+        <div className="rounded-xl border bg-background/60 p-2 mx-1">
           <div className="flex items-center gap-2">
             <Input
               placeholder="Masukkan kode (12 karakter)"
@@ -77,14 +86,23 @@ export default function ManualCardClient() {
               onChange={(e) => setManualCode(e.target.value)}
               onKeyDown={onKey}
               maxLength={12}
-              className="h-10"
+              className="h-11 text-base"
             />
+            <Button
+              type="button"
+              size="icon"
+              onClick={pasteFromClipboard}
+              className="h-11 w-11"
+              title="Paste dari clipboard"
+            >
+              <ClipboardPaste className="h-4 w-4" />
+            </Button>
             <Button
               type="button"
               size="icon"
               onClick={submitManual}
               disabled={manualCode.trim().length !== 12}
-              className="h-10 w-10"
+              className="h-11 w-11"
               title="Kirim kode"
             >
               <Send className="h-4 w-4" />
@@ -92,9 +110,8 @@ export default function ManualCardClient() {
           </div>
         </div>
 
-        {/* CTA jika perlu buka ulang */}
         {lastUrl && (
-          <div className="mt-3 rounded-xl border bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20">
+          <div className="mt-3 rounded-xl border bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20 mx-1">
             Berhasil! Jika tab tidak terbuka:
             <Button
               size="sm"

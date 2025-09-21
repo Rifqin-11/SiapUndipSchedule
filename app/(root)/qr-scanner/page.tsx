@@ -1,13 +1,17 @@
 import QRScannerClient from "@/components/QRScannerPage";
 import ManualCardClient from "@/components/ManualCodeInput";
-import SimplePageHeader from "@/components/SimplePageHeader";
+import BodyScrollLock from "@/app/(root)/qr-scanner/Body-scroll-lock";
 
-export const dynamic = "force-dynamic"; // opsional jika perlu runtime
+export const dynamic = "force-dynamic"; // opsional
 
 export default async function QRScannerPage() {
   return (
-    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-background">
-      {/* Kamera (layer dasar, full-bleed) */}
+    // Wrapper full-viewport & no-scroll
+    <div className="fixed inset-0 h-[100dvh] w-screen overflow-hidden overscroll-none bg-background">
+      {/* Kunci scroll (via effect ke <html> & <body>) */}
+      <BodyScrollLock />
+
+      {/* Kamera (layer dasar) */}
       <section className="absolute inset-0">
         <QRScannerClient />
       </section>
