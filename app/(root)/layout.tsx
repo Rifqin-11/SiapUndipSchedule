@@ -39,26 +39,28 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { user, isInitialLoad } = useAuth();
 
   return (
-    <ProtectedRoute>
-      {/* Offline indicator - deferred */}
-      <OfflineIndicator position="top" showConnectionInfo={true} />
+    <>
+      <ProtectedRoute>
+        {/* Offline indicator - deferred */}
+        <OfflineIndicator position="top" showConnectionInfo={true} />
 
-      <div className="flex min-h-screen pwa-safe-area">
-        {/* Sidebar for desktop - show skeleton during initial load */}
-        {isInitialLoad && !user ? <SidebarSkeleton /> : <Sidebar />}
+        <div className="flex min-h-screen pwa-safe-area">
+          {/* Sidebar for desktop - show skeleton during initial load */}
+          {isInitialLoad && !user ? <SidebarSkeleton /> : <Sidebar />}
 
-        {/* Main content area */}
-        <div className="flex-1 w-full lg:pl-64">
-          <div className="mb-25 lg:mb-0 min-h-screen w-full">{children}</div>
+          {/* Main content area */}
+          <div className="flex-1 w-full lg:pl-64">
+            <div className="mb-25 lg:mb-0 min-h-screen w-full">{children}</div>
+          </div>
+
+          {/* Task notifications initializer - deferred */}
+          <TaskNotificationInitializer />
         </div>
+      </ProtectedRoute>
 
-        {/* Bottom navbar for mobile - critical */}
-        <BottomNavbar />
-
-        {/* Task notifications initializer - deferred */}
-        <TaskNotificationInitializer />
-      </div>
-    </ProtectedRoute>
+      {/* Bottom navbar for mobile - critical, outside ProtectedRoute for instant display */}
+      <BottomNavbar />
+    </>
   );
 };
 

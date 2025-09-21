@@ -17,7 +17,7 @@ const BottomNavbar = () => {
   const pathname = usePathname();
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
-  const { user } = useAuth();
+  const { user, isInitialLoad } = useAuth();
 
   // Detect if app is running as PWA
   useEffect(() => {
@@ -40,8 +40,13 @@ const BottomNavbar = () => {
     };
   }, []);
 
-  // Don't show navbar on auth pages or when user is not logged in
-  if (!user || pathname.startsWith("/auth")) {
+  // Don't show navbar on auth pages, but show optimistically during initial load
+  if (pathname.startsWith("/auth")) {
+    return null;
+  }
+
+  // Show navbar optimistically during initial load, hide only if definitely no user
+  if (!user && !isInitialLoad) {
     return null;
   }
 
