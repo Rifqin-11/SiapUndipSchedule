@@ -87,15 +87,28 @@ export default function QRScannerClient() {
       } catch {}
     }
     setIsScanning(false);
+    setIsProcessing(false);
   }, []);
+
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleResult = useCallback(
     (raw: string) => {
-      window.dispatchEvent(new CustomEvent("qr:scanned", { detail: raw }));
-      toast.success("QR berhasil dipindai!");
-      stopScanning();
+      // Prevent multiple scans
+      if (isProcessing) return;
+      setIsProcessing(true);
+
+      try {
+        window.dispatchEvent(new CustomEvent("qr:scanned", { detail: raw }));
+        toast.success("QR berhasil dipindai!");
+        stopScanning();
+      } catch (err) {
+        console.error("Error handling QR result:", err);
+        toast.error("Gagal memproses QR code");
+        setIsProcessing(false);
+      }
     },
-    [stopScanning]
+    [isProcessing, stopScanning]
   );
 
   const startWithZXing = useCallback(
@@ -121,16 +134,30 @@ export default function QRScannerClient() {
       barcodeDetectorRef.current = new BarcodeDetector({
         formats: ["qr_code"],
       });
+
       const loop = async () => {
-        if (!videoRef.current) return;
-        const res = await barcodeDetectorRef.current!.detect(videoRef.current);
-        const qr = res.find((b) => b.format === "qr_code" && b.rawValue);
-        if (qr?.rawValue) handleResult(qr.rawValue);
+        if (!videoRef.current || !barcodeDetectorRef.current) return;
+        try {
+          const results = await barcodeDetectorRef.current.detect(
+            videoRef.current
+          );
+          const qrCode = results.find(
+            (b) => b.format === "qr_code" && b.rawValue
+          );
+          if (qrCode?.rawValue) {
+            handleResult(qrCode.rawValue);
+          }
+        } catch (err) {
+          // Ignore errors during detection (e.g., video not ready)
+          console.debug("Detection error:", err);
+        }
       };
-      detectionIntervalRef.current = setInterval(loop, 80);
+
+      detectionIntervalRef.current = setInterval(loop, 100);
       setIsScanning(true);
       return true;
-    } catch {
+    } catch (err) {
+      console.warn("BarcodeDetector initialization failed:", err);
       return false;
     }
   }, [handleResult]);
@@ -143,14 +170,22 @@ export default function QRScannerClient() {
       const all = await navigator.mediaDevices.enumerateDevices();
       const cams = all.filter((d) => d.kind === "videoinput");
       setDevices(cams);
-      const prefer =
-        cams.find((d) => /back|rear|environment/i.test(d.label)) || cams[0];
-      if (!prefer) throw new Error("Kamera tidak ditemukan");
-      setSelectedDeviceId(prefer.deviceId);
+
+      let targetDevice: MediaDeviceInfo | undefined;
+      if (selectedDeviceId) {
+        targetDevice = cams.find((d) => d.deviceId === selectedDeviceId);
+      }
+      if (!targetDevice) {
+        targetDevice =
+          cams.find((d) => /back|rear|environment/i.test(d.label)) || cams[0];
+      }
+      if (!targetDevice) throw new Error("Kamera tidak ditemukan");
+
+      setSelectedDeviceId(targetDevice.deviceId);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          deviceId: { exact: prefer.deviceId },
+          deviceId: { exact: targetDevice.deviceId },
           width: { ideal: 1280 },
           height: { ideal: 720 },
           frameRate: { ideal: 30 },
@@ -158,7 +193,16 @@ export default function QRScannerClient() {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) (videoRef.current as any).srcObject = stream;
+
+      if (videoRef.current) {
+        (videoRef.current as any).srcObject = stream;
+        // Wait for video to be ready
+        await new Promise<void>((resolve) => {
+          if (videoRef.current) {
+            videoRef.current.onloadedmetadata = () => resolve();
+          }
+        });
+      }
 
       // Zoom capability
       const track: any = stream.getVideoTracks()[0];
@@ -178,13 +222,18 @@ export default function QRScannerClient() {
       }
 
       const ok = await startWithBarcodeDetector();
-      if (!ok) await startWithZXing(prefer.deviceId);
+      if (!ok) await startWithZXing(targetDevice.deviceId);
     } catch (e: any) {
-      console.error(e);
+      console.error("initScanner error:", e);
       setError(e?.message || "Tidak dapat mengakses kamera");
       setIsScanning(false);
     }
-  }, [startWithBarcodeDetector, startWithZXing, stopScanning]);
+  }, [
+    selectedDeviceId,
+    startWithBarcodeDetector,
+    startWithZXing,
+    stopScanning,
+  ]);
 
   const handleZoomChange = useCallback(
     async (value: number[]) => {
@@ -209,61 +258,134 @@ export default function QRScannerClient() {
       toast.info("Hanya 1 kamera tersedia");
       return;
     }
-    const idx = devices.findIndex((d) => d.deviceId === selectedDeviceId);
-    const next = devices[(idx + 1) % devices.length];
-    stopScanning();
-    setSelectedDeviceId(next.deviceId);
-    await initScanner();
-    toast.info(`Beralih ke kamera: ${next.label || "Device"}`);
+
+    try {
+      const idx = devices.findIndex((d) => d.deviceId === selectedDeviceId);
+      const next = devices[(idx + 1) % devices.length];
+
+      stopScanning();
+      setSelectedDeviceId(next.deviceId);
+
+      // Use timeout to ensure state update
+      setTimeout(async () => {
+        await initScanner();
+        toast.info(`Beralih ke: ${next.label || "Kamera lain"}`);
+      }, 100);
+    } catch (err) {
+      console.error("Switch camera error:", err);
+      toast.error("Gagal beralih kamera");
+    }
   }, [devices, selectedDeviceId, initScanner, stopScanning]);
 
   useEffect(() => {
-    (async () => {
-      const all = await navigator.mediaDevices.enumerateDevices();
-      const cams = all.filter((d) => d.kind === "videoinput");
-      setDevices(cams);
-      if (cams[0]) {
-        setSelectedDeviceId(cams[0].deviceId);
-        initScanner();
+    // Prevent double initialization in Strict Mode
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+
+    const initialize = async () => {
+      try {
+        // Request permission first
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Then enumerate devices
+        const all = await navigator.mediaDevices.enumerateDevices();
+        const cams = all.filter((d) => d.kind === "videoinput");
+        setDevices(cams);
+
+        if (cams.length > 0) {
+          const backCamera =
+            cams.find((d) => /back|rear|environment/i.test(d.label)) || cams[0];
+          setSelectedDeviceId(backCamera.deviceId);
+          await initScanner();
+        } else {
+          setError("Tidak ada kamera yang tersedia");
+        }
+      } catch (err: any) {
+        console.error("Initialization error:", err);
+        setError(err.message || "Tidak dapat mengakses kamera");
       }
-    })();
-    return () => stopScanning();
-  }, []);
+    };
+
+    initialize();
+
+    return () => {
+      mountedRef.current = false;
+      stopScanning();
+    };
+  }, [initScanner, stopScanning]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const img = new Image();
-      img.src = reader.result as string;
-      await new Promise((res) => {
-        img.onload = () => res(null);
+
+    // Show loading toast
+    const loadingToast = toast.loading("Memproses gambar...");
+
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+          image.src = event.target?.result as string;
+        };
+
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("Gagal memuat gambar"));
+
+        reader.onerror = () => reject(new Error("Gagal membaca file"));
+        reader.readAsDataURL(file);
       });
-      try {
-        if (typeof BarcodeDetector !== "undefined") {
-          const det = new BarcodeDetector({ formats: ["qr_code"] });
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d")!;
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-          const found = await det.detect(canvas);
-          const qr = found.find((f) => f.format === "qr_code" && f.rawValue);
-          if (qr?.rawValue) return handleResult(qr.rawValue);
+
+      // Try BarcodeDetector first (if available)
+      if (typeof BarcodeDetector !== "undefined") {
+        try {
+          const detector = new BarcodeDetector({ formats: ["qr_code"] });
+          const barcodes = await detector.detect(img);
+          const qrCode = barcodes.find(
+            (barcode) => barcode.format === "qr_code" && barcode.rawValue
+          );
+
+          if (qrCode?.rawValue) {
+            toast.dismiss(loadingToast);
+            handleResult(qrCode.rawValue);
+            // Reset input value so same file can be selected again
+            if (galleryInputRef.current) galleryInputRef.current.value = "";
+            return;
+          }
+        } catch (err) {
+          console.warn("BarcodeDetector failed, trying ZXing:", err);
         }
-        const zx = new BrowserMultiFormatReader();
-        const r = await zx.decodeFromImage(img as any);
-        handleResult(r.getText());
-      } catch {
-        toast.error("QR tidak ditemukan pada gambar");
       }
-    };
-    reader.readAsDataURL(file);
+
+      // Fallback to ZXing
+      try {
+        const codeReader = new BrowserMultiFormatReader();
+        const result = await codeReader.decodeFromImageElement(img);
+        toast.dismiss(loadingToast);
+        handleResult(result.getText());
+        // Reset input value
+        if (galleryInputRef.current) galleryInputRef.current.value = "";
+      } catch (err) {
+        console.error("ZXing decode error:", err);
+        toast.dismiss(loadingToast);
+        toast.error("QR code tidak ditemukan pada gambar");
+      }
+    } catch (err: any) {
+      console.error("Image upload error:", err);
+      toast.dismiss(loadingToast);
+      toast.error(err.message || "Gagal memproses gambar");
+    }
   };
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden bg-black"
+    >
       {/* VIDEO (digital zoom pakai CSS transform jika perlu) */}
       <video
         ref={videoRef}
@@ -279,69 +401,72 @@ export default function QRScannerClient() {
         autoPlay
         muted
         playsInline
+        onError={(e) => {
+          console.error("Video error:", e);
+          setError("Gagal memutar video kamera");
+        }}
       />
 
       {/* HEADER: Back | QR Scanner | (Upload, Switch) */}
       <div className="absolute top-0 inset-x-0 z-20 p-3">
-  <div className="mx-auto w-full max-w-xl grid grid-cols-3 items-center">
-    {/* Back (kiri) */}
-    <div className="justify-self-start">
-      <Button
-        type="button"
-        size="icon"
-        variant="secondary"
-        onClick={() => router.back()}
-        className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
-    </div>
+        <div className="mx-auto w-full max-w-xl grid grid-cols-3 items-center">
+          {/* Back (kiri) */}
+          <div className="justify-self-start">
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              onClick={() => router.back()}
+              className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </div>
 
-    {/* Title (selalu center) */}
-    <div className="justify-self-center">
-      <div className="px-3 py-1 rounded-full bg-black/40 text-white text-sm font-semibold backdrop-blur-md">
-        QR Scanner
+          {/* Title (selalu center) */}
+          <div className="justify-self-center">
+            <div className="px-3 py-1 rounded-full bg-black/40 text-white text-sm font-semibold backdrop-blur-md">
+              QR Scanner
+            </div>
+          </div>
+
+          {/* Actions (kanan) */}
+          <div className="justify-self-end flex items-center gap-2">
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              onClick={() => galleryInputRef.current?.click()}
+              className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+              title="Upload gambar QR"
+            >
+              <ImagePlus className="h-5 w-5" />
+            </Button>
+
+            {devices.length > 1 && (
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={switchCamera}
+                disabled={!isScanning}
+                className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
+                title="Ganti kamera"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
+
+          {/* Hidden file input */}
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+        </div>
       </div>
-    </div>
-
-    {/* Actions (kanan) */}
-    <div className="justify-self-end flex items-center gap-2">
-      <Button
-        type="button"
-        size="icon"
-        variant="secondary"
-        onClick={() => galleryInputRef.current?.click()}
-        className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-        title="Upload gambar QR"
-      >
-        <ImagePlus className="h-5 w-5" />
-      </Button>
-
-      {devices.length > 1 && (
-        <Button
-          size="icon"
-          variant="secondary"
-          onClick={switchCamera}
-          disabled={!isScanning}
-          className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
-          title="Ganti kamera"
-        >
-          <RotateCcw className="h-5 w-5" />
-        </Button>
-      )}
-    </div>
-
-    {/* Hidden file input */}
-    <input
-      ref={galleryInputRef}
-      type="file"
-      accept="image/*"
-      className="hidden"
-      onChange={handleImageUpload}
-    />
-  </div>
-</div>
-
 
       {/* Frame */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
