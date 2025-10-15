@@ -95,14 +95,14 @@ export async function POST(req: NextRequest) {
       console.log("ERROR: File tidak ditemukan");
       console.log("Available form data keys:", Array.from(formData.keys()));
       return NextResponse.json(
-        { error: "File tidak ditemukan" },
+        { success: false, error: "File tidak ditemukan" },
         { status: 400 }
       );
     }
 
     if (!periodStartDate || !periodEndDate) {
       return NextResponse.json(
-        { error: "Exam period dates are required" },
+        { success: false, error: "Exam period dates are required" },
         { status: 400 }
       );
     }
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       console.log("File type:", typeof file);
       console.log("File object:", file);
       return NextResponse.json(
-        { error: "File is not defined" },
+        { success: false, error: "File is not defined" },
         { status: 400 }
       );
     }
@@ -138,23 +138,29 @@ export async function POST(req: NextRequest) {
       console.log(`ERROR: File type tidak didukung: ${file.type}`);
       return NextResponse.json(
         {
-          error:
-            "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WEBP, BMP, TIFF, atau PDF.",
+          success: false,
+          error: "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WEBP, BMP, TIFF, atau PDF.",
         },
         { status: 400 }
       );
     }
 
-    // Check file size (max 15MB)
-    const maxSize = 15 * 1024 * 1024; // 15MB
+    // Check file size (reduce max to 10MB for better performance)
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       return NextResponse.json(
         {
-          error:
-            "File terlalu besar. Maksimal 15MB untuk performa OCR yang optimal.",
+          success: false,
+          error: "File terlalu besar. Maksimal 10MB untuk performa OCR yang optimal.",
+          suggestion: "Kompres gambar atau gunakan resolusi lebih rendah (cukup 1-2 MB untuk teks yang jelas)",
         },
         { status: 400 }
       );
+    }
+
+    // Recommended size check
+    if (file.size > 5 * 1024 * 1024) {
+      console.warn(`WARNING: File size ${(file.size / 1024 / 1024).toFixed(2)}MB mungkin lambat diproses`);
     }
 
     // 2. Proses OCR dengan Azure Computer Vision
@@ -189,28 +195,44 @@ export async function POST(req: NextRequest) {
 
       console.log("Azure OCR operation submitted, URL:", operationUrl);
 
-      // Step 2: Poll for results
+      // Step 2: Poll for results with timeout protection
       let result;
       let attempts = 0;
-      const maxAttempts = 30; // Maximum 30 attempts (30 seconds)
+      const maxAttempts = 20; // Maximum 20 attempts (20 seconds)
+      const pollInterval = 1000; // 1 second
 
       do {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
 
-        const pollResponse = await axios.get(operationUrl, {
-          headers: {
-            "Ocp-Apim-Subscription-Key": azureKey!,
-          },
-        });
+        try {
+          const pollResponse = await axios.get(operationUrl, {
+            headers: {
+              "Ocp-Apim-Subscription-Key": azureKey!,
+            },
+            timeout: 5000, // 5 second timeout per request
+          });
 
-        result = pollResponse.data;
-        attempts++;
-        console.log(
-          `Azure OCR polling attempt ${attempts}, status: ${result.status}`
-        );
+          result = pollResponse.data;
+          attempts++;
+          console.log(
+            `Azure OCR polling attempt ${attempts}/${maxAttempts}, status: ${result.status}`
+          );
 
-        if (attempts >= maxAttempts) {
-          throw new Error("Azure OCR timeout - proses terlalu lama");
+          if (attempts >= maxAttempts) {
+            throw new Error(
+              "Azure OCR timeout - proses terlalu lama. Coba dengan gambar lebih kecil atau format berbeda."
+            );
+          }
+        } catch (pollError) {
+          if (axios.isAxiosError(pollError) && pollError.code === "ECONNABORTED") {
+            console.log("Polling request timeout, retrying...");
+            attempts++;
+            if (attempts >= maxAttempts) {
+              throw new Error("Azure OCR polling timeout");
+            }
+            continue;
+          }
+          throw pollError;
         }
       } while (result.status === "running" || result.status === "notStarted");
 
@@ -263,8 +285,8 @@ export async function POST(req: NextRequest) {
         if (!rawText || rawText.trim().length < 5) {
           return NextResponse.json(
             {
-              error:
-                "Failed to read text from image. Make sure the image is clear and readable. Try using a higher quality image or different format (PNG/JPG).",
+              success: false,
+              error: "Failed to read text from image. Make sure the image is clear and readable. Try using a higher quality image or different format (PNG/JPG).",
               details: "OCR extracted text length: " + rawText.length,
             },
             { status: 400 }
@@ -297,9 +319,9 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json(
         {
+          success: false,
           error: errorMessage,
-          suggestion:
-            "Tips: Pastikan gambar berkualitas tinggi, teks jelas terbaca, dan format PNG/JPG.",
+          suggestion: "Tips: Pastikan gambar berkualitas tinggi, teks jelas terbaca, dan format PNG/JPG.",
         },
         { status: 500 }
       );
@@ -362,7 +384,15 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
     });
 
     console.log("Mengirim request ke Gemini AI...");
-    const result = await model.generateContent(prompt);
+    
+    // Add timeout for Gemini AI request
+    const geminiTimeout = 25000; // 25 seconds
+    const geminiPromise = model.generateContent(prompt);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Gemini AI request timeout - coba lagi dengan gambar lebih sederhana")), geminiTimeout);
+    });
+
+    const result = await Promise.race([geminiPromise, timeoutPromise]) as any;
     const response = await result.response;
     const aiText = response.text();
 
@@ -406,8 +436,8 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
       console.log("Full AI Response that failed to parse:", aiText);
       return NextResponse.json(
         {
-          error:
-            "AI response tidak dapat di-parse. Coba lagi dengan gambar yang lebih jelas.",
+          success: false,
+          error: "AI response tidak dapat di-parse. Coba lagi dengan gambar yang lebih jelas.",
         },
         { status: 500 }
       );
@@ -418,8 +448,8 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
       console.log("ERROR: Tidak ada jadwal ujian yang ditemukan");
       return NextResponse.json(
         {
-          error:
-            "Tidak dapat menemukan jadwal ujian dalam gambar. Pastikan gambar kartu ujian jelas dan terbaca.",
+          success: false,
+          error: "Tidak dapat menemukan jadwal ujian dalam gambar. Pastikan gambar kartu ujian jelas dan terbaca.",
         },
         { status: 400 }
       );
@@ -430,27 +460,59 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
     );
     console.log(`Total processing time: ${Date.now() - startTime}ms`);
 
-    return NextResponse.json({
-      success: true,
-      exams: exams,
-      message: `Berhasil mengekstrak ${exams.length} jadwal ujian dari kartu ${examType}`,
-      extractedText: rawText.substring(0, 500), // For debugging
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        exams: exams,
+        message: `Berhasil mengekstrak ${exams.length} jadwal ujian dari kartu ${examType}`,
+        extractedText: rawText.substring(0, 500), // For debugging
+        processingTime: Date.now() - startTime,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (error: unknown) {
     console.error("=== UPLOAD-EXAM-CARD ERROR ===");
     console.error("Error details:", error);
 
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Terjadi kesalahan saat memproses file";
+    let errorMessage = "Terjadi kesalahan saat memproses file";
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Specific error handling
+      if (error.message.includes("timeout") || error.message.includes("ETIMEDOUT")) {
+        errorMessage = "Request timeout - gambar terlalu besar atau koneksi lambat. Coba dengan gambar lebih kecil.";
+        statusCode = 504;
+      } else if (error.message.includes("ECONNREFUSED") || error.message.includes("ENOTFOUND")) {
+        errorMessage = "Tidak dapat terhubung ke service OCR/AI. Coba lagi nanti.";
+        statusCode = 503;
+      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+        errorMessage = "Service quota exceeded. Coba lagi dalam beberapa menit.";
+        statusCode = 429;
+      }
+    }
+
     console.error("Error message:", errorMessage);
+    console.error("Status code:", statusCode);
 
     return NextResponse.json(
       {
+        success: false,
         error: errorMessage,
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { 
+        status: statusCode,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
   }
 }

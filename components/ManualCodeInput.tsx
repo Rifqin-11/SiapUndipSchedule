@@ -69,19 +69,22 @@ export default function ManualCardClient() {
     setIsDragging(true);
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging) return;
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging) return;
 
-    currentYRef.current = e.touches[0].clientY;
-    const deltaY = currentYRef.current - startYRef.current;
+      currentYRef.current = e.touches[0].clientY;
+      const deltaY = currentYRef.current - startYRef.current;
 
-    // Only allow dragging down when expanded, or up when collapsed
-    if (isExpanded && deltaY > 0) {
-      setDragY(deltaY);
-    } else if (!isExpanded && deltaY < 0) {
-      setDragY(deltaY);
-    }
-  }, [isDragging, isExpanded]);
+      // Only allow dragging down when expanded, or up when collapsed
+      if (isExpanded && deltaY > 0) {
+        setDragY(deltaY);
+      } else if (!isExpanded && deltaY < 0) {
+        setDragY(deltaY);
+      }
+    },
+    [isDragging, isExpanded]
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (!isDragging) return;
@@ -134,7 +137,9 @@ export default function ManualCardClient() {
         <div
           onClick={handleToggle}
           className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-muted-foreground/40 cursor-pointer hover:bg-muted-foreground/60 transition-all active:scale-95"
-          aria-label={isExpanded ? "Swipe down to collapse" : "Swipe up to expand"}
+          aria-label={
+            isExpanded ? "Swipe down to collapse" : "Swipe up to expand"
+          }
         />
 
         {/* Collapsed state hint */}
@@ -163,7 +168,10 @@ export default function ManualCardClient() {
         {/* input + paste + send */}
         <div
           className="rounded-xl border bg-background/60 p-2 mx-1 transition-opacity duration-300"
-          style={{ opacity: isExpanded ? 1 : 0, pointerEvents: isExpanded ? "auto" : "none" }}
+          style={{
+            opacity: isExpanded ? 1 : 0,
+            pointerEvents: isExpanded ? "auto" : "none",
+          }}
         >
           <div className="flex items-center gap-2">
             <Input
@@ -206,7 +214,10 @@ export default function ManualCardClient() {
         {lastUrl && (
           <div
             className="mt-3 rounded-xl border bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20 mx-1 transition-opacity duration-300"
-            style={{ opacity: isExpanded ? 1 : 0, pointerEvents: isExpanded ? "auto" : "none" }}
+            style={{
+              opacity: isExpanded ? 1 : 0,
+              pointerEvents: isExpanded ? "auto" : "none",
+            }}
           >
             Berhasil! Jika tab tidak terbuka:
             <Button
