@@ -199,17 +199,17 @@ After UTS Upload:
    ```env
    # Database
    MONGODB_URI=your_mongodb_connection_string
-   
+
    # Authentication
    JWT_SECRET=your_jwt_secret_key
-   
+
    # App Configuration
    NEXT_PUBLIC_APP_URL=http://localhost:3000
-   
+
    # Azure Computer Vision (for OCR)
    AZURE_VISION_KEY=your_azure_computer_vision_key
    AZURE_VISION_ENDPOINT=your_azure_endpoint_url
-   
+
    # Google Gemini AI (for document parsing)
    GEMINI_API_KEY=your_google_gemini_api_key
    ```

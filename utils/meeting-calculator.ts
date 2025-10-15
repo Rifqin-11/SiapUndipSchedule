@@ -228,8 +228,18 @@ export function getWeeklyTimeline(
   const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
   const currentWeek = Math.floor(daysDiff / 7) + 1;
 
-  // Generate weekly timeline up to current week or 14 weeks max
-  const maxWeeks = Math.min(Math.max(currentWeek, 1), 14);
+  // Calculate total weeks needed based on latest meeting date
+  let totalWeeksNeeded = 14; // Default to 14 weeks
+  if (meetingDates.length > 0) {
+    const lastMeetingDate = new Date(meetingDates[meetingDates.length - 1]);
+    const weeksDiff = Math.floor(
+      (lastMeetingDate.getTime() - start.getTime()) / (1000 * 3600 * 24 * 7)
+    );
+    totalWeeksNeeded = Math.max(weeksDiff + 1, 14); // At least 14 weeks
+  }
+
+  // Generate weekly timeline up to current week or total weeks needed
+  const maxWeeks = Math.max(currentWeek, totalWeeksNeeded);
   const timeline = [];
 
   for (let week = 1; week <= maxWeeks; week++) {
