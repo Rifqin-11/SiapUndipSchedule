@@ -139,7 +139,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WEBP, BMP, TIFF, atau PDF.",
+          error:
+            "Format file tidak didukung. Gunakan PNG, JPG, JPEG, WEBP, BMP, TIFF, atau PDF.",
         },
         { status: 400 }
       );
@@ -151,8 +152,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "File terlalu besar. Maksimal 10MB untuk performa OCR yang optimal.",
-          suggestion: "Kompres gambar atau gunakan resolusi lebih rendah (cukup 1-2 MB untuk teks yang jelas)",
+          error:
+            "File terlalu besar. Maksimal 10MB untuk performa OCR yang optimal.",
+          suggestion:
+            "Kompres gambar atau gunakan resolusi lebih rendah (cukup 1-2 MB untuk teks yang jelas)",
         },
         { status: 400 }
       );
@@ -160,7 +163,11 @@ export async function POST(req: NextRequest) {
 
     // Recommended size check
     if (file.size > 5 * 1024 * 1024) {
-      console.warn(`WARNING: File size ${(file.size / 1024 / 1024).toFixed(2)}MB mungkin lambat diproses`);
+      console.warn(
+        `WARNING: File size ${(file.size / 1024 / 1024).toFixed(
+          2
+        )}MB mungkin lambat diproses`
+      );
     }
 
     // 2. Proses OCR dengan Azure Computer Vision
@@ -224,7 +231,10 @@ export async function POST(req: NextRequest) {
             );
           }
         } catch (pollError) {
-          if (axios.isAxiosError(pollError) && pollError.code === "ECONNABORTED") {
+          if (
+            axios.isAxiosError(pollError) &&
+            pollError.code === "ECONNABORTED"
+          ) {
             console.log("Polling request timeout, retrying...");
             attempts++;
             if (attempts >= maxAttempts) {
@@ -286,7 +296,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json(
             {
               success: false,
-              error: "Failed to read text from image. Make sure the image is clear and readable. Try using a higher quality image or different format (PNG/JPG).",
+              error:
+                "Failed to read text from image. Make sure the image is clear and readable. Try using a higher quality image or different format (PNG/JPG).",
               details: "OCR extracted text length: " + rawText.length,
             },
             { status: 400 }
@@ -321,7 +332,8 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error: errorMessage,
-          suggestion: "Tips: Pastikan gambar berkualitas tinggi, teks jelas terbaca, dan format PNG/JPG.",
+          suggestion:
+            "Tips: Pastikan gambar berkualitas tinggi, teks jelas terbaca, dan format PNG/JPG.",
         },
         { status: 500 }
       );
@@ -384,15 +396,23 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
     });
 
     console.log("Mengirim request ke Gemini AI...");
-    
+
     // Add timeout for Gemini AI request
     const geminiTimeout = 25000; // 25 seconds
     const geminiPromise = model.generateContent(prompt);
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Gemini AI request timeout - coba lagi dengan gambar lebih sederhana")), geminiTimeout);
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              "Gemini AI request timeout - coba lagi dengan gambar lebih sederhana"
+            )
+          ),
+        geminiTimeout
+      );
     });
 
-    const result = await Promise.race([geminiPromise, timeoutPromise]) as any;
+    const result = (await Promise.race([geminiPromise, timeoutPromise])) as any;
     const response = await result.response;
     const aiText = response.text();
 
@@ -437,7 +457,8 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
       return NextResponse.json(
         {
           success: false,
-          error: "AI response tidak dapat di-parse. Coba lagi dengan gambar yang lebih jelas.",
+          error:
+            "AI response tidak dapat di-parse. Coba lagi dengan gambar yang lebih jelas.",
         },
         { status: 500 }
       );
@@ -449,7 +470,8 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
       return NextResponse.json(
         {
           success: false,
-          error: "Tidak dapat menemukan jadwal ujian dalam gambar. Pastikan gambar kartu ujian jelas dan terbaca.",
+          error:
+            "Tidak dapat menemukan jadwal ujian dalam gambar. Pastikan gambar kartu ujian jelas dan terbaca.",
         },
         { status: 400 }
       );
@@ -484,16 +506,28 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
 
     if (error instanceof Error) {
       errorMessage = error.message;
-      
+
       // Specific error handling
-      if (error.message.includes("timeout") || error.message.includes("ETIMEDOUT")) {
-        errorMessage = "Request timeout - gambar terlalu besar atau koneksi lambat. Coba dengan gambar lebih kecil.";
+      if (
+        error.message.includes("timeout") ||
+        error.message.includes("ETIMEDOUT")
+      ) {
+        errorMessage =
+          "Request timeout - gambar terlalu besar atau koneksi lambat. Coba dengan gambar lebih kecil.";
         statusCode = 504;
-      } else if (error.message.includes("ECONNREFUSED") || error.message.includes("ENOTFOUND")) {
-        errorMessage = "Tidak dapat terhubung ke service OCR/AI. Coba lagi nanti.";
+      } else if (
+        error.message.includes("ECONNREFUSED") ||
+        error.message.includes("ENOTFOUND")
+      ) {
+        errorMessage =
+          "Tidak dapat terhubung ke service OCR/AI. Coba lagi nanti.";
         statusCode = 503;
-      } else if (error.message.includes("quota") || error.message.includes("limit")) {
-        errorMessage = "Service quota exceeded. Coba lagi dalam beberapa menit.";
+      } else if (
+        error.message.includes("quota") ||
+        error.message.includes("limit")
+      ) {
+        errorMessage =
+          "Service quota exceeded. Coba lagi dalam beberapa menit.";
         statusCode = 429;
       }
     }
@@ -507,10 +541,10 @@ Pastikan JSON valid dan tidak ada teks tambahan di luar JSON array.
         error: errorMessage,
         timestamp: new Date().toISOString(),
       },
-      { 
+      {
         status: statusCode,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }
     );

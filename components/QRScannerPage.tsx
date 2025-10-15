@@ -47,6 +47,7 @@ export default function QRScannerClient() {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   // ZOOM: hardware / digital fallback
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -88,6 +89,7 @@ export default function QRScannerClient() {
     }
     setIsScanning(false);
     setIsProcessing(false);
+    setIsVideoReady(false);
   }, []);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -196,12 +198,43 @@ export default function QRScannerClient() {
 
       if (videoRef.current) {
         (videoRef.current as any).srcObject = stream;
-        // Wait for video to be ready
+        
+        // Wait for video to be fully ready (multiple events)
         await new Promise<void>((resolve) => {
-          if (videoRef.current) {
-            videoRef.current.onloadedmetadata = () => resolve();
-          }
+          if (!videoRef.current) return resolve();
+          
+          let metadataLoaded = false;
+          let canPlay = false;
+          
+          const checkReady = () => {
+            if (metadataLoaded && canPlay) {
+              setIsVideoReady(true);
+              resolve();
+            }
+          };
+          
+          videoRef.current.onloadedmetadata = () => {
+            metadataLoaded = true;
+            checkReady();
+          };
+          
+          videoRef.current.oncanplay = () => {
+            canPlay = true;
+            checkReady();
+          };
+          
+          // Fallback timeout
+          setTimeout(() => {
+            if (!metadataLoaded || !canPlay) {
+              console.warn("Video ready timeout, proceeding anyway");
+              setIsVideoReady(true);
+              resolve();
+            }
+          }, 2000);
         });
+        
+        // Additional delay to ensure video is actually rendering
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
 
       // Zoom capability
@@ -235,22 +268,35 @@ export default function QRScannerClient() {
     stopScanning,
   ]);
 
+  const zoomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleZoomChange = useCallback(
     async (value: number[]) => {
       const z = value[0];
       setZoomLevel(z);
-      if (!useCssZoom) {
-        const track: any = streamRef.current?.getVideoTracks?.()[0];
-        const caps: MediaTrackCapabilities | undefined =
-          track?.getCapabilities?.();
-        if (track && caps?.zoom) {
-          try {
-            await track.applyConstraints({ advanced: [{ zoom: z }] });
-          } catch {}
+      
+      if (!useCssZoom && isVideoReady) {
+        // Clear previous timeout
+        if (zoomTimeoutRef.current) {
+          clearTimeout(zoomTimeoutRef.current);
         }
+        
+        // Debounce hardware zoom changes
+        zoomTimeoutRef.current = setTimeout(async () => {
+          const track: any = streamRef.current?.getVideoTracks?.()[0];
+          const caps: MediaTrackCapabilities | undefined =
+            track?.getCapabilities?.();
+          if (track && caps?.zoom) {
+            try {
+              await track.applyConstraints({ advanced: [{ zoom: z }] });
+            } catch (err) {
+              console.warn("Zoom constraint failed:", err);
+            }
+          }
+        }, 50); // 50ms debounce
       }
     },
-    [useCssZoom]
+    [useCssZoom, isVideoReady]
   );
 
   const switchCamera = useCallback(async () => {
@@ -313,6 +359,9 @@ export default function QRScannerClient() {
 
     return () => {
       mountedRef.current = false;
+      if (zoomTimeoutRef.current) {
+        clearTimeout(zoomTimeoutRef.current);
+      }
       stopScanning();
     };
   }, [initScanner, stopScanning]);
@@ -385,25 +434,36 @@ export default function QRScannerClient() {
     <div
       ref={containerRef}
       className="relative h-full w-full overflow-hidden bg-black"
+      style={{
+        WebkitTransform: "translateZ(0)",
+        transform: "translateZ(0)",
+      }}
     >
       {/* VIDEO (digital zoom pakai CSS transform jika perlu) */}
       <video
         ref={videoRef}
-        className="h-full w-full object-cover will-change-transform"
-        style={
-          useCssZoom
-            ? {
-                transform: `scale(${zoomLevel})`,
-                transformOrigin: "center center",
-              }
-            : undefined
-        }
+        className="h-full w-full object-cover"
+        style={{
+          transform: useCssZoom ? `scale(${zoomLevel})` : undefined,
+          transformOrigin: "center center",
+          willChange: useCssZoom ? "transform" : undefined,
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          opacity: isVideoReady ? 1 : 0,
+          transition: "opacity 0.3s ease-in-out",
+        }}
         autoPlay
         muted
         playsInline
         onError={(e) => {
           console.error("Video error:", e);
           setError("Gagal memutar video kamera");
+        }}
+        onLoadedMetadata={() => {
+          console.log("Video metadata loaded");
+        }}
+        onCanPlay={() => {
+          console.log("Video can play");
         }}
       />
 
@@ -497,9 +557,14 @@ export default function QRScannerClient() {
         </div>
       )}
 
-      {!isScanning && (
-        <div className="absolute inset-0 grid place-items-center bg-black/40">
-          <Loader2 className="h-8 w-8 animate-spin text-white" />
+      {(!isScanning || !isVideoReady) && (
+        <div className="absolute inset-0 grid place-items-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-10 w-10 animate-spin text-white" />
+            <p className="text-sm text-white/80">
+              {!isVideoReady ? "Memuat kamera..." : "Memulai scanner..."}
+            </p>
+          </div>
         </div>
       )}
 
