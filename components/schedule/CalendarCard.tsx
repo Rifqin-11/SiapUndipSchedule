@@ -88,17 +88,24 @@ export default function CalendarCard({
       }
     }
     // Fallback to legacy system
+    const legacyTotal = 14;
     return {
       currentMeeting: meeting,
-      totalMeetings: 14,
+      totalMeetings: legacyTotal,
       hasScheduledMeetings: false,
       attendedMeetings: meeting, // Use meeting count instead of attendanceDates.length
       passedMeetings: meeting,
-      attendanceRate: meeting > 0 ? Math.round((meeting / 14) * 100) : 0,
+      attendanceRate:
+        meeting > 0 ? Math.round((meeting / legacyTotal) * 100) : 0,
     };
   }, [meetingDates, attendanceDates, selectedDate, meeting]);
 
-  const progress = (currentMeetingInfo.attendedMeetings / 14) * 100;
+  const progress =
+    currentMeetingInfo.totalMeetings > 0
+      ? (currentMeetingInfo.attendedMeetings /
+          currentMeetingInfo.totalMeetings) *
+        100
+      : 0;
 
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();

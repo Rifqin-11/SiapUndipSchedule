@@ -29,6 +29,7 @@ export interface Subject {
     createdAt: Date;
   }[];
   category?: string;
+  examType?: "UTS" | "UAS"; // Exam type for exam schedules
 }
 
 // Query keys

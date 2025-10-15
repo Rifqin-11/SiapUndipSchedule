@@ -132,29 +132,19 @@ export const useCreateTask = () => {
   return useMutation({
     mutationFn: createTaskAPI,
     onSuccess: (newTask) => {
-      // Force update cache dengan data dari server
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
+      // Update cache dengan task baru
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (old = []) => {
         // Tambah task baru di awal array
         return [newTask, ...old];
-      });
-
-      // Force remove cache dan refetch untuk memastikan konsistensi
-      queryClient.removeQueries({ queryKey: TASKS_QUERY_KEY, exact: false });
-      queryClient.refetchQueries({
-        queryKey: TASKS_QUERY_KEY,
-        type: "active",
       });
     },
     onError: (error) => {
       console.error("Create task error:", error);
     },
-    onSettled: () => {
-      // Force invalidate dan refresh
+    onSettled: async () => {
+      // Background refetch setelah delay kecil
+      await new Promise((resolve) => setTimeout(resolve, 100));
       queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: TASKS_QUERY_KEY });
-      }, 100);
     },
   });
 };
@@ -169,31 +159,26 @@ export const useUpdateTask = () => {
       await queryClient.cancelQueries({ queryKey: TASKS_QUERY_KEY });
 
       // Snapshot previous value
-      const previousTasks = queryClient.getQueryData(TASKS_QUERY_KEY);
+      const previousTasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
 
       // Optimistically update to new value
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        return old.map((task) =>
-          task._id === id || task.id === id ? { ...task, ...taskData } : task
-        );
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (old = []) => {
+        return old.map((task) => {
+          const taskIdentifier = task._id || task.id;
+          return taskIdentifier === id ? { ...task, ...taskData } : task;
+        });
       });
 
       return { previousTasks };
     },
     onSuccess: (updatedTask) => {
-      // Force update cache dengan data dari server
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        return old.map((task) =>
-          task._id === updatedTask._id || task.id === updatedTask.id
-            ? updatedTask
-            : task
-        );
-      });
-
-      // Force refetch dengan bypass cache
-      queryClient.refetchQueries({
-        queryKey: TASKS_QUERY_KEY,
-        type: "active",
+      // Update cache dengan data dari server
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (old = []) => {
+        return old.map((task) => {
+          const taskIdentifier = task._id || task.id;
+          const updatedIdentifier = updatedTask._id || updatedTask.id;
+          return taskIdentifier === updatedIdentifier ? updatedTask : task;
+        });
       });
     },
     onError: (err, variables, context) => {
@@ -202,17 +187,10 @@ export const useUpdateTask = () => {
         queryClient.setQueryData(TASKS_QUERY_KEY, context.previousTasks);
       }
     },
-    onSettled: () => {
-      // Invalidate semua queries terkait
+    onSettled: async () => {
+      // Background refetch setelah delay kecil
+      await new Promise((resolve) => setTimeout(resolve, 100));
       queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-
-      // Force remove dari cache untuk fresh fetch
-      queryClient.removeQueries({ queryKey: TASKS_QUERY_KEY, exact: false });
-
-      // Refetch dengan force
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: TASKS_QUERY_KEY });
-      }, 100);
     },
   });
 };
@@ -223,43 +201,41 @@ export const useDeleteTask = () => {
   return useMutation({
     mutationFn: deleteTaskAPI,
     onMutate: async (taskId) => {
-      // Cancel outgoing refetches
+      // Cancel outgoing refetches untuk menghindari race condition
       await queryClient.cancelQueries({ queryKey: TASKS_QUERY_KEY });
 
-      // Snapshot previous value
-      const previousTasks = queryClient.getQueryData(TASKS_QUERY_KEY);
+      // Snapshot previous value untuk rollback jika error
+      const previousTasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
 
-      // Optimistically remove task
-      queryClient.setQueryData(TASKS_QUERY_KEY, (old: Task[] = []) => {
-        return old.filter((task) => task._id !== taskId && task.id !== taskId);
+      // Optimistically remove task - Ini yang membuat task langsung hilang di UI
+      queryClient.setQueryData<Task[]>(TASKS_QUERY_KEY, (old = []) => {
+        return old.filter((task) => {
+          const taskIdentifier = task._id || task.id;
+          return taskIdentifier !== taskId;
+        });
       });
 
       return { previousTasks };
     },
     onSuccess: () => {
-      // Force remove dari cache
-      queryClient.removeQueries({ queryKey: TASKS_QUERY_KEY, exact: false });
-
-      // Fresh fetch dari server dengan bypass cache
-      queryClient.refetchQueries({
+      // Invalidate tanpa refetch, biarkan data optimistic tetap
+      // Background sync akan terjadi nanti
+      queryClient.invalidateQueries({
         queryKey: TASKS_QUERY_KEY,
-        type: "active",
+        refetchType: "none",
       });
     },
     onError: (err, variables, context) => {
-      // Rollback on error
+      // Rollback on error - kembalikan data sebelumnya
       if (context?.previousTasks) {
         queryClient.setQueryData(TASKS_QUERY_KEY, context.previousTasks);
       }
     },
-    onSettled: () => {
-      // Force invalidate dan refresh
+    onSettled: async () => {
+      // Background refetch untuk sinkronisasi dengan server
+      // Gunakan setTimeout untuk menghindari blocking UI
+      await new Promise((resolve) => setTimeout(resolve, 100));
       queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-
-      // Additional delay untuk memastikan server sudah update
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: TASKS_QUERY_KEY });
-      }, 200);
     },
   });
 };

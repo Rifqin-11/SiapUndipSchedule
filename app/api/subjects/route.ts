@@ -106,8 +106,15 @@ export async function POST(request: NextRequest) {
         (subject: Record<string, unknown>) => {
           let meetingDates: string[] = [];
 
-          // Calculate meeting dates if day is provided
-          if (subject.day && typeof subject.day === "string") {
+          // Calculate meeting dates based on subject type
+          if (
+            subject.specificDate &&
+            typeof subject.specificDate === "string"
+          ) {
+            // One-time subject: only one meeting on the specific date
+            meetingDates = [subject.specificDate];
+          } else if (subject.day && typeof subject.day === "string") {
+            // Recurring weekly subject: calculate 14 meeting dates
             try {
               meetingDates = calculateMeetingDates(startDate, subject.day);
             } catch (error) {
@@ -178,12 +185,19 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Calculate meeting dates if day and startDate are available
-      if (body.day && startDate && typeof body.day === "string") {
+      // Calculate meeting dates based on subject type
+      if (body.specificDate) {
+        // One-time subject: only one meeting on the specific date
+        meetingDates = [body.specificDate];
+        console.log(
+          `Created one-time subject ${body.name} with single meeting on ${body.specificDate}`
+        );
+      } else if (body.day && startDate && typeof body.day === "string") {
+        // Recurring weekly subject: calculate 14 meeting dates
         try {
           meetingDates = calculateMeetingDates(startDate, body.day);
           console.log(
-            `Calculated ${meetingDates.length} meeting dates for ${body.name}`
+            `Calculated ${meetingDates.length} meeting dates for recurring subject ${body.name}`
           );
         } catch (error) {
           console.error(

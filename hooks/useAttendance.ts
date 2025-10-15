@@ -52,32 +52,64 @@ export function useAttendance() {
     }
   };
 
-  // Calculate attendance percentage based on subjects count
-  const calculateAttendancePercentage = (totalSubjects: number): number => {
-    if (!attendanceData || totalSubjects === 0) {
+  // Calculate attendance percentage based on subjects data
+  // Accepts subjects array to properly calculate based on meeting dates
+  const calculateAttendancePercentage = (
+    subjects?: Array<{
+      specificDate?: string;
+      meetingDates?: string[];
+      attendanceDates?: string[];
+    }>
+  ): number => {
+    if (!attendanceData) {
       return 0;
     }
 
+    // If subjects array is provided, use accurate calculation
+    if (subjects && subjects.length > 0) {
+      let totalAttendedMeetings = 0;
+      let totalPossibleMeetings = 0;
+
+      subjects.forEach((subject) => {
+        // Count attended meetings
+        if (subject.attendanceDates && Array.isArray(subject.attendanceDates)) {
+          totalAttendedMeetings += subject.attendanceDates.length;
+        }
+
+        // Calculate possible meetings based on subject type
+        if (subject.specificDate) {
+          // One-time subject: only 1 possible meeting
+          totalPossibleMeetings += 1;
+        } else if (
+          subject.meetingDates &&
+          Array.isArray(subject.meetingDates)
+        ) {
+          // Use actual meeting dates count
+          totalPossibleMeetings += subject.meetingDates.length;
+        } else {
+          // Legacy fallback: assume 14 meetings
+          totalPossibleMeetings += 14;
+        }
+      });
+
+      if (totalPossibleMeetings === 0) {
+        return 0;
+      }
+
+      const percentage = (totalAttendedMeetings / totalPossibleMeetings) * 100;
+      return Math.min(Math.round(percentage), 100);
+    }
+
+    // Legacy fallback: if no subjects provided, use simple calculation
+    // This is deprecated and should not be used
     const totalAttendanceRecords = attendanceData.totalRecords;
-    const totalPossibleMeetings = totalSubjects * 14; // 14 meetings per subject
+    const percentage = Math.min(totalAttendanceRecords * 7, 100); // Rough estimate
 
-    if (totalPossibleMeetings === 0) {
-      return 0;
-    }
+    console.warn(
+      "calculateAttendancePercentage called without subjects data - using legacy fallback"
+    );
 
-    // Formula: (total attendance / (total subjects × 14)) × 100%
-    const percentage = (totalAttendanceRecords / totalPossibleMeetings) * 100;
-
-    // Debug log
-    console.log("Attendance Calculation:", {
-      totalAttendanceRecords,
-      totalSubjects,
-      totalPossibleMeetings,
-      rawPercentage: percentage,
-      finalPercentage: Math.min(Math.round(percentage), 100),
-    });
-
-    return Math.min(Math.round(percentage), 100); // Cap at 100%
+    return Math.round(percentage);
   };
 
   useEffect(() => {

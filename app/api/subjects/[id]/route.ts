@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { verifyJWTToken } from "@/lib/auth";
+import { calculateMeetingDates } from "@/utils/meeting-calculator";
 
 export async function GET(
   request: NextRequest,
@@ -100,8 +101,33 @@ export async function PUT(
     const db = client.db("schedule_undip");
 
     const body = await request.json();
+
+    // Recalculate meeting dates if subject type or schedule changed
+    let meetingDates: string[] | undefined = body.meetingDates;
+
+    if (body.specificDate) {
+      // One-time subject: only one meeting on the specific date
+      meetingDates = [body.specificDate];
+      console.log(
+        `Updated to one-time subject with single meeting on ${body.specificDate}`
+      );
+    } else if (body.day && body.startDate && typeof body.day === "string") {
+      // Recurring weekly subject: calculate 14 meeting dates
+      try {
+        const calculatedDates = calculateMeetingDates(body.startDate, body.day);
+        meetingDates = calculatedDates;
+        console.log(
+          `Recalculated ${calculatedDates.length} meeting dates for recurring subject`
+        );
+      } catch (error) {
+        console.error(`Failed to recalculate meeting dates:`, error);
+        // Keep existing meetingDates if calculation fails
+      }
+    }
+
     const updateData = {
       ...body,
+      meetingDates: meetingDates,
       updatedAt: new Date(),
     };
 

@@ -108,12 +108,31 @@ const UserPage = () => {
     }
 
     let totalAttendedMeetings = 0;
-    const totalPossibleMeetings = subjects.length * 14; // Each subject has 14 meetings max
+    let totalPossibleMeetings = 0;
 
-    // Sum up all attended meetings from all subjects
+    // Sum up all attended meetings and calculate total possible meetings per subject
+    // Exclude exam schedules (UTS/UAS) from attendance calculation
     subjects.forEach((subject) => {
+      // Skip exam schedules (subjects with examType field)
+      if (subject.examType) {
+        return; // Skip this subject
+      }
+
+      // Count attended meetings
       if (subject.attendanceDates && Array.isArray(subject.attendanceDates)) {
         totalAttendedMeetings += subject.attendanceDates.length;
+      }
+
+      // Calculate possible meetings based on subject type
+      if (subject.specificDate) {
+        // One-time subject: only 1 possible meeting
+        totalPossibleMeetings += 1;
+      } else if (subject.meetingDates && Array.isArray(subject.meetingDates)) {
+        // Use actual meeting dates count (could be 14 or any number)
+        totalPossibleMeetings += subject.meetingDates.length;
+      } else {
+        // Legacy fallback: assume 14 meetings for recurring subjects
+        totalPossibleMeetings += 14;
       }
     });
 
@@ -121,14 +140,20 @@ const UserPage = () => {
       return 0;
     }
 
-    // Formula: (total attendance across all subjects / (total subjects × 14)) × 100%
+    // Formula: (total attendance across all subjects / total possible meetings) × 100%
     const percentage = (totalAttendedMeetings / totalPossibleMeetings) * 100;
 
-    console.log("New Attendance Calculation:", {
+    console.log("Attendance Calculation:", {
       totalAttendedMeetings,
       totalSubjects: subjects.length,
       totalPossibleMeetings,
       percentage: Math.round(percentage),
+      subjectsBreakdown: subjects.map((s) => ({
+        name: s.name,
+        attended: s.attendanceDates?.length || 0,
+        possible: s.specificDate ? 1 : s.meetingDates?.length || 14,
+        isOneTime: !!s.specificDate,
+      })),
     });
 
     return Math.min(Math.round(percentage), 100);
@@ -227,7 +252,11 @@ const UserPage = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4">
             <StatsCard
-              value={subjectsError ? "?" : subjects?.length || 0}
+              value={
+                subjectsError
+                  ? "?"
+                  : subjects?.filter((s) => !s.examType).length || 0
+              }
               label="Subjects"
               color="text-blue-600 dark:text-blue-400"
               isLoading={subjectsLoading}

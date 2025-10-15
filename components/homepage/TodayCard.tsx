@@ -311,10 +311,17 @@ const TodayCard: React.FC<TodayCardProps> = ({
             <div className={`flex items-center gap-1 ${textColor}`}>
               <Users className="w-4 h-4" />
               <span className="text-xs font-medium">
-                Attendance {meetingInfo.attendedMeetings}/14
+                Attendance {meetingInfo.attendedMeetings}/
+                {meetingInfo.totalMeetings}
                 {meetingInfo.hasScheduledMeetings && (
                   <span className="ml-1 text-xs opacity-75">
-                    ({Math.round((meetingInfo.attendedMeetings / 14) * 100)}%)
+                    (
+                    {Math.round(
+                      (meetingInfo.attendedMeetings /
+                        meetingInfo.totalMeetings) *
+                        100
+                    )}
+                    %)
                   </span>
                 )}
               </span>
@@ -323,7 +330,13 @@ const TodayCard: React.FC<TodayCardProps> = ({
               <div
                 className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                 style={{
-                  width: `${(meetingInfo.attendedMeetings / 14) * 100}%`,
+                  width: `${
+                    meetingInfo.totalMeetings > 0
+                      ? (meetingInfo.attendedMeetings /
+                          meetingInfo.totalMeetings) *
+                        100
+                      : 0
+                  }%`,
                 }}
               ></div>
             </div>
