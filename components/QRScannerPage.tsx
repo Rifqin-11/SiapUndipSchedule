@@ -198,31 +198,31 @@ export default function QRScannerClient() {
 
       if (videoRef.current) {
         (videoRef.current as any).srcObject = stream;
-        
+
         // Wait for video to be fully ready (multiple events)
         await new Promise<void>((resolve) => {
           if (!videoRef.current) return resolve();
-          
+
           let metadataLoaded = false;
           let canPlay = false;
-          
+
           const checkReady = () => {
             if (metadataLoaded && canPlay) {
               setIsVideoReady(true);
               resolve();
             }
           };
-          
+
           videoRef.current.onloadedmetadata = () => {
             metadataLoaded = true;
             checkReady();
           };
-          
+
           videoRef.current.oncanplay = () => {
             canPlay = true;
             checkReady();
           };
-          
+
           // Fallback timeout
           setTimeout(() => {
             if (!metadataLoaded || !canPlay) {
@@ -232,7 +232,7 @@ export default function QRScannerClient() {
             }
           }, 2000);
         });
-        
+
         // Additional delay to ensure video is actually rendering
         await new Promise(resolve => setTimeout(resolve, 300));
       }
@@ -274,13 +274,13 @@ export default function QRScannerClient() {
     async (value: number[]) => {
       const z = value[0];
       setZoomLevel(z);
-      
+
       if (!useCssZoom && isVideoReady) {
         // Clear previous timeout
         if (zoomTimeoutRef.current) {
           clearTimeout(zoomTimeoutRef.current);
         }
-        
+
         // Debounce hardware zoom changes
         zoomTimeoutRef.current = setTimeout(async () => {
           const track: any = streamRef.current?.getVideoTracks?.()[0];
@@ -476,7 +476,10 @@ export default function QRScannerClient() {
               type="button"
               size="icon"
               variant="secondary"
-              onClick={() => router.back()}
+              onClick={() => {
+                stopScanning();
+                router.back();
+              }}
               className="h-10 w-10 rounded-full bg-black/50 hover:bg-black/60 text-white border-0 backdrop-blur-md"
             >
               <ArrowLeft className="h-5 w-5" />
