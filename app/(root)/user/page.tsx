@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 import ThemeToggle from "@/components/ThemeToggle";
+import MicrosoftLogo from "@/public/microsoft.svg";
 
 const UserPage = () => {
   // Get subjects data
@@ -64,6 +65,14 @@ const UserPage = () => {
     } finally {
       setIsLoggingOut(false);
     }
+  };
+
+  const handleSSOLogin = () => {
+    window.open(
+      "https://sso.undip.ac.id/pages/dashboard",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const userMenuItems = [
@@ -349,6 +358,20 @@ const UserPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Login SSO Button */}
+          <button
+            onClick={handleSSOLogin}
+            disabled={isLoggingOut}
+            className="w-full p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Image
+              src={MicrosoftLogo}
+              alt="Microsoft Logo"
+              className="w-5 h-5"
+            />
+            <span className="font-medium">Login SSO</span>
+          </button>
 
           {/* Logout Button */}
           <button

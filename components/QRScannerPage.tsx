@@ -234,7 +234,7 @@ export default function QRScannerClient() {
         });
 
         // Additional delay to ensure video is actually rendering
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
       // Zoom capability
