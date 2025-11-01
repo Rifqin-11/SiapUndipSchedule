@@ -72,10 +72,16 @@ export function subjectToCalendarEvent(
     );
   }
 
-  // Parse time from startTime and endTime
-  const [startHour, startMinute] = subject.startTime.split(":").map(Number);
-  const [endHour, endMinute] = subject.endTime.split(":").map(Number);
+  // Parse time from startTime and endTime - support both ":" and "." as separator
+  const startTimeParts = subject.startTime.replace(".", ":").split(":");
+  const endTimeParts = subject.endTime.replace(".", ":").split(":");
 
+  const startHour = parseInt(startTimeParts[0]);
+  const startMinute = parseInt(startTimeParts[1] || "0");
+  const endHour = parseInt(endTimeParts[0]);
+  const endMinute = parseInt(endTimeParts[1] || "0");
+
+  // Create date with timezone awareness for Asia/Jakarta (WIB)
   const startDateTime = new Date(targetDate);
   startDateTime.setHours(startHour, startMinute, 0, 0);
 
@@ -201,18 +207,36 @@ export async function createMultipleEvents(oauth2Client: any, events: any[]) {
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
   const results = [];
-  for (const event of events) {
+  let successCount = 0;
+  let failCount = 0;
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
     try {
+      console.log(
+        `[Export] Creating event ${i + 1}/${events.length}: ${event.summary}`
+      );
       const response = await calendar.events.insert({
         calendarId: "primary",
         requestBody: event,
       });
       results.push({ success: true, data: response.data });
+      successCount++;
+      console.log(`[Export] ✅ Success: ${event.summary}`);
     } catch (error: any) {
-      results.push({ success: false, error: error.message });
+      console.error(`[Export] ❌ Failed: ${event.summary}`, error.message);
+      results.push({
+        success: false,
+        error: error.message,
+        event: event.summary,
+      });
+      failCount++;
     }
   }
 
+  console.log(
+    `[Export] Summary: ${successCount} succeeded, ${failCount} failed out of ${events.length} total`
+  );
   return results;
 }
 
@@ -227,6 +251,7 @@ export function createEventsFromMeetingDates(subject: Subject) {
 
   // If it's an exam or has a specific date, create one event
   if (isExam || isSpecificDate) {
+    console.log(`[Export] Creating exam/specific event for ${subject.name}`);
     return [subjectToCalendarEvent(subject)];
   }
 
@@ -236,14 +261,27 @@ export function createEventsFromMeetingDates(subject: Subject) {
     Array.isArray(subject.meetingDates) &&
     subject.meetingDates.length > 0
   ) {
+    console.log(
+      `[Export] Creating ${subject.meetingDates.length} events for ${subject.name} from meetingDates`
+    );
     for (const meetingDate of subject.meetingDates) {
-      const event = subjectToCalendarEvent(subject, meetingDate);
-      events.push(event);
+      try {
+        const event = subjectToCalendarEvent(subject, meetingDate);
+        events.push(event);
+      } catch (error) {
+        console.error(
+          `[Export] Error creating event for ${subject.name} on ${meetingDate}:`,
+          error
+        );
+      }
     }
     return events;
   }
 
   // Fallback: if no meetingDates, create recurring event (legacy support)
+  console.log(
+    `[Export] No meetingDates found for ${subject.name}, creating recurring event`
+  );
   const event = subjectToCalendarEvent(subject);
   return [
     {
@@ -264,8 +302,14 @@ export function createRescheduleEvent(subject: Subject, reschedule: any) {
   const endTime = reschedule.endTime || subject.endTime;
   const room = reschedule.room || subject.room;
 
-  const [startHour, startMinute] = startTime.split(":").map(Number);
-  const [endHour, endMinute] = endTime.split(":").map(Number);
+  // Parse time - support both ":" and "." as separator
+  const startTimeParts = startTime.replace(".", ":").split(":");
+  const endTimeParts = endTime.replace(".", ":").split(":");
+
+  const startHour = parseInt(startTimeParts[0]);
+  const startMinute = parseInt(startTimeParts[1] || "0");
+  const endHour = parseInt(endTimeParts[0]);
+  const endMinute = parseInt(endTimeParts[1] || "0");
 
   const startDateTime = new Date(rescheduleDate);
   startDateTime.setHours(startHour, startMinute, 0, 0);
@@ -320,22 +364,34 @@ export async function exportScheduleToCalendar(
   oauth2Client: any,
   subjects: Subject[]
 ) {
+  console.log(`[Export] Starting export for ${subjects.length} subjects`);
   const allEvents = [];
 
   // Create events based on meetingDates for each subject
   for (const subject of subjects) {
+    console.log(`[Export] Processing subject: ${subject.name}`, {
+      day: subject.day,
+      meetingDatesCount: subject.meetingDates?.length || 0,
+      startTime: subject.startTime,
+      endTime: subject.endTime,
+    });
+
     // Get all events for this subject (based on meetingDates)
     const subjectEvents = createEventsFromMeetingDates(subject);
     allEvents.push(...subjectEvents);
 
     // Add reschedule events as separate one-time events
     if (subject.reschedules && subject.reschedules.length > 0) {
+      console.log(
+        `[Export] Adding ${subject.reschedules.length} reschedule events for ${subject.name}`
+      );
       for (const reschedule of subject.reschedules) {
         allEvents.push(createRescheduleEvent(subject, reschedule));
       }
     }
   }
 
+  console.log(`[Export] Total events to create: ${allEvents.length}`);
   return createMultipleEvents(oauth2Client, allEvents);
 }
 

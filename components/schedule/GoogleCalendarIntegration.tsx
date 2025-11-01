@@ -99,6 +99,17 @@ export default function GoogleCalendarIntegration({
       return;
     }
 
+    console.log("[GoogleCalendar] Exporting subjects:", {
+      count: subjects.length,
+      subjects: subjects.map((s) => ({
+        name: s.name,
+        day: s.day,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        meetingDatesCount: s.meetingDates?.length || 0,
+      })),
+    });
+
     const result = await exportSchedule(subjects);
     if (result) {
       setIsExportDialogOpen(false);
