@@ -87,7 +87,7 @@ export function useGoogleCalendar() {
 
     try {
       setIsLoading(true);
-      
+
       // Show progress toast
       const loadingToast = toast.loading(
         "Mengekspor jadwal ke Google Calendar... Mohon tunggu."
@@ -116,7 +116,7 @@ export function useGoogleCalendar() {
       if (data.success) {
         const successCount = data.results.filter((r: any) => r.success).length;
         const failCount = data.results.filter((r: any) => !r.success).length;
-        
+
         if (failCount > 0) {
           toast.warning(
             `${successCount} event berhasil, ${failCount} gagal diekspor ke Google Calendar`
@@ -132,8 +132,11 @@ export function useGoogleCalendar() {
       }
     } catch (error: any) {
       console.error("Error exporting schedule:", error);
-      
-      if (error.message.includes("504") || error.message.includes("Gateway Timeout")) {
+
+      if (
+        error.message.includes("504") ||
+        error.message.includes("Gateway Timeout")
+      ) {
         toast.error(
           "Waktu ekspor habis. Coba kurangi jumlah jadwal atau coba lagi nanti."
         );
@@ -257,6 +260,70 @@ export function useGoogleCalendar() {
     }
   };
 
+  // Delete all events from Google Calendar
+  const deleteAllEvents = async (timeMin?: string, timeMax?: string) => {
+    if (!isConnected || !tokens) {
+      toast.error("Silakan hubungkan dengan Google Calendar terlebih dahulu");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const loadingToast = toast.loading(
+        "Menghapus semua event dari Google Calendar..."
+      );
+
+      const response = await fetch("/api/google-calendar/delete-all", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tokens,
+          timeMin,
+          timeMax,
+        }),
+      });
+
+      toast.dismiss(loadingToast);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (data.deletedCount === 0) {
+          toast.info("Tidak ada event untuk dihapus");
+        } else {
+          toast.success(
+            `Berhasil menghapus ${data.deletedCount} event dari Google Calendar`
+          );
+        }
+        return data;
+      } else {
+        throw new Error(data.error || "Failed to delete events");
+      }
+    } catch (error: any) {
+      console.error("Error deleting events:", error);
+
+      if (
+        error.message.includes("504") ||
+        error.message.includes("Gateway Timeout")
+      ) {
+        toast.error(
+          "Waktu habis. Terlalu banyak event. Coba hapus manual di Google Calendar."
+        );
+      } else {
+        toast.error("Gagal menghapus event dari Google Calendar");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     isConnected,
     isLoading,
@@ -268,5 +335,7 @@ export function useGoogleCalendar() {
     exportSubject,
     exportTasks,
     exportTask,
+    deleteAllEvents,
   };
 }
+

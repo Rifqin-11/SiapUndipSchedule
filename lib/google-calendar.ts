@@ -81,12 +81,22 @@ export function subjectToCalendarEvent(
   const endHour = parseInt(endTimeParts[0]);
   const endMinute = parseInt(endTimeParts[1] || "0");
 
-  // Create date with timezone awareness for Asia/Jakarta (WIB)
-  const startDateTime = new Date(targetDate);
-  startDateTime.setHours(startHour, startMinute, 0, 0);
+  // Format date string for WIB timezone (Asia/Jakarta)
+  // Use YYYY-MM-DD format to ensure consistent date parsing
+  const year = targetDate.getFullYear();
+  const month = String(targetDate.getMonth() + 1).padStart(2, "0");
+  const day = String(targetDate.getDate()).padStart(2, "0");
+  const dateStr = `${year}-${month}-${day}`;
 
-  const endDateTime = new Date(targetDate);
-  endDateTime.setHours(endHour, endMinute, 0, 0);
+  // Create datetime strings in ISO 8601 format for Asia/Jakarta timezone
+  const startHourStr = String(startHour).padStart(2, "0");
+  const startMinuteStr = String(startMinute).padStart(2, "0");
+  const endHourStr = String(endHour).padStart(2, "0");
+  const endMinuteStr = String(endMinute).padStart(2, "0");
+
+  // Format: YYYY-MM-DDTHH:mm:ss for the specified timezone
+  const startDateTimeStr = `${dateStr}T${startHourStr}:${startMinuteStr}:00`;
+  const endDateTimeStr = `${dateStr}T${endHourStr}:${endMinuteStr}:00`;
 
   const lecturerString = Array.isArray(subject.lecturer)
     ? subject.lecturer.join(", ")
@@ -108,11 +118,11 @@ export function subjectToCalendarEvent(
     description,
     location: subject.room,
     start: {
-      dateTime: startDateTime.toISOString(),
+      dateTime: startDateTimeStr,
       timeZone: "Asia/Jakarta",
     },
     end: {
-      dateTime: endDateTime.toISOString(),
+      dateTime: endDateTimeStr,
       timeZone: "Asia/Jakarta",
     },
     colorId: isExam ? "11" : "9", // Red for exams, Blue for regular classes
@@ -140,30 +150,44 @@ export function taskToCalendarEvent(task: Task) {
   let eventTime;
   if (task.dueTime) {
     const [hour, minute] = task.dueTime.split(":").map(Number);
-    const startDateTime = new Date(dueDate);
-    startDateTime.setHours(hour, minute, 0, 0);
-
-    const endDateTime = new Date(startDateTime);
-    endDateTime.setHours(hour + 1, minute, 0, 0); // 1 hour duration
+    
+    // Format date string for WIB timezone
+    const year = dueDate.getFullYear();
+    const month = String(dueDate.getMonth() + 1).padStart(2, "0");
+    const day = String(dueDate.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+    
+    // Create datetime strings
+    const startHourStr = String(hour).padStart(2, "0");
+    const startMinuteStr = String(minute).padStart(2, "0");
+    const endHourStr = String(hour + 1).padStart(2, "0");
+    
+    const startDateTimeStr = `${dateStr}T${startHourStr}:${startMinuteStr}:00`;
+    const endDateTimeStr = `${dateStr}T${endHourStr}:${startMinuteStr}:00`;
 
     eventTime = {
       start: {
-        dateTime: startDateTime.toISOString(),
+        dateTime: startDateTimeStr,
         timeZone: "Asia/Jakarta",
       },
       end: {
-        dateTime: endDateTime.toISOString(),
+        dateTime: endDateTimeStr,
         timeZone: "Asia/Jakarta",
       },
     };
   } else {
-    // All-day event
+    // All-day event - use YYYY-MM-DD format
+    const year = dueDate.getFullYear();
+    const month = String(dueDate.getMonth() + 1).padStart(2, "0");
+    const day = String(dueDate.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+    
     eventTime = {
       start: {
-        date: dueDate.toISOString().split("T")[0],
+        date: dateStr,
       },
       end: {
-        date: dueDate.toISOString().split("T")[0],
+        date: dateStr,
       },
     };
   }
@@ -238,7 +262,9 @@ export async function createMultipleEvents(oauth2Client: any, events: any[]) {
       // Add delay every BATCH_SIZE events to avoid rate limiting
       if ((i + 1) % BATCH_SIZE === 0 && i + 1 < events.length) {
         console.log(
-          `[Export] Batch ${Math.floor((i + 1) / BATCH_SIZE)} complete, waiting ${DELAY_BETWEEN_BATCHES}ms...`
+          `[Export] Batch ${Math.floor(
+            (i + 1) / BATCH_SIZE
+          )} complete, waiting ${DELAY_BETWEEN_BATCHES}ms...`
         );
         await delay(DELAY_BETWEEN_BATCHES);
       }
@@ -400,11 +426,20 @@ export function createRescheduleEvent(subject: Subject, reschedule: any) {
   const endHour = parseInt(endTimeParts[0]);
   const endMinute = parseInt(endTimeParts[1] || "0");
 
-  const startDateTime = new Date(rescheduleDate);
-  startDateTime.setHours(startHour, startMinute, 0, 0);
+  // Format date string for WIB timezone (Asia/Jakarta)
+  const year = rescheduleDate.getFullYear();
+  const month = String(rescheduleDate.getMonth() + 1).padStart(2, "0");
+  const day = String(rescheduleDate.getDate()).padStart(2, "0");
+  const dateStr = `${year}-${month}-${day}`;
 
-  const endDateTime = new Date(rescheduleDate);
-  endDateTime.setHours(endHour, endMinute, 0, 0);
+  // Create datetime strings in ISO 8601 format for Asia/Jakarta timezone
+  const startHourStr = String(startHour).padStart(2, "0");
+  const startMinuteStr = String(startMinute).padStart(2, "0");
+  const endHourStr = String(endHour).padStart(2, "0");
+  const endMinuteStr = String(endMinute).padStart(2, "0");
+
+  const startDateTimeStr = `${dateStr}T${startHourStr}:${startMinuteStr}:00`;
+  const endDateTimeStr = `${dateStr}T${endHourStr}:${endMinuteStr}:00`;
 
   const lecturerString = Array.isArray(subject.lecturer)
     ? subject.lecturer.join(", ")
@@ -429,11 +464,11 @@ export function createRescheduleEvent(subject: Subject, reschedule: any) {
     }`,
     location: room,
     start: {
-      dateTime: startDateTime.toISOString(),
+      dateTime: startDateTimeStr,
       timeZone: "Asia/Jakarta",
     },
     end: {
-      dateTime: endDateTime.toISOString(),
+      dateTime: endDateTimeStr,
       timeZone: "Asia/Jakarta",
     },
     colorId: "5", // Yellow/Orange color for reschedules
@@ -481,7 +516,7 @@ export async function exportScheduleToCalendar(
   }
 
   console.log(`[Export] Total events to create: ${allEvents.length}`);
-  
+
   // Use parallel processing for better performance
   return createMultipleEventsParallel(oauth2Client, allEvents);
 }
@@ -491,7 +526,99 @@ export async function exportTasksToCalendar(oauth2Client: any, tasks: Task[]) {
   const events = tasks
     .filter((task) => task.status !== "completed") // Only export incomplete tasks
     .map((task) => taskToCalendarEvent(task));
-  
+
   // Use parallel processing for better performance
   return createMultipleEventsParallel(oauth2Client, events);
 }
+
+// Delete all events from Google Calendar
+export async function deleteAllCalendarEvents(
+  oauth2Client: any,
+  timeMin?: string,
+  timeMax?: string
+) {
+  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+
+  console.log("[Delete] Fetching all events from calendar...");
+
+  try {
+    // Get all events
+    const response = await calendar.events.list({
+      calendarId: "primary",
+      timeMin: timeMin || new Date().toISOString(), // Default: from today
+      timeMax: timeMax, // Optional: end date
+      maxResults: 2500, // Google Calendar API max
+      singleEvents: true,
+      orderBy: "startTime",
+    });
+
+    const events = response.data.items || [];
+    console.log(`[Delete] Found ${events.length} events to delete`);
+
+    if (events.length === 0) {
+      return {
+        success: true,
+        deletedCount: 0,
+        message: "No events found to delete",
+      };
+    }
+
+    // Delete events in batches
+    const BATCH_SIZE = 10;
+    const DELAY_BETWEEN_BATCHES = 500;
+    let deletedCount = 0;
+    let failedCount = 0;
+
+    for (let i = 0; i < events.length; i += BATCH_SIZE) {
+      const batch = events.slice(i, i + BATCH_SIZE);
+      const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+
+      console.log(
+        `[Delete] Processing batch ${batchNumber} (${batch.length} events)...`
+      );
+
+      const deletePromises = batch.map(async (event) => {
+        if (!event.id) return { success: false };
+
+        try {
+          await calendar.events.delete({
+            calendarId: "primary",
+            eventId: event.id,
+          });
+          console.log(`[Delete] ✅ Deleted: ${event.summary}`);
+          return { success: true };
+        } catch (error: any) {
+          console.error(`[Delete] ❌ Failed to delete: ${event.summary}`, error.message);
+          return { success: false };
+        }
+      });
+
+      const results = await Promise.all(deletePromises);
+      deletedCount += results.filter((r) => r.success).length;
+      failedCount += results.filter((r) => !r.success).length;
+
+      // Delay between batches
+      if (i + BATCH_SIZE < events.length) {
+        console.log(
+          `[Delete] Batch ${batchNumber} complete, waiting ${DELAY_BETWEEN_BATCHES}ms...`
+        );
+        await delay(DELAY_BETWEEN_BATCHES);
+      }
+    }
+
+    console.log(
+      `[Delete] Summary: ${deletedCount} deleted, ${failedCount} failed out of ${events.length} total`
+    );
+
+    return {
+      success: true,
+      deletedCount,
+      failedCount,
+      totalEvents: events.length,
+    };
+  } catch (error: any) {
+    console.error("[Delete] Error deleting events:", error);
+    throw new Error(`Failed to delete events: ${error.message}`);
+  }
+}
+

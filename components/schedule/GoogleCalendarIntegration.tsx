@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Calendar, Download, LogOut, Loader2, RefreshCw } from "lucide-react";
+import { Calendar, Download, LogOut, Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -42,10 +42,12 @@ export default function GoogleCalendarIntegration({
     disconnect,
     toggleAutoSync,
     exportSchedule,
+    deleteAllEvents,
   } = useGoogleCalendar();
 
   const [isExportDialogOpen, setIsExportDialogOpen] = React.useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   // Handle OAuth callback
   useEffect(() => {
@@ -125,6 +127,13 @@ export default function GoogleCalendarIntegration({
     setIsExportDialogOpen(true);
   };
 
+  const handleDeleteAll = async () => {
+    const result = await deleteAllEvents();
+    if (result) {
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   return (
     <>
       {!isConnected ? (
@@ -174,6 +183,14 @@ export default function GoogleCalendarIntegration({
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-orange-600"
+              disabled={isLoading}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Hapus Semua Event
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleDisconnect}
               className="text-red-600"
@@ -285,6 +302,63 @@ export default function GoogleCalendarIntegration({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete All Events Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hapus Semua Event?</DialogTitle>
+            <DialogDescription>
+              Tindakan ini akan menghapus SEMUA event dari Google Calendar Anda
+              mulai dari hari ini ke depan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 p-4">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                ⚠️ Peringatan
+              </p>
+              <ul className="text-xs text-red-700 dark:text-red-300 space-y-1 list-disc list-inside">
+                <li>Semua event akan dihapus permanen</li>
+                <li>Tidak bisa di-undo</li>
+                <li>Termasuk event yang dibuat dari aplikasi lain</li>
+                <li>Proses bisa memakan waktu beberapa menit</li>
+              </ul>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Pastikan Anda benar-benar ingin menghapus semua event sebelum
+              melanjutkan.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAll}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Menghapus...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Ya, Hapus Semua
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
+
