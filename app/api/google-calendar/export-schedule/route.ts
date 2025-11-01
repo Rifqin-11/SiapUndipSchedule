@@ -5,6 +5,9 @@ import {
   exportScheduleToCalendar,
 } from "@/lib/google-calendar";
 
+// Increase timeout for this route (Vercel allows up to 60s for Hobby plan)
+export const maxDuration = 60; // 60 seconds
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

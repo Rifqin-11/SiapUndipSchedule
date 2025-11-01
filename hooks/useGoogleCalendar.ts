@@ -87,6 +87,12 @@ export function useGoogleCalendar() {
 
     try {
       setIsLoading(true);
+      
+      // Show progress toast
+      const loadingToast = toast.loading(
+        "Mengekspor jadwal ke Google Calendar... Mohon tunggu."
+      );
+
       const response = await fetch("/api/google-calendar/export-schedule", {
         method: "POST",
         headers: {
@@ -98,20 +104,42 @@ export function useGoogleCalendar() {
         }),
       });
 
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
       if (data.success) {
         const successCount = data.results.filter((r: any) => r.success).length;
-        toast.success(
-          `Berhasil mengekspor ${successCount} event ke Google Calendar`
-        );
+        const failCount = data.results.filter((r: any) => !r.success).length;
+        
+        if (failCount > 0) {
+          toast.warning(
+            `${successCount} event berhasil, ${failCount} gagal diekspor ke Google Calendar`
+          );
+        } else {
+          toast.success(
+            `Berhasil mengekspor ${successCount} event ke Google Calendar`
+          );
+        }
         return data.results;
       } else {
         throw new Error(data.error || "Failed to export schedule");
       }
     } catch (error: any) {
       console.error("Error exporting schedule:", error);
-      toast.error("Gagal mengekspor jadwal ke Google Calendar");
+      
+      if (error.message.includes("504") || error.message.includes("Gateway Timeout")) {
+        toast.error(
+          "Waktu ekspor habis. Coba kurangi jumlah jadwal atau coba lagi nanti."
+        );
+      } else {
+        toast.error("Gagal mengekspor jadwal ke Google Calendar");
+      }
     } finally {
       setIsLoading(false);
     }

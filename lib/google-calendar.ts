@@ -202,13 +202,24 @@ export async function createCalendarEvent(oauth2Client: any, event: any) {
   return response.data;
 }
 
-// Create multiple events in batch
+// Helper function to add delay between requests
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Create multiple events in batch with rate limiting
 export async function createMultipleEvents(oauth2Client: any, events: any[]) {
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
   const results = [];
   let successCount = 0;
   let failCount = 0;
+
+  // Process in smaller batches to avoid timeout
+  const BATCH_SIZE = 10;
+  const DELAY_BETWEEN_BATCHES = 1000; // 1 second delay between batches
+
+  console.log(
+    `[Export] Processing ${events.length} events in batches of ${BATCH_SIZE}`
+  );
 
   for (let i = 0; i < events.length; i++) {
     const event = events[i];
@@ -223,6 +234,14 @@ export async function createMultipleEvents(oauth2Client: any, events: any[]) {
       results.push({ success: true, data: response.data });
       successCount++;
       console.log(`[Export] ✅ Success: ${event.summary}`);
+
+      // Add delay every BATCH_SIZE events to avoid rate limiting
+      if ((i + 1) % BATCH_SIZE === 0 && i + 1 < events.length) {
+        console.log(
+          `[Export] Batch ${Math.floor((i + 1) / BATCH_SIZE)} complete, waiting ${DELAY_BETWEEN_BATCHES}ms...`
+        );
+        await delay(DELAY_BETWEEN_BATCHES);
+      }
     } catch (error: any) {
       console.error(`[Export] ❌ Failed: ${event.summary}`, error.message);
       results.push({
@@ -237,6 +256,76 @@ export async function createMultipleEvents(oauth2Client: any, events: any[]) {
   console.log(
     `[Export] Summary: ${successCount} succeeded, ${failCount} failed out of ${events.length} total`
   );
+  return results;
+}
+
+// Faster parallel event creation with batching
+export async function createMultipleEventsParallel(
+  oauth2Client: any,
+  events: any[]
+) {
+  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+
+  const results = [];
+  const BATCH_SIZE = 5; // Smaller batch for parallel requests
+  const DELAY_BETWEEN_BATCHES = 500; // 500ms delay
+
+  console.log(
+    `[Export] Processing ${events.length} events in parallel batches of ${BATCH_SIZE}`
+  );
+
+  // Split events into batches
+  for (let i = 0; i < events.length; i += BATCH_SIZE) {
+    const batch = events.slice(i, i + BATCH_SIZE);
+    const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+
+    console.log(
+      `[Export] Processing batch ${batchNumber} (${batch.length} events)...`
+    );
+
+    // Process batch in parallel
+    const batchPromises = batch.map(async (event, index) => {
+      try {
+        const response = await calendar.events.insert({
+          calendarId: "primary",
+          requestBody: event,
+        });
+        console.log(
+          `[Export] ✅ Success: ${event.summary} (batch ${batchNumber})`
+        );
+        return { success: true, data: response.data };
+      } catch (error: any) {
+        console.error(
+          `[Export] ❌ Failed: ${event.summary} (batch ${batchNumber})`,
+          error.message
+        );
+        return {
+          success: false,
+          error: error.message,
+          event: event.summary,
+        };
+      }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    results.push(...batchResults);
+
+    // Delay between batches
+    if (i + BATCH_SIZE < events.length) {
+      console.log(
+        `[Export] Batch ${batchNumber} complete, waiting ${DELAY_BETWEEN_BATCHES}ms...`
+      );
+      await delay(DELAY_BETWEEN_BATCHES);
+    }
+  }
+
+  const successCount = results.filter((r) => r.success).length;
+  const failCount = results.filter((r) => !r.success).length;
+
+  console.log(
+    `[Export] Summary: ${successCount} succeeded, ${failCount} failed out of ${events.length} total`
+  );
+
   return results;
 }
 
@@ -392,7 +481,9 @@ export async function exportScheduleToCalendar(
   }
 
   console.log(`[Export] Total events to create: ${allEvents.length}`);
-  return createMultipleEvents(oauth2Client, allEvents);
+  
+  // Use parallel processing for better performance
+  return createMultipleEventsParallel(oauth2Client, allEvents);
 }
 
 // Export all tasks
@@ -400,5 +491,7 @@ export async function exportTasksToCalendar(oauth2Client: any, tasks: Task[]) {
   const events = tasks
     .filter((task) => task.status !== "completed") // Only export incomplete tasks
     .map((task) => taskToCalendarEvent(task));
-  return createMultipleEvents(oauth2Client, events);
+  
+  // Use parallel processing for better performance
+  return createMultipleEventsParallel(oauth2Client, events);
 }
