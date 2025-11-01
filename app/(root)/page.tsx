@@ -80,7 +80,6 @@ import {
   useUpdateTask,
   useDeleteTask,
 } from "@/hooks/useTasks";
-import { useAutoSyncTask } from "@/hooks/useAutoSyncTask";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import type { Task } from "@/components/tasks/types";
@@ -151,19 +150,8 @@ const Page = () => {
     startOffset: 10,
   });
 
-  // Auto-sync integration for tasks
-  const { syncTaskToCalendar } = useAutoSyncTask();
-
-  const createTaskMutation = useCreateTask({
-    onAutoSyncSuccess: (task) => {
-      syncTaskToCalendar(task);
-    },
-  });
-  const updateTaskMutation = useUpdateTask({
-    onAutoSyncSuccess: (task) => {
-      syncTaskToCalendar(task);
-    },
-  });
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
 
   // Drawer detail task

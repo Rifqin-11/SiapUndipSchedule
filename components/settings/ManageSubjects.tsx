@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   useSubjects,
   useCreateSubject,
@@ -24,6 +25,12 @@ import {
 import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+
+// Lazy load Google Calendar integration
+const GoogleCalendarIntegration = dynamic(
+  () => import("@/components/schedule/GoogleCalendarIntegration"),
+  { ssr: false, loading: () => <div /> }
+);
 
 const ManageSubjects = () => {
   const {
@@ -267,6 +274,11 @@ const ManageSubjects = () => {
             Manage Subjects
           </h1>
           <div className="flex gap-3">
+            {/* Google Calendar Integration */}
+            {safeSubjects.length > 0 && (
+              <GoogleCalendarIntegration subjects={safeSubjects} />
+            )}
+
             {/* Delete All Button - only show if there are subjects */}
             {safeSubjects.length > 0 && (
               <button

@@ -16,11 +16,6 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const GoogleCalendarTasksIntegration = dynamic(
-  () => import("@/components/tasks/GoogleCalendarTasksIntegration"),
-  { ssr: false, loading: () => <div /> }
-);
 import {
   Select,
   SelectContent,
@@ -36,7 +31,6 @@ import {
   useDeleteTask,
   type Task,
 } from "@/hooks/useTasks";
-import { useAutoSyncTask } from "@/hooks/useAutoSyncTask";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 import { TaskCard } from "@/components/tasks/TaskCard";
@@ -50,19 +44,8 @@ import PageHeader from "@/components/PageHeader";
 export default function TasksPage() {
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
 
-  // Auto-sync integration
-  const { syncTaskToCalendar } = useAutoSyncTask();
-
-  const createTaskMutation = useCreateTask({
-    onAutoSyncSuccess: (task) => {
-      syncTaskToCalendar(task);
-    },
-  });
-  const updateTaskMutation = useUpdateTask({
-    onAutoSyncSuccess: (task) => {
-      syncTaskToCalendar(task);
-    },
-  });
+  const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
 
   const { subjects, loading: subjectsLoading } = useSubjectsForTasks();
@@ -213,16 +196,13 @@ export default function TasksPage() {
         variant="tasks"
         // selectedDay="Wednesday"   // opsional; kalau tidak diisi pakai hari ini
         rightSlot={
-          <div className="flex gap-2">
-            <GoogleCalendarTasksIntegration tasks={tasks} />
-            <Button
-              onClick={openCreate}
-              className="bg-black dark:bg-secondary hover:bg-gray-700 rounded-full sm:rounded-md text-white"
-            >
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Add Task</span>
-            </Button>
-          </div>
+          <Button
+            onClick={openCreate}
+            className="bg-black dark:bg-secondary hover:bg-gray-700 rounded-full sm:rounded-md text-white"
+          >
+            <Plus className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Add Task</span>
+          </Button>
         }
       />
       {/* Content dengan padding-top untuk fixed header di mobile saja */}

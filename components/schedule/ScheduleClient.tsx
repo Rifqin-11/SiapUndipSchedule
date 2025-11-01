@@ -28,11 +28,6 @@ const RescheduleModal = dynamic(
   { ssr: false, loading: () => <div /> }
 );
 
-const GoogleCalendarIntegration = dynamic(
-  () => import("@/components/schedule/GoogleCalendarIntegration"),
-  { ssr: false, loading: () => <div /> }
-);
-
 import Link from "next/link";
 import {
   useSubjects,
@@ -512,7 +507,6 @@ const ScheduleClient = () => {
         <div className="mx-5 flex justify-between items-center mb-4">
           <h1 className="font-bold">Academic Schedule</h1>
           <div className="flex gap-2">
-            <GoogleCalendarIntegration subjects={subjectsArray} />
             <Button
               onClick={handleAddSubject}
               size="sm"
