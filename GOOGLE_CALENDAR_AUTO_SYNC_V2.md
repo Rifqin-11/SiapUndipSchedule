@@ -178,6 +178,7 @@ Komponen minimalis di halaman User:
 ```
 
 Fitur:
+
 - ✅ Connect/Disconnect button
 - ✅ Auto-enable auto-sync saat connect
 - ✅ Status indicator (connected/disconnected)
@@ -198,7 +199,7 @@ const GoogleCalendarConnect = dynamic(
 <div className="space-y-3">
   <h2>Calendar Integration</h2>
   <GoogleCalendarConnect />
-</div>
+</div>;
 ```
 
 ## 🔄 Flow Auto-Sync
@@ -212,22 +213,22 @@ User Page → Click "Connect" → Google OAuth → Auto-sync enabled
 ### 2. Add Subject
 
 ```
-Add Subject → Save → createSubjectMutation.onAutoSyncSuccess() 
+Add Subject → Save → createSubjectMutation.onAutoSyncSuccess()
 → syncSubjectToCalendar() → Silent sync to Google Calendar
 ```
 
 ### 3. Record Reschedule
 
 ```
-Record Reschedule → Submit → API returns updated subject 
+Record Reschedule → Submit → API returns updated subject
 → syncSubjectToCalendar() → Silent sync to Google Calendar
 ```
 
 ### 4. Upload UTS/UAS
 
 ```
-Upload Kartu → Submit → API returns inserted + updated subjects 
-→ Loop through all subjects → syncSubjectToCalendar() 
+Upload Kartu → Submit → API returns inserted + updated subjects
+→ Loop through all subjects → syncSubjectToCalendar()
 → Silent sync all to Google Calendar
 ```
 
@@ -236,16 +237,19 @@ Upload Kartu → Submit → API returns inserted + updated subjects
 ### ✅ Keuntungan Auto-Sync Otomatis
 
 1. **🚀 Zero Manual Work**
+
    - Tidak perlu klik "Export to Calendar" manual
    - Tidak perlu pilih minggu atau range
    - Tidak perlu confirm dialog
 
 2. **⚡ Real-time Sync**
+
    - Jadwal langsung masuk Google Calendar
    - Update otomatis saat ada perubahan
    - Reschedule langsung tersinkronisasi
 
 3. **🔕 Silent Operation**
+
    - Tidak mengganggu dengan toast notification berlebihan
    - Console log untuk debugging saja
    - Error ditangani secara silent (tidak mengganggu user)
@@ -309,15 +313,15 @@ console.log("Auto-sync enabled:", isAutoSyncEnabled);
 
 ### Changes from Previous Version
 
-| Before                 | After                         |
-| ---------------------- | ----------------------------- |
-| Manual export button   | Automatic sync                |
-| Week slider selection  | Uses meetingDates directly    |
-| Export dialog          | Silent background sync        |
-| Schedule page button   | User page button only         |
-| Tasks integration      | ❌ Removed (subjects only)    |
-| ManageSubjects button  | ❌ Removed (User page only)   |
-| Manual week selection  | ✅ Automatic from meetingDates |
+| Before                | After                          |
+| --------------------- | ------------------------------ |
+| Manual export button  | Automatic sync                 |
+| Week slider selection | Uses meetingDates directly     |
+| Export dialog         | Silent background sync         |
+| Schedule page button  | User page button only          |
+| Tasks integration     | ❌ Removed (subjects only)     |
+| ManageSubjects button | ❌ Removed (User page only)    |
+| Manual week selection | ✅ Automatic from meetingDates |
 
 ### Button Location
 

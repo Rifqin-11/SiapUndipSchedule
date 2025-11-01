@@ -14,13 +14,13 @@
 
 Semua aksi ini **otomatis sync ke Google Calendar**:
 
-| Aksi | Lokasi | Auto-Sync |
-|------|--------|-----------|
-| ➕ Add Subject | ManageSubjects / Schedule | ✅ Auto |
-| ✏️ Edit Subject | ManageSubjects / Schedule | ✅ Auto |
-| 📅 Record Reschedule | Schedule (klik reschedule) | ✅ Auto |
-| 🎓 Upload UTS/UAS | ManageSubjects → Upload | ✅ Auto |
-| 📝 Upload IRS | ManageSubjects → Upload | ✅ Auto |
+| Aksi                 | Lokasi                     | Auto-Sync |
+| -------------------- | -------------------------- | --------- |
+| ➕ Add Subject       | ManageSubjects / Schedule  | ✅ Auto   |
+| ✏️ Edit Subject      | ManageSubjects / Schedule  | ✅ Auto   |
+| 📅 Record Reschedule | Schedule (klik reschedule) | ✅ Auto   |
+| 🎓 Upload UTS/UAS    | ManageSubjects → Upload    | ✅ Auto   |
+| 📝 Upload IRS        | ManageSubjects → Upload    | ✅ Auto   |
 
 **Tidak perlu export manual lagi!** Semua langsung masuk Google Calendar.
 
@@ -33,12 +33,15 @@ Semua aksi ini **otomatis sync ke Google Calendar**:
 ## ⚙️ Settings
 
 ### Check Connection Status
+
 Buka `/user` → Lihat section "Calendar Integration"
 
 ### Disconnect
+
 Buka `/user` → Klik "Disconnect" button
 
 ### Reconnect
+
 Buka `/user` → Klik "Connect Google Calendar" lagi
 
 ## 📱 Requirements
@@ -50,22 +53,29 @@ Buka `/user` → Klik "Connect Google Calendar" lagi
 ## ❓ FAQ
 
 ### Q: Apakah perlu export manual?
+
 **A:** Tidak! Semua otomatis sync setelah connect.
 
 ### Q: Bagaimana jika saya edit jadwal?
+
 **A:** Otomatis sync ke Google Calendar. Tidak perlu apa-apa.
 
 ### Q: Bagaimana jika saya upload UTS/UAS?
+
 **A:** Semua jadwal ujian otomatis masuk Google Calendar dengan warna merah.
 
 ### Q: Apakah bisa disable auto-sync?
+
 **A:** Ya, cukup disconnect di halaman User.
 
 ### Q: Event muncul duplikat, bagaimana?
+
 **A:** Gunakan fitur "Delete All Events" di halaman ManageSubjects, lalu sync ulang.
 
 ### Q: Auto-sync tidak jalan?
-**A:** 
+
+**A:**
+
 1. Check di halaman User apakah status "Connected"
 2. Try disconnect dan connect ulang
 3. Clear browser cache dan login ulang
@@ -73,23 +83,26 @@ Buka `/user` → Klik "Connect Google Calendar" lagi
 ## 📊 Debug
 
 ### Check Console Logs
+
 ```javascript
 // Buka DevTools Console (F12)
 // Akan muncul log seperti:
-"🔄 Auto-syncing subject to Google Calendar: Kalkulus"
-"✅ Subject auto-synced to Google Calendar: Kalkulus"
+"🔄 Auto-syncing subject to Google Calendar: Kalkulus";
+"✅ Subject auto-synced to Google Calendar: Kalkulus";
 ```
 
 ### Check localStorage
+
 ```javascript
 // Buka DevTools Console (F12)
-localStorage.getItem("google_calendar_tokens")
-localStorage.getItem("google_calendar_auto_sync") // Should be "true"
+localStorage.getItem("google_calendar_tokens");
+localStorage.getItem("google_calendar_auto_sync"); // Should be "true"
 ```
 
 ## 🎯 Summary
 
 **Workflow baru**:
+
 1. Connect sekali di halaman User
 2. Gunakan aplikasi seperti biasa
 3. Semua jadwal otomatis sync

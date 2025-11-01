@@ -34,12 +34,24 @@ export function useAutoSyncSubject() {
   }, []);
 
   const syncSubjectToCalendar = async (subject: Subject) => {
+    // Re-check localStorage untuk mendapatkan nilai terbaru
+    const savedTokens = localStorage.getItem("google_calendar_tokens");
+    const autoSyncPref = localStorage.getItem("google_calendar_auto_sync");
+    
+    console.log("🔍 Auto-sync check:", {
+      hasTokens: !!savedTokens,
+      autoSyncEnabled: autoSyncPref === "true",
+      subjectName: subject.name,
+    });
+
     // Only sync if connected and auto-sync is enabled
-    if (!isConnected || !tokens || !isAutoSyncEnabled) {
+    if (!savedTokens || autoSyncPref !== "true") {
+      console.log("⏭️ Skipping auto-sync (not connected or disabled)");
       return;
     }
 
     try {
+      const parsedTokens = JSON.parse(savedTokens);
       console.log("🔄 Auto-syncing subject to Google Calendar:", subject.name);
 
       const response = await fetch("/api/google-calendar/export-subject", {
@@ -49,22 +61,19 @@ export function useAutoSyncSubject() {
         },
         body: JSON.stringify({
           subject,
-          tokens,
+          tokens: parsedTokens,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        console.log(
-          "✅ Subject auto-synced to Google Calendar:",
-          subject.name
-        );
+        console.log("✅ Subject auto-synced to Google Calendar:", subject.name);
       } else {
-        console.error("Failed to auto-sync subject:", data.error);
+        console.error("❌ Failed to auto-sync subject:", data.error);
       }
     } catch (error) {
-      console.error("Error auto-syncing subject to Google Calendar:", error);
+      console.error("❌ Error auto-syncing subject to Google Calendar:", error);
       // Silent fail - don't show error toast to avoid annoying user
     }
   };
