@@ -41,6 +41,7 @@ import {
   useDeleteSubject,
   Subject,
 } from "@/hooks/useSubjects";
+import { useAutoSyncSubject } from "@/hooks/useAutoSyncSubject";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -106,8 +107,19 @@ const ScheduleClient = () => {
     refetch,
   } = useSubjects();
 
-  const createSubjectMutation = useCreateSubject();
-  const updateSubjectMutation = useUpdateSubject();
+  // Auto-sync integration
+  const { syncSubjectToCalendar } = useAutoSyncSubject();
+
+  const createSubjectMutation = useCreateSubject({
+    onAutoSyncSuccess: (subject) => {
+      syncSubjectToCalendar(subject);
+    },
+  });
+  const updateSubjectMutation = useUpdateSubject({
+    onAutoSyncSuccess: (subject) => {
+      syncSubjectToCalendar(subject);
+    },
+  });
   const deleteSubjectMutation = useDeleteSubject();
 
   // Initialize auto notifications

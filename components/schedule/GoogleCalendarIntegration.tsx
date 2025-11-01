@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Calendar, Download, LogOut, Loader2 } from "lucide-react";
+import { Calendar, Download, LogOut, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { Subject } from "@/hooks/useSubjects";
 import { toast } from "sonner";
@@ -34,11 +34,18 @@ export default function GoogleCalendarIntegration({
 }: GoogleCalendarIntegrationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isConnected, isLoading, connect, disconnect, exportSchedule } =
-    useGoogleCalendar();
+  const {
+    isConnected,
+    isLoading,
+    autoSync,
+    connect,
+    disconnect,
+    toggleAutoSync,
+    exportSchedule,
+  } = useGoogleCalendar();
 
   const [isExportDialogOpen, setIsExportDialogOpen] = React.useState(false);
-  const [numberOfWeeks, setNumberOfWeeks] = React.useState(14);
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   // Handle OAuth callback
   useEffect(() => {
@@ -92,7 +99,7 @@ export default function GoogleCalendarIntegration({
       return;
     }
 
-    const result = await exportSchedule(subjects, numberOfWeeks);
+    const result = await exportSchedule(subjects);
     if (result) {
       setIsExportDialogOpen(false);
     }
@@ -148,6 +155,13 @@ export default function GoogleCalendarIntegration({
               <Download className="mr-2 h-4 w-4" />
               Ekspor Jadwal ke Calendar
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Pengaturan Auto-Sync
+              {autoSync && (
+                <span className="ml-auto text-xs text-green-600">ON</span>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleDisconnect}
@@ -165,36 +179,24 @@ export default function GoogleCalendarIntegration({
           <DialogHeader>
             <DialogTitle>Ekspor Jadwal ke Google Calendar</DialogTitle>
             <DialogDescription>
-              Jadwal kuliah akan ditambahkan sebagai event berulang di Google
-              Calendar Anda.
+              Jadwal kuliah akan ditambahkan berdasarkan Learning Progress
+              (meetingDates) setiap mata kuliah.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="weeks">
-                Jumlah minggu:{" "}
-                <span className="font-bold">{numberOfWeeks}</span>
-              </Label>
-              <Slider
-                id="weeks"
-                min={1}
-                max={20}
-                step={1}
-                value={[numberOfWeeks]}
-                onValueChange={(value) => setNumberOfWeeks(value[0])}
-                className="w-full"
-              />
-              <p className="text-xs text-muted-foreground">
-                Event akan dibuat untuk {numberOfWeeks} minggu ke depan
-              </p>
-            </div>
             <div className="space-y-2">
               <p className="text-sm">
                 <strong>{subjects.length}</strong> mata kuliah akan diekspor
               </p>
               <p className="text-xs text-muted-foreground">
-                Setiap mata kuliah akan menjadi event berulang mingguan dengan
-                pengingat otomatis.
+                ✅ Setiap mata kuliah akan dibuat event sesuai tanggal pertemuan
+                di Learning Progress
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ✅ Jadwal reschedule akan ditambahkan sebagai event terpisah
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ✅ Jadwal UTS/UAS akan ditambahkan dengan warna merah
               </p>
             </div>
           </div>
@@ -218,6 +220,57 @@ export default function GoogleCalendarIntegration({
                 </>
               )}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto-Sync Settings Dialog */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pengaturan Auto-Sync Google Calendar</DialogTitle>
+            <DialogDescription>
+              Atur sinkronisasi otomatis dengan Google Calendar
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between space-x-4">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="auto-sync" className="text-sm font-medium">
+                  Auto-Sync ke Google Calendar
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Otomatis ekspor jadwal baru ke Google Calendar saat Anda
+                  menambahkan jadwal
+                </p>
+              </div>
+              <Switch
+                id="auto-sync"
+                checked={autoSync}
+                onCheckedChange={toggleAutoSync}
+              />
+            </div>
+
+            {autoSync && (
+              <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800 p-3">
+                <p className="text-xs text-green-800 dark:text-green-200">
+                  ✅ Auto-sync aktif. Jadwal baru akan otomatis ditambahkan ke
+                  Google Calendar.
+                </p>
+              </div>
+            )}
+
+            {!autoSync && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-900/20 dark:border-gray-800 p-3">
+                <p className="text-xs text-muted-foreground">
+                  ℹ️ Anda perlu ekspor manual untuk menambahkan jadwal ke Google
+                  Calendar.
+                </p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsSettingsOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

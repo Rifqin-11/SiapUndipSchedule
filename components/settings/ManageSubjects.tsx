@@ -9,6 +9,7 @@ import {
   useDeleteAllSubjects,
   Subject,
 } from "@/hooks/useSubjects";
+import { useAutoSyncSubject } from "@/hooks/useAutoSyncSubject";
 import SubjectModal from "@/components/SubjectModal";
 import {
   AlertDialog,
@@ -32,8 +33,19 @@ const ManageSubjects = () => {
     refetch,
   } = useSubjects();
 
-  const createSubjectMutation = useCreateSubject();
-  const updateSubjectMutation = useUpdateSubject();
+  // Auto-sync integration
+  const { syncSubjectToCalendar } = useAutoSyncSubject();
+
+  const createSubjectMutation = useCreateSubject({
+    onAutoSyncSuccess: (subject) => {
+      syncSubjectToCalendar(subject);
+    },
+  });
+  const updateSubjectMutation = useUpdateSubject({
+    onAutoSyncSuccess: (subject) => {
+      syncSubjectToCalendar(subject);
+    },
+  });
   const deleteSubjectMutation = useDeleteSubject();
   const deleteAllSubjectsMutation = useDeleteAllSubjects();
 

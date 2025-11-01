@@ -65,6 +65,7 @@ const TaskDetailDrawer = dynamic(
 
 // Imports for hooks and utilities
 import { useSubjects, useCreateSubject, Subject } from "@/hooks/useSubjects";
+import { useAutoSyncSubject } from "@/hooks/useAutoSyncSubject";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { BookOpen, Plus } from "lucide-react";
 import HomeSkeleton from "@/components/homepage/HomeSkeleton";
@@ -79,6 +80,7 @@ import {
   useUpdateTask,
   useDeleteTask,
 } from "@/hooks/useTasks";
+import { useAutoSyncTask } from "@/hooks/useAutoSyncTask";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { getDaysUntilDue } from "@/components/tasks/utils";
 import type { Task } from "@/components/tasks/types";
@@ -98,7 +100,14 @@ const Page = () => {
   } = useSubjects();
 
   const { user } = useUserProfile();
-  const createSubjectMutation = useCreateSubject();
+
+  // Auto-sync integration
+  const { syncSubjectToCalendar } = useAutoSyncSubject();
+  const createSubjectMutation = useCreateSubject({
+    onAutoSyncSuccess: (subject) => {
+      syncSubjectToCalendar(subject);
+    },
+  });
 
   // Non-critical data loading - defer and lazy load
   const [enableNonCriticalLoading, setEnableNonCriticalLoading] =
@@ -142,8 +151,19 @@ const Page = () => {
     startOffset: 10,
   });
 
-  const createTaskMutation = useCreateTask();
-  const updateTaskMutation = useUpdateTask();
+  // Auto-sync integration for tasks
+  const { syncTaskToCalendar } = useAutoSyncTask();
+
+  const createTaskMutation = useCreateTask({
+    onAutoSyncSuccess: (task) => {
+      syncTaskToCalendar(task);
+    },
+  });
+  const updateTaskMutation = useUpdateTask({
+    onAutoSyncSuccess: (task) => {
+      syncTaskToCalendar(task);
+    },
+  });
   const deleteTaskMutation = useDeleteTask();
 
   // Drawer detail task

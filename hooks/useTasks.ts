@@ -126,7 +126,9 @@ export const useTasks = (options?: { enabled?: boolean }) => {
   });
 };
 
-export const useCreateTask = () => {
+export const useCreateTask = (options?: {
+  onAutoSyncSuccess?: (task: Task) => void;
+}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -137,6 +139,11 @@ export const useCreateTask = () => {
         // Tambah task baru di awal array
         return [newTask, ...old];
       });
+
+      // Trigger auto-sync callback if provided
+      if (options?.onAutoSyncSuccess) {
+        options.onAutoSyncSuccess(newTask);
+      }
     },
     onError: (error) => {
       console.error("Create task error:", error);
@@ -149,7 +156,9 @@ export const useCreateTask = () => {
   });
 };
 
-export const useUpdateTask = () => {
+export const useUpdateTask = (options?: {
+  onAutoSyncSuccess?: (task: Task) => void;
+}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -180,6 +189,11 @@ export const useUpdateTask = () => {
           return taskIdentifier === updatedIdentifier ? updatedTask : task;
         });
       });
+
+      // Trigger auto-sync callback if provided
+      if (options?.onAutoSyncSuccess) {
+        options.onAutoSyncSuccess(updatedTask);
+      }
     },
     onError: (err, variables, context) => {
       // Rollback on error

@@ -13,8 +13,9 @@ export function useGoogleCalendar() {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [tokens, setTokens] = useState<GoogleCalendarTokens | null>(null);
+  const [autoSync, setAutoSync] = useState(false);
 
-  // Check if user is already connected
+  // Check if user is already connected and auto-sync preference
   useEffect(() => {
     const savedTokens = localStorage.getItem("google_calendar_tokens");
     if (savedTokens) {
@@ -26,6 +27,12 @@ export function useGoogleCalendar() {
         console.error("Error parsing saved tokens:", error);
         localStorage.removeItem("google_calendar_tokens");
       }
+    }
+
+    // Load auto-sync preference
+    const autoSyncPref = localStorage.getItem("google_calendar_auto_sync");
+    if (autoSyncPref === "true") {
+      setAutoSync(true);
     }
   }, []);
 
@@ -53,16 +60,26 @@ export function useGoogleCalendar() {
   // Disconnect from Google Calendar
   const disconnect = () => {
     localStorage.removeItem("google_calendar_tokens");
+    localStorage.removeItem("google_calendar_auto_sync");
     setTokens(null);
     setIsConnected(false);
+    setAutoSync(false);
     toast.success("Berhasil memutuskan koneksi Google Calendar");
   };
 
-  // Export schedule to Google Calendar
-  const exportSchedule = async (
-    subjects: Subject[],
-    numberOfWeeks: number = 14
-  ) => {
+  // Toggle auto-sync
+  const toggleAutoSync = (enabled: boolean) => {
+    setAutoSync(enabled);
+    localStorage.setItem("google_calendar_auto_sync", enabled.toString());
+    if (enabled) {
+      toast.success("Auto-sync ke Google Calendar diaktifkan");
+    } else {
+      toast.info("Auto-sync ke Google Calendar dinonaktifkan");
+    }
+  };
+
+  // Export schedule to Google Calendar (using meetingDates from subjects)
+  const exportSchedule = async (subjects: Subject[]) => {
     if (!isConnected || !tokens) {
       toast.error("Silakan hubungkan dengan Google Calendar terlebih dahulu");
       return;
@@ -77,7 +94,6 @@ export function useGoogleCalendar() {
         },
         body: JSON.stringify({
           subjects,
-          numberOfWeeks,
           tokens,
         }),
       });
@@ -87,7 +103,7 @@ export function useGoogleCalendar() {
       if (data.success) {
         const successCount = data.results.filter((r: any) => r.success).length;
         toast.success(
-          `Berhasil mengekspor ${successCount} jadwal ke Google Calendar`
+          `Berhasil mengekspor ${successCount} event ke Google Calendar`
         );
         return data.results;
       } else {
@@ -216,8 +232,10 @@ export function useGoogleCalendar() {
   return {
     isConnected,
     isLoading,
+    autoSync,
     connect,
     disconnect,
+    toggleAutoSync,
     exportSchedule,
     exportSubject,
     exportTasks,

@@ -36,6 +36,7 @@ import {
   useDeleteTask,
   type Task,
 } from "@/hooks/useTasks";
+import { useAutoSyncTask } from "@/hooks/useAutoSyncTask";
 import { useSubjectsForTasks } from "@/hooks/useSubjectsForTasks";
 
 import { TaskCard } from "@/components/tasks/TaskCard";
@@ -49,8 +50,19 @@ import PageHeader from "@/components/PageHeader";
 export default function TasksPage() {
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
 
-  const createTaskMutation = useCreateTask();
-  const updateTaskMutation = useUpdateTask();
+  // Auto-sync integration
+  const { syncTaskToCalendar } = useAutoSyncTask();
+
+  const createTaskMutation = useCreateTask({
+    onAutoSyncSuccess: (task) => {
+      syncTaskToCalendar(task);
+    },
+  });
+  const updateTaskMutation = useUpdateTask({
+    onAutoSyncSuccess: (task) => {
+      syncTaskToCalendar(task);
+    },
+  });
   const deleteTaskMutation = useDeleteTask();
 
   const { subjects, loading: subjectsLoading } = useSubjectsForTasks();

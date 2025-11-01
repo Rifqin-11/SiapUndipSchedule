@@ -217,29 +217,42 @@ export async function createMultipleEvents(oauth2Client: any, events: any[]) {
 }
 
 // Create recurring event for weekly schedule (or one-time for exams)
-export function createRecurringEvent(
-  subject: Subject,
-  numberOfWeeks: number = 14
-) {
-  const event = subjectToCalendarEvent(subject);
+// Create individual events for each meeting date
+export function createEventsFromMeetingDates(subject: Subject) {
+  const events = [];
 
-  // Check if this is an exam schedule (UTS/UAS)
-  // Exam schedules should NOT repeat
+  // Check if this is an exam schedule (UTS/UAS) or specific date
   const isExam = subject.examType === "UTS" || subject.examType === "UAS";
   const isSpecificDate = subject.specificDate !== undefined;
 
-  // If it's an exam or has a specific date, don't add recurrence
+  // If it's an exam or has a specific date, create one event
   if (isExam || isSpecificDate) {
-    return event; // Return as one-time event
+    return [subjectToCalendarEvent(subject)];
   }
 
-  // Add recurrence rule for weekly repetition (regular classes only)
-  return {
-    ...event,
-    recurrence: [
-      `RRULE:FREQ=WEEKLY;COUNT=${numberOfWeeks}`, // Repeat weekly for specified weeks
-    ],
-  };
+  // If subject has meetingDates, create individual events for each date
+  if (
+    subject.meetingDates &&
+    Array.isArray(subject.meetingDates) &&
+    subject.meetingDates.length > 0
+  ) {
+    for (const meetingDate of subject.meetingDates) {
+      const event = subjectToCalendarEvent(subject, meetingDate);
+      events.push(event);
+    }
+    return events;
+  }
+
+  // Fallback: if no meetingDates, create recurring event (legacy support)
+  const event = subjectToCalendarEvent(subject);
+  return [
+    {
+      ...event,
+      recurrence: [
+        `RRULE:FREQ=WEEKLY;COUNT=14`, // Default 14 weeks for legacy subjects
+      ],
+    },
+  ];
 }
 
 // Create event for rescheduled class
@@ -302,17 +315,18 @@ export function createRescheduleEvent(subject: Subject, reschedule: any) {
   };
 }
 
-// Export all subjects as recurring events (including reschedules)
+// Export all subjects based on their meetingDates (including reschedules)
 export async function exportScheduleToCalendar(
   oauth2Client: any,
-  subjects: Subject[],
-  numberOfWeeks: number = 14
+  subjects: Subject[]
 ) {
   const allEvents = [];
 
-  // Add regular/recurring events
+  // Create events based on meetingDates for each subject
   for (const subject of subjects) {
-    allEvents.push(createRecurringEvent(subject, numberOfWeeks));
+    // Get all events for this subject (based on meetingDates)
+    const subjectEvents = createEventsFromMeetingDates(subject);
+    allEvents.push(...subjectEvents);
 
     // Add reschedule events as separate one-time events
     if (subject.reschedules && subject.reschedules.length > 0) {

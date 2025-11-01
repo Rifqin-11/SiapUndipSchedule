@@ -78,17 +78,19 @@
 
 ### ✨ Schedule Export
 
-- Export semua jadwal kuliah sebagai recurring events
-- Pilih jumlah minggu (1-20 minggu)
-- Default: 14 minggu
-- Setiap mata kuliah jadi event berulang mingguan
+- Export semua jadwal kuliah berdasarkan Learning Progress
+- Setiap meeting date jadi event individual
+- Support UTS/UAS sebagai one-time event (merah)
+- Support reschedule sebagai event terpisah (kuning)
 - Include info: Dosen, Ruangan, Meeting ke-
+- **NEW**: Auto-sync otomatis export jadwal baru!
 
 ### 📝 Tasks Export
 
 - Export semua tugas yang belum selesai
 - Warna berdasarkan prioritas (High/Medium/Low)
 - Include info: Deskripsi, Mata kuliah, Status
+- **NEW**: Auto-sync otomatis export tugas baru!
 
 ### 🔔 Smart Reminders
 
@@ -97,11 +99,21 @@
 
 ### 🎨 Color Coding
 
-- **Jadwal**: Biru (semua)
+- **Jadwal Reguler**: Biru
+- **UTS/UAS**: Merah
+- **Reschedule**: Kuning
 - **Tugas**:
   - High Priority: Merah
   - Medium Priority: Kuning
   - Low Priority: Hijau
+
+### 🔄 Auto-Sync (NEW!)
+
+- Toggle ON/OFF auto-sync dari menu Pengaturan
+- Jadwal/tugas baru otomatis masuk ke Google Calendar
+- Tidak perlu export manual setiap kali!
+- Bekerja otomatis di background
+- Indikator status di menu dropdown
 
 ### 🔒 Security
 
@@ -125,10 +137,19 @@
 
 ### Penggunaan (Sehari-hari)
 
+#### Cara Manual:
+
 1. Klik "Hubungkan Google Calendar"
 2. Login & berikan izin
 3. Klik "Ekspor" (jadwal atau tugas)
 4. Buka Google Calendar → Lihat hasilnya!
+
+#### Cara Auto-Sync (Recommended):
+
+1. Hubungkan Google Calendar
+2. Buka menu dropdown → "Pengaturan Auto-Sync"
+3. Toggle ON auto-sync
+4. Selesai! Jadwal/tugas baru otomatis masuk ke calendar ✨
 
 ---
 
@@ -210,8 +231,9 @@ User → Click "Export Schedule"
 
 Fitur yang bisa ditambahkan di masa depan:
 
+- [x] ~~Auto-sync dengan toggle~~ ✅ DONE!
 - [ ] Two-way sync (update dari Google Calendar)
-- [ ] Auto-sync dengan webhook
+- [ ] Server-side webhook untuk background sync
 - [ ] Selective export (pilih mata kuliah tertentu)
 - [ ] Edit event langsung dari app
 - [ ] Delete event dari Google Calendar

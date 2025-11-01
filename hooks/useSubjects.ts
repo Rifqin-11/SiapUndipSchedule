@@ -152,7 +152,9 @@ export const useSubjects = () => {
   });
 };
 
-export const useCreateSubject = () => {
+export const useCreateSubject = (options?: {
+  onAutoSyncSuccess?: (subject: Subject) => void;
+}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -170,6 +172,11 @@ export const useCreateSubject = () => {
         queryKey: SUBJECTS_QUERY_KEY,
         type: "active",
       });
+
+      // Trigger auto-sync callback if provided
+      if (options?.onAutoSyncSuccess) {
+        options.onAutoSyncSuccess(newSubject);
+      }
     },
     onError: (error) => {
       console.error("Create subject error:", error);
@@ -234,7 +241,9 @@ export const useDeleteSubject = () => {
   });
 };
 
-export const useUpdateSubject = () => {
+export const useUpdateSubject = (options?: {
+  onAutoSyncSuccess?: (subject: Subject) => void;
+}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -270,6 +279,11 @@ export const useUpdateSubject = () => {
         queryKey: SUBJECTS_QUERY_KEY,
         type: "active",
       });
+
+      // Trigger auto-sync callback if provided
+      if (options?.onAutoSyncSuccess) {
+        options.onAutoSyncSuccess(updatedSubject);
+      }
     },
     onError: (err, variables, context) => {
       // Rollback on error

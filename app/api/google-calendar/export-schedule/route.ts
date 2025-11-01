@@ -8,7 +8,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { subjects, numberOfWeeks = 14, tokens } = body;
+    const { subjects, tokens } = body;
 
     if (!subjects || !Array.isArray(subjects)) {
       return NextResponse.json(
@@ -28,12 +28,8 @@ export async function POST(request: NextRequest) {
     const oauth2Client = getOAuth2Client();
     setCredentials(oauth2Client, tokens);
 
-    // Export schedule to Google Calendar
-    const results = await exportScheduleToCalendar(
-      oauth2Client,
-      subjects,
-      numberOfWeeks
-    );
+    // Export schedule to Google Calendar (using meetingDates from each subject)
+    const results = await exportScheduleToCalendar(oauth2Client, subjects);
 
     return NextResponse.json({
       success: true,
