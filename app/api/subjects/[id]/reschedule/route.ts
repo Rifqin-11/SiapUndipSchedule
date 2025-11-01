@@ -89,19 +89,10 @@ export async function POST(
       `Reschedule added for subject ${id}: ${originalDate} -> ${newDate}`
     );
 
-    // Fetch the updated subject to return
-    const updatedSubject = await db.collection("subjects").findOne({
-      $and: [
-        { $or: [{ _id: new ObjectId(id) }, { id: id }] },
-        { userId: decoded.userId },
-      ],
-    });
-
     return NextResponse.json({
       success: true,
       message: "Class reschedule recorded successfully",
       data: rescheduleData,
-      subject: updatedSubject,
     });
   } catch (error) {
     console.error("Error recording reschedule:", error);

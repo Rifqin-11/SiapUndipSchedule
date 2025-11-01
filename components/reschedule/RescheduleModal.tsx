@@ -15,8 +15,6 @@ import {
 import { Calendar, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { forceModalCleanup, useModalCleanup } from "@/lib/modal-utils";
-import { useAutoSyncSubject } from "@/hooks/useAutoSyncSubject";
-import { Subject } from "@/hooks/useSubjects";
 
 interface RescheduleItem {
   subjectId: string;
@@ -59,9 +57,6 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
     room: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-
-  // Auto-sync integration
-  const { syncSubjectToCalendar } = useAutoSyncSubject();
 
   // Auto-cleanup saat modal ditutup & saat komponen unmount
   useModalCleanup(isOpen);
@@ -163,12 +158,6 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
             ? "Class reschedule updated successfully!"
             : "Class reschedule recorded successfully!";
         toast.success(successMessage);
-
-        // Auto-sync the updated subject to Google Calendar
-        if (result.subject) {
-          syncSubjectToCalendar(result.subject as Subject);
-        }
-
         onRescheduleAdded();
         // Tutup + cleanup
         hardClose();
