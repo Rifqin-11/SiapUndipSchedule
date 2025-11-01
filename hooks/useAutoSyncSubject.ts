@@ -1,41 +1,76 @@
-import { useEffect } from "react";
-import { useGoogleCalendar } from "./useGoogleCalendar";
+import { useEffect, useState } from "react";
 import type { Subject } from "./useSubjects";
+
+interface GoogleCalendarTokens {
+  access_token: string;
+  refresh_token?: string;
+  expiry_date?: number;
+}
 
 /**
  * Hook untuk auto-sync subject ke Google Calendar
  * Mendengarkan perubahan subject dan otomatis ekspor jika auto-sync aktif
  */
 export function useAutoSyncSubject() {
-  const { isConnected, autoSync, exportSubject } = useGoogleCalendar();
+  const [isConnected, setIsConnected] = useState(false);
+  const [tokens, setTokens] = useState<GoogleCalendarTokens | null>(null);
+  const [isAutoSyncEnabled, setIsAutoSyncEnabled] = useState(false);
+
+  // Check connection status and auto-sync preference
+  useEffect(() => {
+    const savedTokens = localStorage.getItem("google_calendar_tokens");
+    if (savedTokens) {
+      try {
+        const parsedTokens = JSON.parse(savedTokens);
+        setTokens(parsedTokens);
+        setIsConnected(true);
+      } catch (error) {
+        console.error("Error parsing saved tokens:", error);
+      }
+    }
+
+    const autoSyncPref = localStorage.getItem("google_calendar_auto_sync");
+    setIsAutoSyncEnabled(autoSyncPref === "true");
+  }, []);
 
   const syncSubjectToCalendar = async (subject: Subject) => {
     // Only sync if connected and auto-sync is enabled
-    if (!isConnected || !autoSync) {
+    if (!isConnected || !tokens || !isAutoSyncEnabled) {
       return;
     }
 
     try {
-      // Determine the date to use for export
-      let dateToUse: string | undefined;
+      console.log("🔄 Auto-syncing subject to Google Calendar:", subject.name);
 
-      if (subject.specificDate) {
-        // Use specific date if available (e.g., for exams)
-        dateToUse = subject.specificDate;
-      } else if (subject.meetingDates && subject.meetingDates.length > 0) {
-        // Use first meeting date if available
-        dateToUse = subject.meetingDates[0];
+      const response = await fetch("/api/google-calendar/export-subject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject,
+          tokens,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log(
+          "✅ Subject auto-synced to Google Calendar:",
+          subject.name
+        );
+      } else {
+        console.error("Failed to auto-sync subject:", data.error);
       }
-
-      await exportSubject(subject, dateToUse);
     } catch (error) {
-      console.error("Auto-sync failed:", error);
+      console.error("Error auto-syncing subject to Google Calendar:", error);
       // Silent fail - don't show error toast to avoid annoying user
     }
   };
 
   return {
     syncSubjectToCalendar,
-    isAutoSyncEnabled: isConnected && autoSync,
+    isAutoSyncEnabled: isConnected && isAutoSyncEnabled,
   };
 }

@@ -211,7 +211,26 @@ export async function POST(request: NextRequest) {
 
     console.log(`Inserted ${insertResult.insertedCount} exam schedules`);
 
-    // Return success response with detailed info
+    // Fetch the newly created exam subjects with their IDs
+    const insertedIds = Object.values(insertResult.insertedIds);
+    const insertedSubjects = await db
+      .collection("subjects")
+      .find({
+        _id: { $in: insertedIds },
+      })
+      .toArray();
+
+    // Fetch updated regular subjects (those with replaced meetings)
+    const updatedSubjects = await db
+      .collection("subjects")
+      .find({
+        userId: decoded.userId,
+        specificDate: { $exists: false },
+        meetingDates: { $exists: true, $type: "array" },
+      })
+      .toArray();
+
+    // Return success response with detailed info and subjects for auto-sync
     return NextResponse.json({
       success: true,
       message: `Successfully added ${exams.length} exam schedules`,
@@ -220,6 +239,8 @@ export async function POST(request: NextRequest) {
         replacementMeetingsAdded: replacementsAdded.length,
         replacements: replacementsAdded,
       },
+      insertedSubjects, // New exam subjects
+      updatedSubjects, // Regular subjects with replaced meetings
     });
   } catch (error) {
     console.error("Error adding exam schedules:", error);

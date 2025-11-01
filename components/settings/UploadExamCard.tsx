@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useAutoSyncSubject } from "@/hooks/useAutoSyncSubject";
+import { Subject } from "@/hooks/useSubjects";
 
 interface ParsedExamSchedule {
   id: string;
@@ -55,6 +57,9 @@ const UploadExamCardPage = () => {
   const [periodStartDate, setPeriodStartDate] = useState<string>("");
   const [periodEndDate, setPeriodEndDate] = useState<string>("");
   const [examType, setExamType] = useState<"UTS" | "UAS">("UTS");
+
+  // Auto-sync integration
+  const { syncSubjectToCalendar } = useAutoSyncSubject();
 
   // Cleanup object URL on component unmount
   useEffect(() => {
@@ -238,6 +243,27 @@ const UploadExamCardPage = () => {
         toast.success(
           `Successfully added ${parsedData.length} exam schedules and shifted regular classes!`
         );
+
+        // Auto-sync all inserted exam subjects and updated regular subjects to Google Calendar
+        if (result.insertedSubjects && Array.isArray(result.insertedSubjects)) {
+          console.log(
+            "🔄 Auto-syncing exam subjects to Google Calendar:",
+            result.insertedSubjects.length
+          );
+          for (const subject of result.insertedSubjects) {
+            await syncSubjectToCalendar(subject as Subject);
+          }
+        }
+
+        if (result.updatedSubjects && Array.isArray(result.updatedSubjects)) {
+          console.log(
+            "🔄 Auto-syncing updated regular subjects to Google Calendar:",
+            result.updatedSubjects.length
+          );
+          for (const subject of result.updatedSubjects) {
+            await syncSubjectToCalendar(subject as Subject);
+          }
+        }
 
         resetUpload();
         setParsedData([]);

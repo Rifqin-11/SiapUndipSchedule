@@ -27,6 +27,12 @@ import { useRouter } from "next/navigation";
 import { useScrollOpacity } from "@/hooks/useScrollOpacity";
 import ThemeToggle from "@/components/ThemeToggle";
 import MicrosoftLogo from "@/public/microsoft.svg";
+import dynamic from "next/dynamic";
+
+const GoogleCalendarConnect = dynamic(
+  () => import("@/components/GoogleCalendarConnect"),
+  { ssr: false }
+);
 
 const UserPage = () => {
   // Get subjects data
@@ -334,6 +340,14 @@ const UserPage = () => {
                 </Link>
               );
             })}
+          </div>
+
+          {/* Google Calendar Integration */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white px-2">
+              Calendar Integration
+            </h2>
+            <GoogleCalendarConnect />
           </div>
 
           {/* Academic Info */}

@@ -150,18 +150,18 @@ export function taskToCalendarEvent(task: Task) {
   let eventTime;
   if (task.dueTime) {
     const [hour, minute] = task.dueTime.split(":").map(Number);
-    
+
     // Format date string for WIB timezone
     const year = dueDate.getFullYear();
     const month = String(dueDate.getMonth() + 1).padStart(2, "0");
     const day = String(dueDate.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${day}`;
-    
+
     // Create datetime strings
     const startHourStr = String(hour).padStart(2, "0");
     const startMinuteStr = String(minute).padStart(2, "0");
     const endHourStr = String(hour + 1).padStart(2, "0");
-    
+
     const startDateTimeStr = `${dateStr}T${startHourStr}:${startMinuteStr}:00`;
     const endDateTimeStr = `${dateStr}T${endHourStr}:${startMinuteStr}:00`;
 
@@ -181,7 +181,7 @@ export function taskToCalendarEvent(task: Task) {
     const month = String(dueDate.getMonth() + 1).padStart(2, "0");
     const day = String(dueDate.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${day}`;
-    
+
     eventTime = {
       start: {
         date: dateStr,
@@ -607,7 +607,9 @@ export async function deleteAllCalendarEvents(
             calendarId: "primary",
             eventId: event.id,
           });
-          console.log(`[Delete] ✅ Deleted: ${event.summary} (ID: ${event.id})`);
+          console.log(
+            `[Delete] ✅ Deleted: ${event.summary} (ID: ${event.id})`
+          );
           return { success: true };
         } catch (error: any) {
           console.error(
@@ -646,4 +648,3 @@ export async function deleteAllCalendarEvents(
     throw new Error(`Failed to delete events: ${error.message}`);
   }
 }
-
