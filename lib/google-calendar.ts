@@ -86,11 +86,20 @@ export function subjectToCalendarEvent(
     ? subject.lecturer.join(", ")
     : subject.lecturer || "-";
 
+  // Check if this is an exam
+  const isExam = subject.examType === "UTS" || subject.examType === "UAS";
+  const examPrefix = isExam ? `${subject.examType} - ` : "";
+
+  // Different description and color for exams vs regular classes
+  const description = isExam
+    ? `📝 ${subject.examType}\nRuangan: ${subject.room}\nDosen: ${lecturerString}`
+    : `Ruangan: ${subject.room}\nDosen: ${lecturerString}\nPertemuan: ${
+        subject.meeting || "-"
+      }`;
+
   return {
-    summary: subject.name,
-    description: `Ruangan: ${
-      subject.room
-    }\nDosen: ${lecturerString}\nPertemuan: ${subject.meeting || "-"}`,
+    summary: `${examPrefix}${subject.name}`,
+    description,
     location: subject.room,
     start: {
       dateTime: startDateTime.toISOString(),
@@ -100,13 +109,19 @@ export function subjectToCalendarEvent(
       dateTime: endDateTime.toISOString(),
       timeZone: "Asia/Jakarta",
     },
-    colorId: "9", // Blue color for classes
+    colorId: isExam ? "11" : "9", // Red for exams, Blue for regular classes
     reminders: {
       useDefault: false,
-      overrides: [
-        { method: "popup", minutes: 30 },
-        { method: "popup", minutes: 10 },
-      ],
+      overrides: isExam
+        ? [
+            { method: "popup", minutes: 24 * 60 }, // 1 day before for exams
+            { method: "popup", minutes: 60 }, // 1 hour before
+            { method: "popup", minutes: 30 },
+          ]
+        : [
+            { method: "popup", minutes: 30 },
+            { method: "popup", minutes: 10 },
+          ],
     },
   };
 }
@@ -201,14 +216,24 @@ export async function createMultipleEvents(oauth2Client: any, events: any[]) {
   return results;
 }
 
-// Create recurring event for weekly schedule
+// Create recurring event for weekly schedule (or one-time for exams)
 export function createRecurringEvent(
   subject: Subject,
   numberOfWeeks: number = 14
 ) {
   const event = subjectToCalendarEvent(subject);
 
-  // Add recurrence rule for weekly repetition
+  // Check if this is an exam schedule (UTS/UAS)
+  // Exam schedules should NOT repeat
+  const isExam = subject.examType === "UTS" || subject.examType === "UAS";
+  const isSpecificDate = subject.specificDate !== undefined;
+
+  // If it's an exam or has a specific date, don't add recurrence
+  if (isExam || isSpecificDate) {
+    return event; // Return as one-time event
+  }
+
+  // Add recurrence rule for weekly repetition (regular classes only)
   return {
     ...event,
     recurrence: [
@@ -217,16 +242,87 @@ export function createRecurringEvent(
   };
 }
 
-// Export all subjects as recurring events
+// Create event for rescheduled class
+export function createRescheduleEvent(subject: Subject, reschedule: any) {
+  const rescheduleDate = new Date(reschedule.newDate);
+
+  // Use reschedule time if available, otherwise use subject's original time
+  const startTime = reschedule.startTime || subject.startTime;
+  const endTime = reschedule.endTime || subject.endTime;
+  const room = reschedule.room || subject.room;
+
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+
+  const startDateTime = new Date(rescheduleDate);
+  startDateTime.setHours(startHour, startMinute, 0, 0);
+
+  const endDateTime = new Date(rescheduleDate);
+  endDateTime.setHours(endHour, endMinute, 0, 0);
+
+  const lecturerString = Array.isArray(subject.lecturer)
+    ? subject.lecturer.join(", ")
+    : subject.lecturer || "-";
+
+  const originalDate = new Date(reschedule.originalDate).toLocaleDateString(
+    "id-ID",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
+
+  return {
+    summary: `🔄 ${subject.name} (Reschedule)`,
+    description: `⚠️ JADWAL PENGGANTI\n\nJadwal Asli: ${originalDate}\nAlasan: ${
+      reschedule.reason
+    }\n\nRuangan: ${room}\nDosen: ${lecturerString}\nPertemuan: ${
+      subject.meeting || "-"
+    }`,
+    location: room,
+    start: {
+      dateTime: startDateTime.toISOString(),
+      timeZone: "Asia/Jakarta",
+    },
+    end: {
+      dateTime: endDateTime.toISOString(),
+      timeZone: "Asia/Jakarta",
+    },
+    colorId: "5", // Yellow/Orange color for reschedules
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: "popup", minutes: 24 * 60 }, // 1 day before
+        { method: "popup", minutes: 60 }, // 1 hour before
+        { method: "popup", minutes: 30 },
+      ],
+    },
+  };
+}
+
+// Export all subjects as recurring events (including reschedules)
 export async function exportScheduleToCalendar(
   oauth2Client: any,
   subjects: Subject[],
   numberOfWeeks: number = 14
 ) {
-  const events = subjects.map((subject) =>
-    createRecurringEvent(subject, numberOfWeeks)
-  );
-  return createMultipleEvents(oauth2Client, events);
+  const allEvents = [];
+
+  // Add regular/recurring events
+  for (const subject of subjects) {
+    allEvents.push(createRecurringEvent(subject, numberOfWeeks));
+
+    // Add reschedule events as separate one-time events
+    if (subject.reschedules && subject.reschedules.length > 0) {
+      for (const reschedule of subject.reschedules) {
+        allEvents.push(createRescheduleEvent(subject, reschedule));
+      }
+    }
+  }
+
+  return createMultipleEvents(oauth2Client, allEvents);
 }
 
 // Export all tasks
