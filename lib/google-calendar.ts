@@ -540,22 +540,44 @@ export async function deleteAllCalendarEvents(
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
   console.log("[Delete] Fetching all events from calendar...");
+  console.log("[Delete] Time range:", {
+    timeMin: timeMin || "no limit (all past events)",
+    timeMax: timeMax || "no limit (all future events)",
+  });
 
   try {
-    // Get all events
-    const response = await calendar.events.list({
-      calendarId: "primary",
-      timeMin: timeMin || new Date().toISOString(), // Default: from today
-      timeMax: timeMax, // Optional: end date
-      maxResults: 2500, // Google Calendar API max
-      singleEvents: true,
-      orderBy: "startTime",
-    });
+    // Get ALL events (including recurring events)
+    // Don't use singleEvents:true because we want to delete the recurring rule, not instances
+    let allEvents: any[] = [];
+    let pageToken: string | undefined;
+    let pageCount = 0;
 
-    const events = response.data.items || [];
-    console.log(`[Delete] Found ${events.length} events to delete`);
+    // Paginate through all events
+    do {
+      pageCount++;
+      console.log(`[Delete] Fetching page ${pageCount}...`);
 
-    if (events.length === 0) {
+      const response = await calendar.events.list({
+        calendarId: "primary",
+        timeMin: timeMin, // No default - get ALL events including past
+        timeMax: timeMax,
+        maxResults: 250, // Smaller batch for better performance
+        pageToken: pageToken,
+        singleEvents: false, // Get recurring events, not instances
+      });
+
+      const items = response.data.items || [];
+      allEvents = allEvents.concat(items);
+      pageToken = response.data.nextPageToken || undefined;
+
+      console.log(
+        `[Delete] Page ${pageCount}: Found ${items.length} events (total so far: ${allEvents.length})`
+      );
+    } while (pageToken);
+
+    console.log(`[Delete] Total events found: ${allEvents.length}`);
+
+    if (allEvents.length === 0) {
       return {
         success: true,
         deletedCount: 0,
@@ -569,15 +591,15 @@ export async function deleteAllCalendarEvents(
     let deletedCount = 0;
     let failedCount = 0;
 
-    for (let i = 0; i < events.length; i += BATCH_SIZE) {
-      const batch = events.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < allEvents.length; i += BATCH_SIZE) {
+      const batch = allEvents.slice(i, i + BATCH_SIZE);
       const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
 
       console.log(
         `[Delete] Processing batch ${batchNumber} (${batch.length} events)...`
       );
 
-      const deletePromises = batch.map(async (event) => {
+      const deletePromises = batch.map(async (event: any) => {
         if (!event.id) return { success: false };
 
         try {
@@ -585,20 +607,23 @@ export async function deleteAllCalendarEvents(
             calendarId: "primary",
             eventId: event.id,
           });
-          console.log(`[Delete] ✅ Deleted: ${event.summary}`);
+          console.log(`[Delete] ✅ Deleted: ${event.summary} (ID: ${event.id})`);
           return { success: true };
         } catch (error: any) {
-          console.error(`[Delete] ❌ Failed to delete: ${event.summary}`, error.message);
-          return { success: false };
+          console.error(
+            `[Delete] ❌ Failed to delete: ${event.summary} (ID: ${event.id})`,
+            error.message
+          );
+          return { success: false, error: error.message };
         }
       });
 
       const results = await Promise.all(deletePromises);
-      deletedCount += results.filter((r) => r.success).length;
-      failedCount += results.filter((r) => !r.success).length;
+      deletedCount += results.filter((r: any) => r.success).length;
+      failedCount += results.filter((r: any) => !r.success).length;
 
       // Delay between batches
-      if (i + BATCH_SIZE < events.length) {
+      if (i + BATCH_SIZE < allEvents.length) {
         console.log(
           `[Delete] Batch ${batchNumber} complete, waiting ${DELAY_BETWEEN_BATCHES}ms...`
         );
@@ -607,14 +632,14 @@ export async function deleteAllCalendarEvents(
     }
 
     console.log(
-      `[Delete] Summary: ${deletedCount} deleted, ${failedCount} failed out of ${events.length} total`
+      `[Delete] Summary: ${deletedCount} deleted, ${failedCount} failed out of ${allEvents.length} total`
     );
 
     return {
       success: true,
       deletedCount,
       failedCount,
-      totalEvents: events.length,
+      totalEvents: allEvents.length,
     };
   } catch (error: any) {
     console.error("[Delete] Error deleting events:", error);

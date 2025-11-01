@@ -309,8 +309,7 @@ export default function GoogleCalendarIntegration({
           <DialogHeader>
             <DialogTitle>Hapus Semua Event?</DialogTitle>
             <DialogDescription>
-              Tindakan ini akan menghapus SEMUA event dari Google Calendar Anda
-              mulai dari hari ini ke depan.
+              Tindakan ini akan menghapus SEMUA event dari Google Calendar Anda (termasuk masa lalu dan masa depan).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -319,11 +318,17 @@ export default function GoogleCalendarIntegration({
                 ⚠️ Peringatan
               </p>
               <ul className="text-xs text-red-700 dark:text-red-300 space-y-1 list-disc list-inside">
-                <li>Semua event akan dihapus permanen</li>
+                <li>Semua event akan dihapus permanen (termasuk recurring events)</li>
                 <li>Tidak bisa di-undo</li>
                 <li>Termasuk event yang dibuat dari aplikasi lain</li>
+                <li>Termasuk event di masa lalu</li>
                 <li>Proses bisa memakan waktu beberapa menit</li>
               </ul>
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 p-3">
+              <p className="text-xs text-blue-800 dark:text-blue-200">
+                💡 <strong>Tip:</strong> Fitur ini akan menghapus recurring events secara langsung (bukan instance satu per satu), sehingga lebih efektif untuk menghapus jadwal yang di-export.
+              </p>
             </div>
             <p className="text-sm text-muted-foreground">
               Pastikan Anda benar-benar ingin menghapus semua event sebelum
